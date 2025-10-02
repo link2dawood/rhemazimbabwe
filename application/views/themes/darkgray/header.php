@@ -99,6 +99,14 @@ foreach ($menu_value['submenus'] as $submenu_key => $submenu_value) {
                                     <?php
 }
 ?>
+
+                            <!-- Partner Portal Login Link -->
+                            <li>
+                                <a href="<?php echo base_url('partnerportal/login'); ?>">
+                                    <i class="fa fa-handshake-o"></i> Partner Login
+                                </a>
+                            </li>
+
                             </ul>
                         </div><!-- /.navbar-collapse -->
                     </nav><!-- /.navbar -->

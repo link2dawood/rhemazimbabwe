@@ -167,6 +167,7 @@ foreach ($roles as $role_key => $role_value) {
 }
 }
 ?>
+                                                            <li data-value="partner"><a href="#"><?php echo $this->lang->line('partners'); ?></a></li>
                                                         </ul>
                                                     </div>
                                                     <input type="text" value="" data-record="" data-email="" data-mobileno="" class="form-control" autocomplete="off" name="text" id="search-query">
@@ -470,6 +471,10 @@ foreach ($birthDaysList['staff'] as $staff_key => $staff_value) {
                                     var email = obj.email;
                                     var contact = obj.contact_no;
                                     var name = obj.name + ' ' + obj.surname + '(' + obj.employee_id + ')';
+                                } else if (category_selected == "partner") {
+                                    var email = obj.email;
+                                    var contact = obj.mobileno;
+                                    var name = obj.fullname;
                                 }
 
                                 var li = $('<li/>')
@@ -552,6 +557,10 @@ foreach ($birthDaysList['staff'] as $staff_key => $staff_value) {
 
                 if(category_selected == 'student_guardian'){
                     category_selected_lang = '<?php echo $this->lang->line('student_guardian'); ?>';
+                }
+
+                if(category_selected == 'partner'){
+                    category_selected_lang = '<?php echo $this->lang->line('partner'); ?>';
                 }
 
                 $("#search-query").attr('value', "").val("");

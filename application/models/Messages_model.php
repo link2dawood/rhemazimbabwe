@@ -554,4 +554,111 @@ class Messages_model extends MY_Model
             //return $return_value;
         }
     }
+
+    /**
+     * ========================================
+     * PARTNER MODULE - COMMUNICATION METHODS
+     * ========================================
+     */
+
+    /**
+     * Get partner email templates
+     * @param int|null $id Template ID
+     * @return array|object
+     */
+    public function get_partner_email_template($id = null)
+    {
+        $this->db->select('*')->from('email_template');
+        $this->db->where('template_type', 'partner');
+        if ($id != null) {
+            $this->db->where('email_template.id', $id);
+        } else {
+            $this->db->order_by('email_template.template', 'ASC');
+        }
+        $query = $this->db->get();
+        if ($id != null) {
+            return $query->row();
+        } else {
+            return $query->result_array();
+        }
+    }
+
+    /**
+     * Get partner SMS templates
+     * @param int|null $id Template ID
+     * @return array|object
+     */
+    public function get_partner_sms_template($id = null)
+    {
+        $this->db->select('*')->from('sms_template');
+        $this->db->where('template_type', 'partner');
+        if ($id != null) {
+            $this->db->where('sms_template.id', $id);
+        } else {
+            $this->db->order_by('sms_template.template', 'ASC');
+        }
+        $query = $this->db->get();
+        if ($id != null) {
+            return $query->row();
+        } else {
+            return $query->result_array();
+        }
+    }
+
+    /**
+     * Get partner giving type name
+     * @param int $id Giving type ID
+     * @return string
+     */
+    public function get_giving_type_name($id)
+    {
+        $giving_type = $this->db->select('name')->from('giving_types')->where('id', $id)->get()->row_array();
+        if ($giving_type) {
+            return $this->lang->line('giving_type') . " : " . $giving_type['name'];
+        }
+        return '';
+    }
+
+    /**
+     * Get partner giving frequency name
+     * @param int $id Giving frequency ID
+     * @return string
+     */
+    public function get_giving_frequency_name($id)
+    {
+        $giving_frequency = $this->db->select('name')->from('giving_frequencies')->where('id', $id)->get()->row_array();
+        if ($giving_frequency) {
+            return $this->lang->line('giving_frequency') . " : " . $giving_frequency['name'];
+        }
+        return '';
+    }
+
+    /**
+     * Get partner name
+     * @param int $id Partner ID
+     * @return string
+     */
+    public function get_partner_name($id)
+    {
+        $partner = $this->db->select('firstname, lastname, partner_code')->from('partners')->where('id', $id)->get()->row_array();
+        if ($partner) {
+            return $this->lang->line('partner') . " : " . $partner['firstname'] . " " . $partner['lastname'] . " (" . $partner['partner_code'] . ")";
+        }
+        return '';
+    }
+
+    /**
+     * Get partner status name
+     * @param string $status Partner status
+     * @return string
+     */
+    public function get_partner_status_name($status)
+    {
+        $status_map = array(
+            'active' => $this->lang->line('active'),
+            'inactive' => $this->lang->line('inactive'),
+            'suspended' => $this->lang->line('suspended')
+        );
+        return isset($status_map[$status]) ? $this->lang->line('status') . " : " . $status_map[$status] : '';
+    }
 }

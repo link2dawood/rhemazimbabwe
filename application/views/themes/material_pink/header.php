@@ -66,7 +66,7 @@ form.gauthenticate-form {
                           <div class="cart-wrapper cart-list" id="card_data_list_hide">
                             <ul>
                                 <div id="card_data_list"></div>
-                            </ul>
+</ul>
                           </div>
                           <div class="cart-wrapper cart-list" id="card_data_list_show">
                             <ul>
@@ -163,9 +163,16 @@ if (!empty($cartdata)) {
                         
                         }else{ if ($setting_data[0]['student_panel_login']) { ?>
                             <a class="complainbtn" href="<?php echo base_url(); ?>site/userlogin"><?php echo $this->lang->line('login'); ?></a>
-                        <?php } } ?> 
-						
-                        </li>                      
+                        <?php } } ?>
+
+                        </li>
+
+                        <!-- Partner Portal Login Link -->
+                        <li>
+                            <a href="<?php echo base_url('partnerportal/login'); ?>">
+                                <i class="fa fa-handshake-o"></i> Partner Login
+                            </a>
+                        </li>
 
                     </ul>
                 </div><!--./col-md-8-->

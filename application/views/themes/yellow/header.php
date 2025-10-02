@@ -31,7 +31,7 @@ form.gauthenticate-form {
                         <div class="he-text"><?php echo $this->lang->line('feedback'); ?><span><a href="<?php echo site_url('page/complain') ?>"><?php echo $this->lang->line('complain'); ?></a></span>
                         </div>
                     </li>
-                </ul>
+</ul>
             </div><!--./col-md-8-->
         </div><!--./row-->
     </div><!--./container-->
@@ -114,6 +114,13 @@ foreach ($menu_value['submenus'] as $submenu_key => $submenu_value) {
                             <?php
 }
 ?>
+
+                        <!-- Partner Portal Login Link -->
+                        <li>
+                            <a href="<?php echo base_url('partnerportal/login'); ?>">
+                                <i class="fa fa-handshake-o"></i> Partner Login
+                            </a>
+                        </li>
 
                     </ul>
                 </div><!-- /.navbar-collapse -->

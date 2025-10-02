@@ -845,7 +845,17 @@ class Customlib
     public function getUserRole()
     {
         $user = $this->CI->session->userdata('student');
-        return $user['role'];
+        if ($user && isset($user['role'])) {
+            return $user['role'];
+        }
+
+        // Check if partner session exists
+        $partner = $this->CI->session->userdata('partner');
+        if ($partner) {
+            return 'partner';
+        }
+
+        return null;
     }
 
     public function getMonthNoDropdown($start_month = null)

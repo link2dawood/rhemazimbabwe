@@ -46,7 +46,7 @@ class StudentModule_lib
     public function hasActive($module = null)
     {
 
-        if ($this->modules[$module]) {
+        if (isset($this->modules[$module]) && $this->modules[$module]) {
             return true;
         }
 

@@ -1,0 +1,37 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep:*)",
+      "Bash(cat:*)",
+      "Bash(mkdir:*)",
+      "Bash(php:*)",
+      "Bash(if not exist \"uploads\\partner_images\" mkdir \"uploads\\partner_images\")",
+      "Bash(for:*)",
+      "Bash(do if [ -f \"$dir/header.php\" ])",
+      "Bash(then echo \"Found: $dir/header.php\")",
+      "Bash(fi)",
+      "Bash(done)",
+      "Bash(do grep -n \"navbar-right\" \"$theme/header.php\")",
+      "Bash(start http://localhost/rhemazimbabwe)",
+      "Read(//d/xampp8.2/apache/logs/**)",
+      "Bash(else echo \"No log file for today\")",
+      "Bash(if [ -d \"application/cache\" ])",
+      "Bash(then find application/cache -type f -name \"*.php\" -not -name \"index.html\" -not -name \".htaccess\" -delete)",
+      "Bash(else echo \"No cache directory\")",
+      "Bash(mysql:*)",
+      "Bash(if not exist \"application\\sql\" mkdir \"application\\sql\")",
+      "Bash(curl:*)",
+      "Read(//d/xampp8.2/mysql/bin/**)",
+      "Bash(mysql.exe:*)",
+      "Bash(start http://localhost/rhemazimbabwe/get_test_logins.php)",
+      "Bash(\"D:\\xampp8.2\\mysql\\bin\\mysql.exe\" -u root -e \"DESCRIBE ssdb.staff\")",
+      "Bash(\"D:\\xampp8.2\\mysql\\bin\\mysql.exe\" -u root -e \"DESCRIBE ssdb.staff_roles\")",
+      "Bash(\"D:\\xampp8.2\\mysql\\bin\\mysql.exe\" -u root -e \"DESCRIBE ssdb.roles\")",
+      "Bash(\"D:\\xampp8.2\\mysql\\bin\\mysql.exe\" -u root -e \"DESCRIBE ssdb.partners\")",
+      "Bash(\"D:\\xampp8.2\\mysql\\bin\\mysql.exe\" -u root -e \"DESCRIBE ssdb.students\")",
+      "Bash(\"D:\\xampp8.2\\mysql\\bin\\mysql.exe\" -u root -e \"DESCRIBE ssdb.guardians\")"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

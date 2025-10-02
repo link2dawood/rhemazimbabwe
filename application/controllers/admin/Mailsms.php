@@ -75,6 +75,15 @@ class Mailsms extends Admin_Controller
                 $result = $this->student_model->searchGuardianNameLike($keyword);
             } elseif ($category == "staff") {
                 $result = $this->staff_model->searchNameLike($keyword);
+            } elseif ($category == "partner") {
+                // Search partners by name, partner code, or email
+                $this->load->model('partner_model');
+                $result = $this->partner_model->searchPartnerNameLike($keyword);
+                foreach ($result as $key => $value) {
+                    $result[$key]['fullname'] = $value['firstname'] . ' ' . $value['lastname'] . ' (' . $value['partner_code'] . ')';
+                    $result[$key]['email'] = $value['email'];
+                    $result[$key]['mobileno'] = $value['phone'];
+                }
             } else {
 
             }

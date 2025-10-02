@@ -4,7 +4,11 @@
 <?php
 $is_lock_panel   = check_lock_enabled();
 $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
-$role            = $this->customlib->getUserRole();
+
+// Use passed role if available, otherwise get from session
+if (!isset($role)) {
+    $role = $this->customlib->getUserRole();
+}
 
 ?>
 
@@ -135,6 +139,10 @@ if ($role == 'guest') {
 } elseif ($role == 'student') {
     $function = 'user/user/dashboard';
 } elseif ($role == 'parent') {
+    $function = 'user/user/dashboard';
+} elseif ($role == 'partner') {
+    $function = 'partnerdashboard';
+} else {
     $function = 'user/user/dashboard';
 }?>
                 <a href="<?php echo base_url(); ?><?php echo $function; ?>" class="logo">
@@ -277,22 +285,25 @@ $tasklist = $this->customlib->getincompleteTask($userdata["id"]);
                                  <li class="cal15 d-sm-none <?php echo ($is_lock_panel) ? "disable-link" : "" ?>"><a data-placement="bottom" data-toggle="tooltip" title="" href="<?php echo base_url() ?>user/chat" data-original-title="<?php echo $this->lang->line('chat'); ?>" class="todoicon"><i class="fa fa-comment-o"></i></a></li>
                                 <?php }
 
-$student_data = $this->customlib->getLoggedInUserData(); 
+// Get student data if not provided (for partner compatibility)
+if (!isset($student_data)) {
+    $student_data = $this->customlib->getLoggedInUserData();
+}
 
-if (!empty($student_data["image"])) {
-    if($student_data['role'] == 'guest'){                    
-        $file = base_url() . "uploads/guest_images/" . $student_data["image"] . img_time();                                    
-    }else{                   
-        $file = base_url() . $student_data["image"] . img_time();               
-    }                
+if (!empty($student_data) && !empty($student_data["image"])) {
+    if(isset($student_data['role']) && $student_data['role'] == 'guest'){
+        $file = base_url() . "uploads/guest_images/" . $student_data["image"] . img_time();
+    }else{
+        $file = base_url() . $student_data["image"] . img_time();
+    }
 }else{
-    if ($student_data['gender'] == 'Female') {
+    if (!empty($student_data) && isset($student_data['gender']) && $student_data['gender'] == 'Female') {
         $file = base_url() . "uploads/student_images/default_female.jpg" . img_time();
-    } elseif ($student_data['gender'] == 'Male') {
+    } elseif (!empty($student_data) && isset($student_data['gender']) && $student_data['gender'] == 'Male') {
         $file = base_url() . "uploads/student_images/default_male.jpg" . img_time();
     }else{
-        $file = base_url() . "uploads/student_images/no_image.png";  
-    }                
+        $file = base_url() . "uploads/student_images/no_image.png";
+    }
 }
 ?>
                                 
@@ -418,6 +429,9 @@ if ($role == 'student' || $role == 'parent') {
                         </li>
 
                         <li class="<?php echo set_Topmenu('my_profile'); ?>"><a href="<?php echo base_url(); ?>user/user/profile"><i class="fa fa-user-plus ftlayer"></i> <span><?php echo $this->lang->line('my_profile'); ?></span></a></li>
+
+                        <!-- Partners Menu -->
+                        <li class="<?php echo set_Topmenu('partner'); ?>"><a href="<?php echo base_url(); ?>user/partner"><i class="fa fa-handshake-o ftlayer"></i> <span><?php echo $this->lang->line('partners'); ?></span></a></li>
 
                         <?php if ($this->module_lib->hasActive('fees_collection') && $this->studentmodule_lib->hasActive('fees')) {?>
                             <li class="<?php echo set_Topmenu('fees'); ?>"><a href="<?php echo base_url(); ?>user/user/getfees"><i class="fa fa-money ftlayer"></i> <span><?php echo $this->lang->line('fees'); ?></span></a></li>
