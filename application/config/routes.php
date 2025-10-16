@@ -75,6 +75,7 @@ $route['user/partner_management/delete/(:num)'] = 'user/partner_management/delet
 $route['partnerdashboard'] = 'partnerdashboard/index';
 $route['partnerdashboard/profile'] = 'partnerdashboard/profile';
 $route['partnerdashboard/contributions'] = 'partnerdashboard/contributions';
+$route['partnerdashboard/giving-settings'] = 'partnerdashboard/giving_settings';
 $route['partnerdashboard/change-password'] = 'partnerdashboard/change_password';
 $route['partnerdashboard/receipt/(:any)'] = 'partnerdashboard/receipt/$1';
 $route['partnerdashboard/update-profile'] = 'partnerdashboard/update_profile';

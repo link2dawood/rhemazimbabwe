@@ -28,18 +28,10 @@ class Partnerdashboard extends Partner_Controller
     {
         $data = [];
         $data['title'] = 'Partner Dashboard';
-        $data['page'] = 'partner_dashboard';
-        $data['role'] = 'partner';
+        $data['page_title'] = 'Dashboard';
+        $data['page_description'] = 'Welcome to your partner portal';
+        $data['active_menu'] = 'dashboard';
         $data['partner'] = $this->partner_data;
-        $data['partners'] = [$this->partner_data]; // For compatibility with dashboard view
-        $data['is_partner_portal'] = true; // Flag to hide add partner buttons
-
-        // Add student_data for header compatibility
-        $data['student_data'] = [
-            'image' => $this->partner_data['photo'] ?? '',
-            'gender' => 'Male', // Default
-            'id' => $this->partner_data['id']
-        ];
 
         // Load giving types and frequencies for dashboard view
         $data['giving_types'] = $this->giving_type_model->getAll();
@@ -55,9 +47,12 @@ class Partnerdashboard extends Partner_Controller
             $data['recent_contributions'] = array_slice($data['recent_contributions'], 0, 5);
         }
 
-        $this->load->view('layout/student/header', $data);
-        $this->load->view('user/partner/dashboard', $data);
-        $this->load->view('layout/student/footer', $data);
+        // Make setting_model available in views
+        $data['setting_model'] = $this->setting_model;
+        
+        $this->load->view('layout/partner/header', $data);
+        $this->load->view('partner/dashboard', $data);
+        $this->load->view('layout/partner/footer', $data);
     }
 
     // Profile/Settings
@@ -65,13 +60,10 @@ class Partnerdashboard extends Partner_Controller
     {
         $data = [];
         $data['title'] = 'My Profile & Settings';
-        $data['role'] = 'partner';
+        $data['page_title'] = 'My Profile';
+        $data['page_description'] = 'Manage your profile information';
+        $data['active_menu'] = 'profile';
         $data['partner'] = $this->partner_data;
-        $data['student_data'] = [
-            'image' => $this->partner_data['photo'] ?? '',
-            'gender' => 'Male',
-            'id' => $this->partner_data['id']
-        ];
         $data['giving_types'] = $this->giving_type_model->getAll();
         $data['giving_frequencies'] = $this->giving_frequency_model->getAll();
         
@@ -79,9 +71,12 @@ class Partnerdashboard extends Partner_Controller
         $partner_id = $this->partner_data['id'];
         $data['current_settings'] = $this->Partner_giving_setting_model->getByPartnerId($partner_id);
 
-        $this->load->view('layout/student/header', $data);
+        // Make setting_model available in views
+        $data['setting_model'] = $this->setting_model;
+        
+        $this->load->view('layout/partner/header', $data);
         $this->load->view('user/partner/settings', $data);
-        $this->load->view('layout/student/footer', $data);
+        $this->load->view('layout/partner/footer', $data);
     }
 
     // Update Profile
@@ -113,14 +108,10 @@ class Partnerdashboard extends Partner_Controller
     {
         $data = [];
         $data['title'] = 'Giving Settings';
-        $data['role'] = 'partner';
+        $data['page_title'] = 'Giving Settings';
+        $data['page_description'] = 'Manage your contribution preferences';
+        $data['active_menu'] = 'giving_settings';
         $data['partner'] = $this->partner_data;
-        $data['is_partner_portal'] = true;
-        $data['student_data'] = [
-            'image' => $this->partner_data['photo'] ?? '',
-            'gender' => 'Male',
-            'id' => $this->partner_data['id']
-        ];
 
         // Get giving types and frequencies
         $data['giving_types'] = $this->giving_type_model->getAll();
@@ -142,9 +133,12 @@ class Partnerdashboard extends Partner_Controller
         }
         $data['total_amount'] = $total;
 
-        $this->load->view('layout/student/header', $data);
-        $this->load->view('user/partner/giving_settings', $data);
-        $this->load->view('layout/student/footer', $data);
+        // Make setting_model available in views
+        $data['setting_model'] = $this->setting_model;
+        
+        $this->load->view('layout/partner/header', $data);
+        $this->load->view('partner/giving_settings', $data);
+        $this->load->view('layout/partner/footer', $data);
     }
 
     // Update Giving Settings
@@ -255,14 +249,10 @@ class Partnerdashboard extends Partner_Controller
     {
         $data = [];
         $data['title'] = 'My Contributions';
-        $data['role'] = 'partner';
+        $data['page_title'] = 'My Contributions';
+        $data['page_description'] = 'View your contribution history';
+        $data['active_menu'] = 'contributions';
         $data['partner'] = $this->partner_data;
-        $data['is_partner_portal'] = true; // Flag to indicate this is partner portal
-        $data['student_data'] = [
-            'image' => $this->partner_data['photo'] ?? '',
-            'gender' => 'Male',
-            'id' => $this->partner_data['id']
-        ];
 
         // Load giving types and frequencies for contributions view
         $data['giving_types'] = $this->giving_type_model->getAll();
@@ -272,9 +262,12 @@ class Partnerdashboard extends Partner_Controller
         $data['contributions'] = $this->contribution_model->getContributionsByPartner($partner_id);
         $data['total_contributed'] = $this->contribution_model->getTotalContributed($partner_id);
 
-        $this->load->view('layout/student/header', $data);
+        // Make setting_model available in views
+        $data['setting_model'] = $this->setting_model;
+        
+        $this->load->view('layout/partner/header', $data);
         $this->load->view('user/partner/contributions', $data);
-        $this->load->view('layout/student/footer', $data);
+        $this->load->view('layout/partner/footer', $data);
     }
 
     // Download Receipt
@@ -305,21 +298,21 @@ class Partnerdashboard extends Partner_Controller
     {
         $data = [];
         $data['title'] = 'Change Password';
-        $data['role'] = 'partner';
+        $data['page_title'] = 'Change Password';
+        $data['page_description'] = 'Update your account password';
+        $data['active_menu'] = 'change_password';
         $data['partner'] = $this->partner_data;
-        $data['student_data'] = [
-            'image' => $this->partner_data['photo'] ?? '',
-            'gender' => 'Male',
-            'id' => $this->partner_data['id']
-        ];
 
         // Load giving types and frequencies for consistency
         $data['giving_types'] = $this->giving_type_model->getAll();
         $data['giving_frequencies'] = $this->giving_frequency_model->getAll();
 
-        $this->load->view('layout/student/header', $data);
+        // Make setting_model available in views
+        $data['setting_model'] = $this->setting_model;
+        
+        $this->load->view('layout/partner/header', $data);
         $this->load->view('user/partner/change_password', $data);
-        $this->load->view('layout/student/footer', $data);
+        $this->load->view('layout/partner/footer', $data);
     }
 
     // Update Password

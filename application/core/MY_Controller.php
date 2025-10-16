@@ -235,7 +235,7 @@ class Front_Controller extends CI_Controller
         parent::__construct();
         $this->check_installation();
         $this->load->database();
-                $this->load->library(array('Smsgateway', 'QDMailer'));
+                $this->load->library(array('Smsgateway', 'QDMailer', 'captchalib', 'customlib'));
         $this->load->model(array('setting_model', 'language_model', 'Module_model', 'cms_program_model', 'cms_menu_model', 'cms_menuitems_model', 'cms_page_model', 'cms_page_content_model', 'class_model', 'category_model','notificationsetting_model'));
 
         if ($this->config->item('installed') == true) {

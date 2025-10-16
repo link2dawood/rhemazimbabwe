@@ -241,7 +241,7 @@
         <div class="login-footer">
             <p style="margin: 0;">
                 Don't have an account?
-                <a href="<?php echo base_url('partnerportal/register'); ?>">Register Here</a>
+                <a href="<?php echo base_url('partnerregistration/'); ?>">Register Here</a>
             </p>
             <p style="margin: 10px 0 0 0; font-size: 12px; color: #6c757d;">
                 <a href="<?php echo base_url(); ?>" style="color: #6c757d;">

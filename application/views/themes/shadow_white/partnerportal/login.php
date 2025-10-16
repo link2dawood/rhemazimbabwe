@@ -163,7 +163,7 @@
                     <div class="footer-links">
                         <p>
                             Don't have an account?
-                            <a href="<?php echo base_url('partnerregistration/register'); ?>">Register Here</a>
+                            <a href="<?php echo base_url('partnerregistration/'); ?>">Register Here</a>
                         </p>
                     </div>
                 </div>

@@ -12,7 +12,11 @@ class Partner_registration extends Front_Controller
         $this->load->model(array(
             'partner_model',
             'type_model',
-            'frequency_model'
+            'frequency_model',
+            'cms_menu_model',
+            'cms_menuitems_model',
+            'setting_model',
+            'frontcms_setting_model'
         ));
         $this->load->library('form_validation');
         $this->load->helper('url');
@@ -24,8 +28,33 @@ class Partner_registration extends Front_Controller
     public function index()
     {
         $this->data['title'] = 'Become a Partner - Rhema Zimbabwe School';
-        $this->data['giving_types'] = $this->type_model->getAll();
-        $this->data['giving_frequencies'] = $this->frequency_model->getAll();
+        
+        // Load required menu data
+        $menu_list = $this->cms_menu_model->getBySlug('main-menu');
+        if ($menu_list) {
+            $this->data['main_menus'] = $this->cms_menuitems_model->getMenus($menu_list['id']);
+        } else {
+            $this->data['main_menus'] = array();
+        }
+        
+        // Load setting data
+        $setting_data = $this->setting_model->get();
+        $this->data['setting_data'] = $setting_data;
+        
+        // Provide default giving types and frequencies
+        $this->data['giving_types'] = array(
+            (object) array('id' => 1, 'name' => 'General Support', 'description' => 'General support for the school'),
+            (object) array('id' => 2, 'name' => 'Student Scholarships', 'description' => 'Support for student scholarships'),
+            (object) array('id' => 3, 'name' => 'Infrastructure', 'description' => 'Support for school infrastructure')
+        );
+        
+        $this->data['giving_frequencies'] = array(
+            (object) array('id' => 1, 'name' => 'One-time', 'days_interval' => null),
+            (object) array('id' => 2, 'name' => 'Monthly', 'days_interval' => 30),
+            (object) array('id' => 3, 'name' => 'Quarterly', 'days_interval' => 90),
+            (object) array('id' => 4, 'name' => 'Annually', 'days_interval' => 365)
+        );
+        
         $this->data['active_menu'] = 'partner_registration';
         $this->data['page_side_bar'] = false;
         $this->data['page'] = array(
@@ -35,8 +64,63 @@ class Partner_registration extends Front_Controller
             'meta_description' => 'Join us as a partner to support Rhema Zimbabwe School'
         );
         
-        
         $this->load_theme('pages/partner_registration');
+    }
+    
+    /**
+     * Test method to check if basic theme loading works
+     */
+    public function test()
+    {
+        // Simple test - just load the view directly
+        $this->load->view('themes/shadow_white/pages/partner_registration');
+    }
+    
+    /**
+     * Debug method to check theme loading step by step
+     */
+    public function debug()
+    {
+        echo "<h1>Debug Information</h1>";
+        echo "<p>Theme Path: " . (isset($this->theme_path) ? $this->theme_path : 'NOT SET') . "</p>";
+        echo "<p>Front Setting: " . (isset($this->front_setting) ? 'SET' : 'NOT SET') . "</p>";
+        echo "<p>School Details: " . (isset($this->school_details) ? 'SET' : 'NOT SET') . "</p>";
+        
+        // Check database connection
+        try {
+            $this->db->query("SELECT 1");
+            echo "<p>Database Connection: OK</p>";
+        } catch (Exception $e) {
+            echo "<p>Database Connection: FAILED - " . $e->getMessage() . "</p>";
+        }
+        
+        // Check if front setting is loaded
+        if (isset($this->front_setting)) {
+            echo "<p>Front Setting Theme: " . $this->front_setting->theme . "</p>";
+            echo "<p>Front Setting Active: " . ($this->front_setting->is_active_front_cms ? 'YES' : 'NO') . "</p>";
+        }
+        
+        // Check if theme files exist
+        $theme_path = 'themes/shadow_white';
+        echo "<p>Layout file exists: " . (file_exists(APPPATH . 'views/' . $theme_path . '/layout.php') ? 'YES' : 'NO') . "</p>";
+        echo "<p>Header file exists: " . (file_exists(APPPATH . 'views/' . $theme_path . '/header.php') ? 'YES' : 'NO') . "</p>";
+        echo "<p>Footer file exists: " . (file_exists(APPPATH . 'views/' . $theme_path . '/footer.php') ? 'YES' : 'NO') . "</p>";
+        echo "<p>Partner registration file exists: " . (file_exists(APPPATH . 'views/' . $theme_path . '/pages/partner_registration.php') ? 'YES' : 'NO') . "</p>";
+        
+        // Try to load theme with minimal data
+        $this->data['title'] = 'Debug Test';
+        $this->data['page'] = array(
+            'title' => 'Debug Test',
+            'meta_title' => 'Debug Test',
+            'meta_keyword' => 'debug',
+            'meta_description' => 'Debug test page'
+        );
+        
+        try {
+            $this->load_theme('pages/partner_registration');
+        } catch (Exception $e) {
+            echo "<p>Error loading theme: " . $e->getMessage() . "</p>";
+        }
     }
 
     /**
