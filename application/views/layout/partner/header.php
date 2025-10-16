@@ -11,12 +11,16 @@
     <link href="<?php echo base_url(); ?>backend/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
     <link href="<?php echo base_url(); ?>backend/dist/css/font-awesome.min.css" rel="stylesheet">
+    <!-- Ionicons -->
+    <link href="<?php echo base_url(); ?>backend/dist/css/ionicons.min.css" rel="stylesheet">
     <!-- AdminLTE CSS -->
     <link href="<?php echo base_url(); ?>backend/dist/css/AdminLTE.min.css" rel="stylesheet">
     <!-- AdminLTE Skins -->
     <link href="<?php echo base_url(); ?>backend/dist/css/skins/_all-skins.min.css" rel="stylesheet">
     <!-- Custom Partner Portal CSS -->
     <link href="<?php echo base_url(); ?>backend/dist/css/partner-portal.css" rel="stylesheet">
+    <!-- Additional CSS -->
+    <link href="<?php echo base_url(); ?>backend/dist/css/custom_style.css" rel="stylesheet">
     
     <script type="text/javascript">
         var base_url = "<?php echo base_url() ?>";

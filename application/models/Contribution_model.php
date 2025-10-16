@@ -378,10 +378,13 @@ class Contribution_model extends MY_Model
      */
     public function getContributionsByPartner($partner_id)
     {
-        return $this->db->where('partner_id', $partner_id)
-                       ->order_by('contribution_date', 'DESC')
-                       ->get('partner_contributions')
-                       ->result_array();
+        $this->db->select('partner_contributions.*, giving_types.name as giving_type_name')
+                 ->from('partner_contributions')
+                 ->join('giving_types', 'giving_types.id = partner_contributions.giving_type_id', 'left')
+                 ->where('partner_contributions.partner_id', $partner_id)
+                 ->order_by('partner_contributions.contribution_date', 'DESC');
+        
+        return $this->db->get()->result_array();
     }
 
     /**

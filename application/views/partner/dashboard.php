@@ -125,7 +125,7 @@
                                 <?php foreach ($recent_contributions as $contribution): ?>
                                 <tr>
                                     <td><?php echo date('M d, Y', strtotime($contribution['contribution_date'])); ?></td>
-                                    <td><?php echo $contribution['giving_type_name']; ?></td>
+                                    <td><?php echo !empty($contribution['giving_type_name']) ? $contribution['giving_type_name'] : 'General'; ?></td>
                                     <td>$<?php echo number_format($contribution['amount'], 2); ?></td>
                                     <td>
                                         <span class="label label-<?php echo $contribution['status'] == 'completed' ? 'success' : 'warning'; ?>">

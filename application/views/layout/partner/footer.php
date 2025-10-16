@@ -65,11 +65,15 @@
     <!-- ./wrapper -->
 
     <!-- jQuery 3 -->
-    <script src="<?php echo base_url(); ?>backend/bower_components/jquery/dist/jquery.min.js"></script>
+    <script src="<?php echo base_url(); ?>backend/custom/jquery.min.js"></script>
     <!-- Bootstrap 3.3.7 -->
-    <script src="<?php echo base_url(); ?>backend/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="<?php echo base_url(); ?>backend/bootstrap/js/bootstrap.min.js"></script>
+    <!-- FastClick -->
+    <script src="<?php echo base_url(); ?>backend/plugins/fastclick/fastclick.js"></script>
     <!-- AdminLTE App -->
-    <script src="<?php echo base_url(); ?>backend/dist/js/adminlte.min.js"></script>
+    <script src="<?php echo base_url(); ?>backend/dist/js/app.min.js"></script>
+    <!-- jQuery UI -->
+    <script src="<?php echo base_url(); ?>backend/dist/js/jquery-ui.min.js"></script>
     <!-- Custom Partner Portal JS -->
     <script src="<?php echo base_url(); ?>backend/dist/js/partner-portal.js"></script>
     

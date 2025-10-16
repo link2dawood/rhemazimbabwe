@@ -20,7 +20,18 @@
                                         <div class="checkbox">
                                             <label>
                                                 <input type="checkbox" name="giving_types[]" value="<?php echo $type->id; ?>" 
-                                                       <?php echo (isset($current_settings) && in_array($type->id, array_column($current_settings, 'giving_type_id'))) ? 'checked' : ''; ?>
+                                                       <?php 
+                                                       $is_checked = false;
+                                                       if (isset($current_settings) && !empty($current_settings)) {
+                                                           foreach ($current_settings as $setting) {
+                                                               if ($setting->giving_type_id == $type->id) {
+                                                                   $is_checked = true;
+                                                                   break;
+                                                               }
+                                                           }
+                                                       }
+                                                       echo $is_checked ? 'checked' : '';
+                                                       ?>
                                                        onchange="updateTotal()">
                                                 <strong><?php echo $type->name; ?></strong>
                                                 <br><small class="text-muted"><?php echo $type->description; ?></small>
@@ -31,7 +42,18 @@
                                             <input type="number" class="form-control amount-input" 
                                                    name="amounts[]" placeholder="0.00" 
                                                    min="0" step="0.01" onchange="updateTotal()"
-                                                   value="<?php echo (isset($current_settings) && in_array($type->id, array_column($current_settings, 'giving_type_id'))) ? $current_settings[array_search($type->id, array_column($current_settings, 'giving_type_id'))]['amount'] : ''; ?>">
+                                                   value="<?php 
+                                                   $amount_value = '';
+                                                   if (isset($current_settings) && !empty($current_settings)) {
+                                                       foreach ($current_settings as $setting) {
+                                                           if ($setting->giving_type_id == $type->id) {
+                                                               $amount_value = $setting->amount;
+                                                               break;
+                                                           }
+                                                       }
+                                                   }
+                                                   echo $amount_value;
+                                                   ?>">
                                         </div>
                                     </div>
                                     <?php endforeach; ?>
@@ -46,7 +68,13 @@
                                     <option value="">Select Frequency</option>
                                     <?php foreach ($giving_frequencies as $frequency): ?>
                                     <option value="<?php echo $frequency->id; ?>"
-                                            <?php echo (isset($current_settings) && !empty($current_settings) && $current_settings[0]['giving_frequency_id'] == $frequency->id) ? 'selected' : ''; ?>>
+                                            <?php 
+                                            $is_selected = false;
+                                            if (isset($current_settings) && !empty($current_settings)) {
+                                                $is_selected = ($current_settings[0]->giving_frequency_id == $frequency->id);
+                                            }
+                                            echo $is_selected ? 'selected' : '';
+                                            ?>>
                                         <?php echo $frequency->name; ?>
                                         <?php if ($frequency->days_interval): ?>
                                         (Every <?php echo $frequency->days_interval; ?> days)
@@ -59,9 +87,9 @@
                             <div class="form-group">
                                 <label for="currency">Currency</label>
                                 <select class="form-control" id="currency" name="currency">
-                                    <option value="USD" <?php echo (isset($current_settings) && !empty($current_settings) && $current_settings[0]['currency'] == 'USD') ? 'selected' : ''; ?>>USD</option>
-                                    <option value="ZWL" <?php echo (isset($current_settings) && !empty($current_settings) && $current_settings[0]['currency'] == 'ZWL') ? 'selected' : ''; ?>>ZWL</option>
-                                    <option value="ZAR" <?php echo (isset($current_settings) && !empty($current_settings) && $current_settings[0]['currency'] == 'ZAR') ? 'selected' : ''; ?>>ZAR</option>
+                                    <option value="USD" <?php echo (isset($current_settings) && !empty($current_settings) && $current_settings[0]->currency == 'USD') ? 'selected' : ''; ?>>USD</option>
+                                    <option value="ZWL" <?php echo (isset($current_settings) && !empty($current_settings) && $current_settings[0]->currency == 'ZWL') ? 'selected' : ''; ?>>ZWL</option>
+                                    <option value="ZAR" <?php echo (isset($current_settings) && !empty($current_settings) && $current_settings[0]->currency == 'ZAR') ? 'selected' : ''; ?>>ZAR</option>
                                 </select>
                             </div>
                             
@@ -83,7 +111,7 @@
                         <div class="col-md-12">
                             <div class="form-group">
                                 <label for="notes">Additional Notes</label>
-                                <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="Any additional information about your giving preferences..."><?php echo (isset($current_settings) && !empty($current_settings)) ? $current_settings[0]['notes'] : ''; ?></textarea>
+                                <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="Any additional information about your giving preferences..."><?php echo (isset($current_settings) && !empty($current_settings)) ? $current_settings[0]->notes : ''; ?></textarea>
                             </div>
                         </div>
                     </div>
@@ -129,11 +157,11 @@
                         <tbody>
                             <?php foreach ($current_settings as $setting): ?>
                             <tr>
-                                <td><?php echo $setting['giving_type_name']; ?></td>
-                                <td>$<?php echo number_format($setting['amount'], 2); ?></td>
-                                <td><?php echo $setting['frequency_name']; ?></td>
-                                <td><?php echo $setting['currency']; ?></td>
-                                <td><?php echo date('M d, Y H:i', strtotime($setting['updated_at'])); ?></td>
+                                <td><?php echo $setting->type_name; ?></td>
+                                <td>$<?php echo number_format($setting->amount, 2); ?></td>
+                                <td><?php echo $setting->frequency_name ?? 'N/A'; ?></td>
+                                <td><?php echo $setting->currency; ?></td>
+                                <td><?php echo date('M d, Y H:i', strtotime($setting->updated_at)); ?></td>
                             </tr>
                             <?php endforeach; ?>
                         </tbody>
@@ -195,6 +223,34 @@ document.addEventListener('DOMContentLoaded', function() {
 // Form submission with AJAX
 document.getElementById('givingSettingsForm').addEventListener('submit', function(e) {
     e.preventDefault();
+    
+    // Client-side validation
+    const checkedTypes = document.querySelectorAll('input[name="giving_types[]"]:checked');
+    const frequencySelect = document.getElementById('giving_frequency_id');
+    
+    if (checkedTypes.length === 0) {
+        alert('Please select at least one giving type');
+        return;
+    }
+    
+    if (!frequencySelect.value) {
+        alert('Please select a giving frequency');
+        return;
+    }
+    
+    // Check if all checked types have amounts
+    let hasValidAmounts = true;
+    checkedTypes.forEach(checkbox => {
+        const amountInput = checkbox.closest('.contribution-type-item').querySelector('.amount-input');
+        if (!amountInput.value || parseFloat(amountInput.value) <= 0) {
+            hasValidAmounts = false;
+        }
+    });
+    
+    if (!hasValidAmounts) {
+        alert('Please enter valid amounts for all selected giving types');
+        return;
+    }
     
     const formData = new FormData(this);
     

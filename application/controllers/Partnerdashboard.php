@@ -75,7 +75,7 @@ class Partnerdashboard extends Partner_Controller
         $data['setting_model'] = $this->setting_model;
         
         $this->load->view('layout/partner/header', $data);
-        $this->load->view('user/partner/settings', $data);
+        $this->load->view('partner/profile', $data);
         $this->load->view('layout/partner/footer', $data);
     }
 
@@ -128,7 +128,7 @@ class Partnerdashboard extends Partner_Controller
         $total = 0;
         if (!empty($data['current_settings'])) {
             foreach ($data['current_settings'] as $setting) {
-                $total += $setting['amount'];
+                $total += $setting->amount;
             }
         }
         $data['total_amount'] = $total;
@@ -147,18 +147,23 @@ class Partnerdashboard extends Partner_Controller
         $partner_id = $this->partner_data['id'];
 
         // Get posted data
-        $giving_types = $this->input->post('giving_types');
-        $amounts = $this->input->post('amounts');
-        $frequency_id = $this->input->post('frequency_id');
+        $giving_types = $this->input->post('giving_types') ?: array();
+        $amounts = $this->input->post('amounts') ?: array();
+        $frequency_id = $this->input->post('giving_frequency_id');
         $currency = $this->input->post('currency') ?: 'USD';
 
         // Validation
-        if (empty($giving_types) || empty($amounts)) {
-            echo json_encode(['status' => false, 'message' => 'Please select at least one giving type with an amount']);
+        if (empty($giving_types) || !is_array($giving_types) || count($giving_types) == 0) {
+            echo json_encode(['status' => false, 'message' => 'Please select at least one giving type']);
             return;
         }
 
-        if (empty($frequency_id)) {
+        if (empty($amounts) || !is_array($amounts) || count($amounts) == 0) {
+            echo json_encode(['status' => false, 'message' => 'Please enter amounts for selected giving types']);
+            return;
+        }
+
+        if (empty($frequency_id) || $frequency_id == '') {
             echo json_encode(['status' => false, 'message' => 'Please select a giving frequency']);
             return;
         }
@@ -311,7 +316,7 @@ class Partnerdashboard extends Partner_Controller
         $data['setting_model'] = $this->setting_model;
         
         $this->load->view('layout/partner/header', $data);
-        $this->load->view('user/partner/change_password', $data);
+        $this->load->view('partner/change_password', $data);
         $this->load->view('layout/partner/footer', $data);
     }
 
