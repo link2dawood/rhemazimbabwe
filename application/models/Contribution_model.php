@@ -84,11 +84,13 @@ class Contribution_model extends MY_Model
                           partners.email as partner_email,
                           partners.mobileno as partner_mobile,
                           giving_types.name as type_name,
-                          giving_frequencies.name as frequency_name')
+                          giving_frequencies.name as frequency_name,
+                          staff.name as recorded_by_name')
                  ->from('partner_contributions')
                  ->join('partners', 'partners.id = partner_contributions.partner_id')
                  ->join('giving_types', 'giving_types.id = partner_contributions.giving_type_id', 'left')
                  ->join('giving_frequencies', 'giving_frequencies.id = partner_contributions.giving_frequency_id', 'left')
+                 ->join('staff', 'staff.id = partner_contributions.recorded_by', 'left')
                  ->where('partner_contributions.id', $id);
 
         $query = $this->db->get();
@@ -437,5 +439,57 @@ class Contribution_model extends MY_Model
                          ->where('status', 'completed')
                          ->count_all_results('partner_contributions');
         return $count > 0;
+    }
+
+    /**
+     * Get contributions by partner ID and date range
+     * @param int $partner_id
+     * @param string $start_date
+     * @param string $end_date
+     * @return array
+     */
+    public function getByPartnerIdAndDateRange($partner_id, $start_date, $end_date)
+    {
+        $this->db->select('partner_contributions.*,
+                          giving_types.name as type_name,
+                          giving_frequencies.name as frequency_name')
+                 ->from('partner_contributions')
+                 ->join('giving_types', 'giving_types.id = partner_contributions.giving_type_id', 'left')
+                 ->join('giving_frequencies', 'giving_frequencies.id = partner_contributions.giving_frequency_id', 'left')
+                 ->where('partner_contributions.partner_id', $partner_id)
+                 ->where('partner_contributions.contribution_date >=', $start_date)
+                 ->where('partner_contributions.contribution_date <=', $end_date)
+                 ->where('partner_contributions.status', 'completed')
+                 ->order_by('partner_contributions.contribution_date', 'ASC');
+
+        $query = $this->db->get();
+        return $query->result();
+    }
+
+    /**
+     * Get total contributions by partner and date range
+     * @param int $partner_id
+     * @param string $start_date
+     * @param string $end_date
+     * @return float
+     */
+    public function getTotalByPartnerAndDateRange($partner_id, $start_date = null, $end_date = null)
+    {
+        $this->db->select_sum('amount');
+        $this->db->where('partner_id', $partner_id);
+        $this->db->where('status', 'completed');
+
+        if ($start_date) {
+            $this->db->where('contribution_date >=', $start_date);
+        }
+
+        if ($end_date) {
+            $this->db->where('contribution_date <=', $end_date);
+        }
+
+        $query = $this->db->get('partner_contributions');
+        $result = $query->row();
+
+        return $result->amount ? $result->amount : 0;
     }
 }

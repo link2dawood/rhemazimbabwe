@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Partner Giving Settings - Testing Checklist</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 30px;
+            background: #f8f9fa;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #667eea;
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+        }
+        
+        .section-title {
+            font-size: 1.5em;
+            color: #333;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+        
+        .test-item {
+            background: #f8f9fa;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s;
+        }
+        
+        .test-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+        
+        .test-item input[type="checkbox"] {
+            width: 25px;
+            height: 25px;
+            margin-right: 15px;
+            cursor: pointer;
+        }
+        
+        .test-item label {
+            flex: 1;
+            cursor: pointer;
+            font-size: 1.1em;
+        }
+        
+        .test-item.completed {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+        }
+        
+        .quick-links {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .quick-link {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-decoration: none;
+            text-align: center;
+            font-weight: bold;
+            transition: transform 0.3s;
+        }
+        
+        .quick-link:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        
+        .quick-link i {
+            display: block;
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        
+        .progress-bar {
+            background: #e9ecef;
+            height: 30px;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        
+        .progress-fill {
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            height: 100%;
+            transition: width 0.5s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .note {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        
+        .note-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 5px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        button:hover {
+            background: #764ba2;
+        }
+        
+        .footer {
+            background: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧪 Partner Giving Settings Testing</h1>
+            <p>Interactive Testing Checklist & Quick Access</p>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-card">
+                <span class="stat-value" id="totalTests">17</span>
+                <span class="stat-label">Total Tests</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value" id="completedTests">0</span>
+                <span class="stat-label">Completed</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value" id="progressPercent">0%</span>
+                <span class="stat-label">Progress</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value" id="remainingTests">17</span>
+                <span class="stat-label">Remaining</span>
+            </div>
+        </div>
+        
+        <div class="content">
+            <div class="section">
+                <h2 class="section-title">📋 Quick Links</h2>
+                <div class="quick-links">
+                    <a href="http://localhost/rhemazimbabwe/user/partner/settings?partner_id=1" class="quick-link" target="_blank">
+                        ⚙️<br>Partner Settings
+                    </a>
+                    <a href="http://localhost/rhemazimbabwe/admin/partnercontributions" class="quick-link" target="_blank">
+                        💰<br>Admin Contributions
+                    </a>
+                    <a href="http://localhost/rhemazimbabwe/admin/partnercontributions/add" class="quick-link" target="_blank">
+                        ➕<br>Add Contribution
+                    </a>
+                    <a href="http://localhost/phpmyadmin" class="quick-link" target="_blank">
+                        🗄️<br>phpMyAdmin
+                    </a>
+                </div>
+            </div>
+            
+            <div class="note">
+                <div class="note-title">📝 Before Starting:</div>
+                <div>
+                    1. Make sure XAMPP is running<br>
+                    2. Run <code>insert_test_data.php</code> to create test partners<br>
+                    3. Check that you can access the partner portal<br>
+                    4. Have phpMyAdmin open in another tab for database verification
+                </div>
+            </div>
+            
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressBar" style="width: 0%;">0%</div>
+            </div>
+            
+            <div class="section">
+                <h2 class="section-title">✅ Basic Functionality Tests</h2>
+                <div class="test-item">
+                    <input type="checkbox" id="test1" onchange="updateProgress()">
+                    <label for="test1">TEST 1: Access Partner Settings Page - Page loads successfully</label>
+                </div>
+                <div class="test-item">
+                    <input type="checkbox" id="test2" onchange="updateProgress()">
+                    <label for="test2">TEST 2: Select Single Giving Type - Checkbox enables amount field</label>
+                </div>
+                <div class="test-item">
+                    <input type="checkbox" id="test3" onchange="updateProgress()">
+                    <label for="test3">TEST 3: Select Multiple Giving Types - Can select 3+ types with different amounts</label>
+                </div>
+                <div class="test-item">
+                    <input type="checkbox" id="test4" onchange="updateProgress()">
+                    <label for="test4">TEST 4: Real-Time Total Calculation - Total updates without page refresh</label>
+                </div>
+                <div class="test-item">
+                    <input type="checkbox" id="test5" onchange="updateProgress()">
+                    <label for="test5">TEST 5: Checkbox Toggle Behavior - Unchecking clears and disables field</label>
+                </div>
+                <div class="test-item">
+                    <input type="checkbox" id="test6" onchange="updateProgress()">
+                    <label for="test6">TEST 6: Select All Functionality - Header checkbox toggles all types</label>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2 class="section-title">💱 Currency & Frequency Tests</h2>
+                <div class="test-item">
+                    <input type="checkbox" id="test7" onchange="updateProgress()">
+                    <label for="test7">TEST 7: Currency Selection - Symbols update correctly (USD, ZWL, ZAR, EUR, GBP)</label>
+                </div>
+                <div class="test-item">
+                    <input type="checkbox" id="test16" onchange="updateProgress()">
+                    <label for="test16">TEST 16: Different Currencies - Test all 5 currency options</label>
+                </div>
+                <div class="test-item">
+                    <input type="checkbox" id="test17" onchange="updateProgress()">
+                    <label for="test17">TEST 17: Different Frequencies - Test all 5 frequency options</label>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2 class="section-title">💾 Save & Validation Tests</h2>
+                <div class="test-item">
+                    <input type="checkbox" id="test8" onchange="updateProgress()">
+                    <label for="test8">TEST 8: Save Settings (Valid Data) - Success message & page reload</label>
+                </div>
+                <div class="test-item">
+                    <input type="checkbox" id="test9" onchange="updateProgress()">
+                    <label for="test9">TEST 9: Validation - No Type Selected - Error message appears</label>
+                </div>
+                <div class="test-item">
+                    <input type="checkbox" id="test10" onchange="updateProgress()">
+                    <label for="test10">TEST 10: Validation - No Frequency - Error message appears</label>
+                </div>
+                <div class="test-item">
+                    <input type="checkbox" id="test11" onchange="updateProgress()">
+                    <label for="test11">TEST 11: Validation - Zero Amounts - Error message appears</label>
+                </div>
+                <div class="test-item">
+                    <input type="checkbox" id="test12" onchange="updateProgress()">
+                    <label for="test12">TEST 12: Update Existing Settings - Previous values load & can be updated</label>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2 class="section-title">🎛️ Admin Panel Tests</h2>
+                <div class="test-item">
+                    <input type="checkbox" id="test13" onchange="updateProgress()">
+                    <label for="test13">TEST 13: Admin - View Contributions - List page loads with all contributions</label>
+                </div>
+                <div class="test-item">
+                    <input type="checkbox" id="test14" onchange="updateProgress()">
+                    <label for="test14">TEST 14: Admin - Add Contribution - Can add with reference_no and attachment</label>
+                </div>
+                <div class="test-item">
+                    <input type="checkbox" id="test15" onchange="updateProgress()">
+                    <label for="test15">TEST 15: Admin - View Details - All fields display correctly (code, phone)</label>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2 class="section-title">🔧 Quick Actions</h2>
+                <button onclick="checkAll()">✅ Check All Tests</button>
+                <button onclick="uncheckAll()">❌ Uncheck All Tests</button>
+                <button onclick="resetProgress()">🔄 Reset Progress</button>
+                <button onclick="window.print()">🖨️ Print Checklist</button>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>Partner Giving Settings Testing Suite | v1.0</p>
+            <p>For detailed test procedures, see <strong>TESTING_GUIDE_PARTNER_GIVING_SETTINGS.md</strong></p>
+        </div>
+    </div>
+    
+    <script>
+        function updateProgress() {
+            const total = 17;
+            let completed = 0;
+            
+            for (let i = 1; i <= total; i++) {
+                const checkbox = document.getElementById('test' + i);
+                if (checkbox && checkbox.checked) {
+                    checkbox.parentElement.classList.add('completed');
+                    completed++;
+                } else if (checkbox) {
+                    checkbox.parentElement.classList.remove('completed');
+                }
+            }
+            
+            const percent = Math.round((completed / total) * 100);
+            const remaining = total - completed;
+            
+            document.getElementById('completedTests').textContent = completed;
+            document.getElementById('progressPercent').textContent = percent + '%';
+            document.getElementById('remainingTests').textContent = remaining;
+            document.getElementById('progressBar').style.width = percent + '%';
+            document.getElementById('progressBar').textContent = percent + '%';
+            
+            // Save progress to localStorage
+            const progress = {};
+            for (let i = 1; i <= total; i++) {
+                const checkbox = document.getElementById('test' + i);
+                if (checkbox) {
+                    progress['test' + i] = checkbox.checked;
+                }
+            }
+            localStorage.setItem('testProgress', JSON.stringify(progress));
+            
+            // Celebrate completion
+            if (completed === total) {
+                setTimeout(() => {
+                    alert('🎉 Congratulations! All tests completed! 🎉');
+                }, 500);
+            }
+        }
+        
+        function checkAll() {
+            for (let i = 1; i <= 17; i++) {
+                const checkbox = document.getElementById('test' + i);
+                if (checkbox) {
+                    checkbox.checked = true;
+                }
+            }
+            updateProgress();
+        }
+        
+        function uncheckAll() {
+            for (let i = 1; i <= 17; i++) {
+                const checkbox = document.getElementById('test' + i);
+                if (checkbox) {
+                    checkbox.checked = false;
+                }
+            }
+            updateProgress();
+        }
+        
+        function resetProgress() {
+            if (confirm('Are you sure you want to reset all progress?')) {
+                localStorage.removeItem('testProgress');
+                uncheckAll();
+            }
+        }
+        
+        // Load saved progress on page load
+        window.onload = function() {
+            const saved = localStorage.getItem('testProgress');
+            if (saved) {
+                const progress = JSON.parse(saved);
+                Object.keys(progress).forEach(key => {
+                    const checkbox = document.getElementById(key);
+                    if (checkbox) {
+                        checkbox.checked = progress[key];
+                    }
+                });
+                updateProgress();
+            }
+        };
+    </script>
+</body>
+</html>
+
+
+

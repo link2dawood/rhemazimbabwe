@@ -37,4 +37,46 @@ $route['examresult'] = 'welcome/examresult';
 $route['frontend'] = 'welcome';
 $route['cbseexam'] = 'welcome/cbseexam';
 $route['online_course'] = 'course';
-$route['annual_calendar'] = 'welcome/annual_calendar'; 
+$route['annual_calendar'] = 'welcome/annual_calendar';
+
+// Partner Registration Routes
+$route['partner_registration'] = 'partner_registration/index';
+$route['partner_registration/individual'] = 'partner_registration/individual';
+$route['partner_registration/organization'] = 'partner_registration/organization';
+$route['partner_registration/process_individual'] = 'partner_registration/process_individual';
+$route['partner_registration/process_organization'] = 'partner_registration/process_organization';
+$route['partner_registration/success'] = 'partner_registration/success';
+
+// Partner Portal Routes
+$route['partnerportal'] = 'partnerportal/login';
+$route['partnerportal/login'] = 'partnerportal/login';
+$route['partnerportal/register'] = 'partnerportal/register';
+$route['partnerportal/logout'] = 'partnerportal/logout';
+$route['partnerportal/forgot-password'] = 'partnerportal/forgot_password';
+$route['partnerportal/reset-password/(:any)'] = 'partnerportal/reset_password/$1';
+$route['partnerportal/verify-email/(:any)'] = 'partnerportal/verify_email/$1';
+
+// User Partner Registration Routes
+$route['user/partner_registration'] = 'user/partner_registration/index';
+$route['user/partner_registration/student_register'] = 'user/partner_registration/student_register';
+$route['user/partner_registration/staff_register'] = 'user/partner_registration/staff_register';
+$route['user/partner_registration/process_student'] = 'user/partner_registration/process_student';
+$route['user/partner_registration/process_staff'] = 'user/partner_registration/process_staff';
+
+// User Partner Management Routes
+$route['user/partner_management'] = 'user/partner_management/index';
+$route['user/partner_management/add'] = 'user/partner_management/add';
+$route['user/partner_management/process_add'] = 'user/partner_management/process_add';
+$route['user/partner_management/edit/(:num)'] = 'user/partner_management/edit/$1';
+$route['user/partner_management/process_edit/(:num)'] = 'user/partner_management/process_edit/$1';
+$route['user/partner_management/delete/(:num)'] = 'user/partner_management/delete/$1';
+
+// Partner Dashboard Routes
+$route['partnerdashboard'] = 'partnerdashboard/index';
+$route['partnerdashboard/profile'] = 'partnerdashboard/profile';
+$route['partnerdashboard/contributions'] = 'partnerdashboard/contributions';
+$route['partnerdashboard/change-password'] = 'partnerdashboard/change_password';
+$route['partnerdashboard/receipt/(:any)'] = 'partnerdashboard/receipt/$1';
+$route['partnerdashboard/update-profile'] = 'partnerdashboard/update_profile';
+$route['partnerdashboard/update-giving-settings'] = 'partnerdashboard/update_giving_settings';
+$route['partnerdashboard/add-contribution'] = 'partnerdashboard/add_contribution'; 

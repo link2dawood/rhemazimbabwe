@@ -102,7 +102,7 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
 
                                 <div class="form-group col-md-3">
                                     <label><?php echo $this->lang->line('zip_code'); ?></label>
-                                    <input type="text" name="zipcode" class="form-control" value="<?php echo set_value('zipcode', $partner->zipcode); ?>">
+                                    <input type="text" name="zip_code" class="form-control" value="<?php echo set_value('zip_code', $partner->zip_code); ?>">
                                 </div>
                             </div>
 
@@ -166,9 +166,9 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                             <div class="row">
                                 <div class="form-group col-md-6">
                                     <label><?php echo $this->lang->line('photo'); ?></label>
-                                    <?php if ($partner->image) { ?>
+                                    <?php if ($partner->photo) { ?>
                                         <div>
-                                            <img src="<?php echo base_url() . $partner->image ?>" width="100" class="img-thumbnail">
+                                            <img src="<?php echo base_url() . $partner->photo ?>" width="100" class="img-thumbnail">
                                         </div>
                                     <?php } ?>
                                     <input type="file" name="file" class="form-control filestyle" data-buttonText="<?php echo $this->lang->line('browse'); ?>">

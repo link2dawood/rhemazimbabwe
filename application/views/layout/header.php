@@ -54,6 +54,7 @@ $this->load->view('layout/theme');
         <script src="<?php echo base_url(); ?>backend/plugins/colorpicker/bootstrap-colorpicker.js"></script>
 
         <script src="<?php echo base_url(); ?>backend/dist/js/jquery-ui.min.js"></script>
+        <script src="<?php echo base_url(); ?>backend/custom/jquery.validate.min.js"></script>
         <script src="<?php echo base_url(); ?>backend/js/school-custom.js"></script>
         <script src="<?php echo base_url(); ?>backend/js/school-admin-custom.js"></script>
         <script src="<?php echo base_url(); ?>backend/js/sstoast.js"></script>

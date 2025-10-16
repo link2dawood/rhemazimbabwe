@@ -1,0 +1,261 @@
+<!-- Content Header (Page header) -->
+<section class="content-header">
+    <h1>
+        <i class="fa fa-clock-o"></i> Giving Frequencies Settings
+        <small>Manage giving frequencies for partners</small>
+    </h1>
+    <ol class="breadcrumb">
+        <li><a href="<?php echo base_url(); ?>admin/dashboard"><i class="fa fa-dashboard"></i> Home</a></li>
+        <li><a href="<?php echo base_url(); ?>admin/partners">Partners</a></li>
+        <li><a href="<?php echo base_url(); ?>admin/partner_settings">Settings</a></li>
+        <li class="active">Giving Frequencies</li>
+    </ol>
+</section>
+
+<!-- Main content -->
+<section class="content">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="box box-primary">
+                <div class="box-header with-border">
+                    <h3 class="box-title"><i class="fa fa-clock-o"></i> Giving Frequencies Management</h3>
+                    <div class="box-tools pull-right">
+                        <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#addFrequencyModal">
+                            <i class="fa fa-plus"></i> Add New Frequency
+                        </button>
+                    </div>
+                </div>
+                <div class="box-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-bordered" id="frequenciesTable">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Code</th>
+                                    <th>Days Interval</th>
+                                    <th>Description</th>
+                                    <th>Status</th>
+                                    <th>Usage</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($giving_frequencies as $frequency): ?>
+                                <tr>
+                                    <td><?php echo $frequency->name; ?></td>
+                                    <td><span class="label label-info"><?php echo $frequency->code; ?></span></td>
+                                    <td>
+                                        <?php if ($frequency->days_interval): ?>
+                                            <span class="badge bg-blue"><?php echo $frequency->days_interval; ?> days</span>
+                                        <?php else: ?>
+                                            <span class="text-muted">Once-off</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td><?php echo $frequency->description; ?></td>
+                                    <td>
+                                        <?php if ($frequency->is_active): ?>
+                                            <span class="label label-success">Active</span>
+                                        <?php else: ?>
+                                            <span class="label label-danger">Inactive</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-green"><?php echo $this->frequency_model->getUsageCount($frequency->id); ?> partners</span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <button type="button" class="btn btn-default btn-xs" onclick="editFrequency(<?php echo $frequency->id; ?>)">
+                                                <i class="fa fa-edit"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-<?php echo $frequency->is_active ? 'warning' : 'success'; ?> btn-xs" onclick="toggleStatus(<?php echo $frequency->id; ?>, 'giving_frequency')">
+                                                <i class="fa fa-<?php echo $frequency->is_active ? 'pause' : 'play'; ?>"></i>
+                                            </button>
+                                            <?php if ($this->frequency_model->getUsageCount($frequency->id) == 0): ?>
+                                            <button type="button" class="btn btn-danger btn-xs" onclick="deleteFrequency(<?php echo $frequency->id; ?>)">
+                                                <i class="fa fa-trash"></i>
+                                            </button>
+                                            <?php endif; ?>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Add/Edit Frequency Modal -->
+<div class="modal fade" id="addFrequencyModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title" id="modalTitle">Add New Giving Frequency</h4>
+            </div>
+            <form id="frequencyForm">
+                <div class="modal-body">
+                    <input type="hidden" id="frequencyId" name="id">
+                    
+                    <div class="form-group">
+                        <label for="frequencyName">Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="frequencyName" name="name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="frequencyCode">Code</label>
+                        <input type="text" class="form-control" id="frequencyCode" name="code" placeholder="e.g., weekly, monthly">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="frequencyInterval">Days Interval</label>
+                        <input type="number" class="form-control" id="frequencyInterval" name="days_interval" min="0" placeholder="Leave 0 for once-off">
+                        <small class="help-block">Number of days between contributions. Leave 0 for one-time contributions.</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="frequencyDescription">Description</label>
+                        <textarea class="form-control" id="frequencyDescription" name="description" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <div class="checkbox">
+                            <label>
+                                <input type="checkbox" id="frequencyActive" name="is_active" checked> Active
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+$(document).ready(function() {
+    // Initialize DataTable
+    $('#frequenciesTable').DataTable({
+        "responsive": true,
+        "pageLength": 25,
+        "order": [[ 0, "asc" ]]
+    });
+
+    // Form submission
+    $('#frequencyForm').on('submit', function(e) {
+        e.preventDefault();
+        
+        var formData = $(this).serialize();
+        var url = '<?php echo base_url(); ?>admin/partner_settings/save_giving_frequency';
+        
+        $.ajax({
+            url: url,
+            type: 'POST',
+            data: formData,
+            dataType: 'json',
+            success: function(response) {
+                if (response.status === 'success') {
+                    showAlert('success', response.message);
+                    $('#addFrequencyModal').modal('hide');
+                    location.reload();
+                } else {
+                    showAlert('error', response.message);
+                }
+            },
+            error: function() {
+                showAlert('error', 'An error occurred while saving the giving frequency.');
+            }
+        });
+    });
+
+    // Reset form when modal is closed
+    $('#addFrequencyModal').on('hidden.bs.modal', function() {
+        $('#frequencyForm')[0].reset();
+        $('#frequencyId').val('');
+        $('#modalTitle').text('Add New Giving Frequency');
+        $('#frequencyActive').prop('checked', true);
+    });
+});
+
+function editFrequency(id) {
+    // Get frequency data via AJAX
+    $.ajax({
+        url: '<?php echo base_url(); ?>admin/partner_settings/get_settings_data',
+        type: 'GET',
+        data: { type: 'giving_frequencies' },
+        dataType: 'json',
+        success: function(frequencies) {
+            var frequency = frequencies.find(f => f.id == id);
+            if (frequency) {
+                $('#frequencyId').val(frequency.id);
+                $('#frequencyName').val(frequency.name);
+                $('#frequencyCode').val(frequency.code);
+                $('#frequencyInterval').val(frequency.days_interval);
+                $('#frequencyDescription').val(frequency.description);
+                $('#frequencyActive').prop('checked', frequency.is_active == 1);
+                $('#modalTitle').text('Edit Giving Frequency');
+                $('#addFrequencyModal').modal('show');
+            }
+        }
+    });
+}
+
+function deleteFrequency(id) {
+    if (confirm('Are you sure you want to delete this giving frequency?')) {
+        $.ajax({
+            url: '<?php echo base_url(); ?>admin/partner_settings/delete_giving_frequency',
+            type: 'POST',
+            data: { id: id },
+            dataType: 'json',
+            success: function(response) {
+                if (response.status === 'success') {
+                    showAlert('success', response.message);
+                    location.reload();
+                } else {
+                    showAlert('error', response.message);
+                }
+            }
+        });
+    }
+}
+
+function toggleStatus(id, type) {
+    $.ajax({
+        url: '<?php echo base_url(); ?>admin/partner_settings/toggle_status',
+        type: 'POST',
+        data: { id: id, type: type },
+        dataType: 'json',
+        success: function(response) {
+            if (response.status === 'success') {
+                showAlert('success', response.message);
+                location.reload();
+            } else {
+                showAlert('error', response.message);
+            }
+        }
+    });
+}
+
+function showAlert(type, message) {
+    var alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+    var alertHtml = '<div class="alert ' + alertClass + ' alert-dismissible">' +
+                    '<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>' +
+                    message +
+                    '</div>';
+    
+    $('.content').prepend(alertHtml);
+    
+    // Auto-hide after 5 seconds
+    setTimeout(function() {
+        $('.alert').fadeOut();
+    }, 5000);
+}
+</script>

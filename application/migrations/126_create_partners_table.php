@@ -63,7 +63,7 @@ class Migration_Create_partners_table extends CI_Migration
                 'constraint' => 100,
                 'null' => TRUE
             ),
-            'zipcode' => array(
+            'zip_code' => array(
                 'type' => 'VARCHAR',
                 'constraint' => 20,
                 'null' => TRUE

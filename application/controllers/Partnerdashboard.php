@@ -15,8 +15,12 @@ class Partnerdashboard extends Partner_Controller
         $this->load->model(array(
             'contribution_model',
             'type_model' => 'giving_type_model',
-            'frequency_model' => 'giving_frequency_model'
+            'frequency_model' => 'giving_frequency_model',
+            'Partner_giving_setting_model',
+            'setting_model'
         ));
+        $this->load->library('form_validation');
+        $this->load->helper('number');
     }
 
     // Dashboard
@@ -37,6 +41,10 @@ class Partnerdashboard extends Partner_Controller
             'id' => $this->partner_data['id']
         ];
 
+        // Load giving types and frequencies for dashboard view
+        $data['giving_types'] = $this->giving_type_model->getAll();
+        $data['giving_frequencies'] = $this->giving_frequency_model->getAll();
+
         // Get statistics
         $partner_id = $this->partner_data['id'];
         $data['statistics'] = $this->getStatistics($partner_id);
@@ -52,11 +60,11 @@ class Partnerdashboard extends Partner_Controller
         $this->load->view('layout/student/footer', $data);
     }
 
-    // Profile
+    // Profile/Settings
     public function profile()
     {
         $data = [];
-        $data['title'] = 'My Profile';
+        $data['title'] = 'My Profile & Settings';
         $data['role'] = 'partner';
         $data['partner'] = $this->partner_data;
         $data['student_data'] = [
@@ -66,6 +74,10 @@ class Partnerdashboard extends Partner_Controller
         ];
         $data['giving_types'] = $this->giving_type_model->getAll();
         $data['giving_frequencies'] = $this->giving_frequency_model->getAll();
+        
+        // Get current giving settings
+        $partner_id = $this->partner_data['id'];
+        $data['current_settings'] = $this->Partner_giving_setting_model->getByPartnerId($partner_id);
 
         $this->load->view('layout/student/header', $data);
         $this->load->view('user/partner/settings', $data);
@@ -86,10 +98,6 @@ class Partnerdashboard extends Partner_Controller
             'state' => $this->input->post('state'),
             'country' => $this->input->post('country'),
             'zip_code' => $this->input->post('zip_code'),
-            'giving_type_id' => $this->input->post('giving_type_id'),
-            'giving_frequency_id' => $this->input->post('giving_frequency_id'),
-            'contribution_amount' => $this->input->post('contribution_amount'),
-            'currency' => $this->input->post('currency'),
             'notes' => $this->input->post('notes')
         ];
 
@@ -100,6 +108,148 @@ class Partnerdashboard extends Partner_Controller
         }
     }
 
+    // Giving Settings Page (Dedicated)
+    public function giving_settings()
+    {
+        $data = [];
+        $data['title'] = 'Giving Settings';
+        $data['role'] = 'partner';
+        $data['partner'] = $this->partner_data;
+        $data['is_partner_portal'] = true;
+        $data['student_data'] = [
+            'image' => $this->partner_data['photo'] ?? '',
+            'gender' => 'Male',
+            'id' => $this->partner_data['id']
+        ];
+
+        // Get giving types and frequencies
+        $data['giving_types'] = $this->giving_type_model->getAll();
+        $data['giving_frequencies'] = $this->giving_frequency_model->getAll();
+
+        // Get current giving settings
+        $partner_id = $this->partner_data['id'];
+        $data['current_settings'] = $this->Partner_giving_setting_model->getByPartnerId($partner_id);
+
+        // Get current frequency from partner table
+        $data['current_frequency'] = $this->partner_data['giving_frequency_id'] ?? '';
+
+        // Calculate total contribution amount
+        $total = 0;
+        if (!empty($data['current_settings'])) {
+            foreach ($data['current_settings'] as $setting) {
+                $total += $setting['amount'];
+            }
+        }
+        $data['total_amount'] = $total;
+
+        $this->load->view('layout/student/header', $data);
+        $this->load->view('user/partner/giving_settings', $data);
+        $this->load->view('layout/student/footer', $data);
+    }
+
+    // Update Giving Settings
+    public function update_giving_settings()
+    {
+        $partner_id = $this->partner_data['id'];
+
+        // Get posted data
+        $giving_types = $this->input->post('giving_types');
+        $amounts = $this->input->post('amounts');
+        $frequency_id = $this->input->post('frequency_id');
+        $currency = $this->input->post('currency') ?: 'USD';
+
+        // Validation
+        if (empty($giving_types) || empty($amounts)) {
+            echo json_encode(['status' => false, 'message' => 'Please select at least one giving type with an amount']);
+            return;
+        }
+
+        if (empty($frequency_id)) {
+            echo json_encode(['status' => false, 'message' => 'Please select a giving frequency']);
+            return;
+        }
+
+        // Prepare settings data
+        $settings_data = [];
+        $total_amount = 0;
+
+        foreach ($giving_types as $index => $type_id) {
+            if (isset($amounts[$index]) && $amounts[$index] > 0) {
+                $settings_data[] = [
+                    'partner_id' => $partner_id,
+                    'giving_type_id' => $type_id,
+                    'amount' => $amounts[$index],
+                    'currency' => $currency,
+                    'is_active' => 1,
+                    'created_at' => date('Y-m-d H:i:s')
+                ];
+                $total_amount += $amounts[$index];
+            }
+        }
+
+        if (empty($settings_data)) {
+            echo json_encode(['status' => false, 'message' => 'Please enter valid amounts greater than 0']);
+            return;
+        }
+
+        // Update partner's main giving settings
+        $partner_update = [
+            'giving_frequency_id' => $frequency_id,
+            'contribution_amount' => $total_amount,
+            'currency' => $currency,
+            'updated_at' => date('Y-m-d H:i:s')
+        ];
+
+        $this->partner_model->update($partner_id, $partner_update);
+
+        // Save individual giving type settings
+        if ($this->Partner_giving_setting_model->saveSettings($partner_id, $settings_data)) {
+            $this->session->set_flashdata('success', 'Giving settings updated successfully!');
+            echo json_encode([
+                'status' => true,
+                'message' => 'Giving settings updated successfully!',
+                'total_amount' => $total_amount
+            ]);
+        } else {
+            echo json_encode(['status' => false, 'message' => 'Failed to update giving settings']);
+        }
+    }
+
+    // Add Contribution
+    public function add_contribution()
+    {
+        $partner_id = $this->partner_data['id'];
+        
+        $this->form_validation->set_rules('giving_type_id', 'Giving Type', 'required');
+        $this->form_validation->set_rules('amount', 'Amount', 'required|numeric|greater_than[0]');
+        $this->form_validation->set_rules('contribution_date', 'Contribution Date', 'required');
+        $this->form_validation->set_rules('payment_method', 'Payment Method', 'required');
+
+        if ($this->form_validation->run() == FALSE) {
+            echo json_encode(['status' => false, 'message' => validation_errors()]);
+            return;
+        }
+
+        $contribution_data = [
+            'partner_id' => $partner_id,
+            'giving_type_id' => $this->input->post('giving_type_id'),
+            'amount' => $this->input->post('amount'),
+            'currency' => $this->input->post('currency') ?? 'USD',
+            'contribution_date' => $this->input->post('contribution_date'),
+            'payment_method' => $this->input->post('payment_method'),
+            'transaction_id' => $this->input->post('transaction_id'),
+            'notes' => $this->input->post('notes'),
+            'status' => 'pending', // Pending admin approval
+            'created_at' => date('Y-m-d H:i:s')
+        ];
+
+        if ($this->contribution_model->add($contribution_data)) {
+            echo json_encode(['status' => true, 'message' => 'Contribution submitted successfully. It will be reviewed by admin.']);
+        } else {
+            echo json_encode(['status' => false, 'message' => 'Failed to submit contribution']);
+        }
+    }
+
     // Contributions
     public function contributions()
     {
@@ -107,11 +257,16 @@ class Partnerdashboard extends Partner_Controller
         $data['title'] = 'My Contributions';
         $data['role'] = 'partner';
         $data['partner'] = $this->partner_data;
+        $data['is_partner_portal'] = true; // Flag to indicate this is partner portal
         $data['student_data'] = [
             'image' => $this->partner_data['photo'] ?? '',
             'gender' => 'Male',
             'id' => $this->partner_data['id']
         ];
+
+        // Load giving types and frequencies for contributions view
+        $data['giving_types'] = $this->giving_type_model->getAll();
+        $data['giving_frequencies'] = $this->giving_frequency_model->getAll();
 
         $partner_id = $this->partner_data['id'];
         $data['contributions'] = $this->contribution_model->getContributionsByPartner($partner_id);
@@ -134,6 +289,13 @@ class Partnerdashboard extends Partner_Controller
         $data['contribution'] = $contribution;
         $data['partner'] = $this->partner_data;
         $data['school_setting'] = $this->setting_model->getSetting();
+        
+        // Get giving type for the receipt
+        if ($contribution['giving_type_id']) {
+            $data['giving_type'] = $this->giving_type_model->get($contribution['giving_type_id']);
+        } else {
+            $data['giving_type'] = null;
+        }
 
         $this->load->view('user/partner/receipt', $data);
     }
@@ -150,6 +312,10 @@ class Partnerdashboard extends Partner_Controller
             'gender' => 'Male',
             'id' => $this->partner_data['id']
         ];
+
+        // Load giving types and frequencies for consistency
+        $data['giving_types'] = $this->giving_type_model->getAll();
+        $data['giving_frequencies'] = $this->giving_frequency_model->getAll();
 
         $this->load->view('layout/student/header', $data);
         $this->load->view('user/partner/change_password', $data);

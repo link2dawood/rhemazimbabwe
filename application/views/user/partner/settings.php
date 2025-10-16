@@ -1,161 +1,263 @@
 <div class="content-wrapper">
     <section class="content-header">
         <h1>
-            <i class="fa fa-cog"></i> <?php echo $this->lang->line('giving_settings'); ?>
+            <i class="fa fa-cog"></i> Partner Settings
         </h1>
         <ol class="breadcrumb">
-            <li><a href="<?php echo base_url('user/user/dashboard'); ?>"><i class="fa fa-dashboard"></i> <?php echo $this->lang->line('dashboard'); ?></a></li>
-            <li><a href="<?php echo base_url('user/partner'); ?>"><i class="fa fa-handshake-o"></i> <?php echo $this->lang->line('partners'); ?></a></li>
-            <li class="active"><?php echo $this->lang->line('settings'); ?></li>
+            <li><a href="<?php echo base_url('partnerdashboard'); ?>"><i class="fa fa-dashboard"></i> Dashboard</a></li>
+            <li class="active">Settings</li>
         </ol>
     </section>
 
     <section class="content">
         <div class="row">
-            <!-- Partner Info Card -->
-            <div class="col-md-4">
+            <!-- Profile Information -->
+            <div class="col-md-6">
                 <div class="box box-primary">
                     <div class="box-header with-border">
-                        <h3 class="box-title"><?php echo $this->lang->line('partner_information'); ?></h3>
+                        <h3 class="box-title"><i class="fa fa-user"></i> Profile Information</h3>
                     </div>
-                    <div class="box-body box-profile">
-                        <h3 class="profile-username text-center">
-                            <?php
-                            if ($partner['account_type'] == 'organization') {
-                                echo $partner['organization_name'];
-                            } else {
-                                echo $partner['firstname'] . ' ' . $partner['lastname'];
-                            }
-                            ?>
-                        </h3>
-                        <p class="text-muted text-center"><?php echo $partner['partner_code']; ?></p>
-
-                        <ul class="list-group list-group-unbordered">
-                            <li class="list-group-item">
-                                <b><?php echo $this->lang->line('account_type'); ?></b>
-                                <span class="pull-right">
-                                    <?php
-                                    echo ($partner['account_type'] == 'individual')
-                                        ? '<span class="label label-info">' . $this->lang->line('individual_partner') . '</span>'
-                                        : '<span class="label label-primary">' . $this->lang->line('organization_partner') . '</span>';
-                                    ?>
-                                </span>
-                            </li>
-                            <li class="list-group-item">
-                                <b><?php echo $this->lang->line('status'); ?></b>
-                                <span class="pull-right">
-                                    <?php
-                                    $status_class = '';
-                                    $status_text = '';
-                                    switch ($partner['status']) {
-                                        case 'active':
-                                            $status_class = 'success';
-                                            $status_text = $this->lang->line('active');
-                                            break;
-                                        case 'inactive':
-                                            $status_class = 'warning';
-                                            $status_text = $this->lang->line('pending');
-                                            break;
-                                        case 'suspended':
-                                            $status_class = 'danger';
-                                            $status_text = $this->lang->line('suspended');
-                                            break;
-                                    }
-                                    ?>
-                                    <span class="label label-<?php echo $status_class; ?>"><?php echo $status_text; ?></span>
-                                </span>
-                            </li>
-                            <li class="list-group-item">
-                                <b><?php echo $this->lang->line('email'); ?></b>
-                                <span class="pull-right"><?php echo $partner['email']; ?></span>
-                            </li>
-                            <li class="list-group-item">
-                                <b><?php echo $this->lang->line('phone'); ?></b>
-                                <span class="pull-right"><?php echo $partner['mobileno']; ?></span>
-                            </li>
-                        </ul>
-
-                        <a href="<?php echo base_url('user/partner/contributions?partner_id=' . $partner['id']); ?>" class="btn btn-primary btn-block">
-                            <i class="fa fa-history"></i> <?php echo $this->lang->line('view_contributions'); ?>
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Settings Form -->
-            <div class="col-md-8">
-                <div class="box box-info">
-                    <div class="box-header with-border">
-                        <h3 class="box-title"><?php echo $this->lang->line('giving_settings'); ?></h3>
-                    </div>
-                    <form id="settingsForm" method="post" action="<?php echo base_url('user/partner/updateSettings'); ?>">
-                        <?php echo $this->customlib->getCSRF(); ?>
-                        <input type="hidden" name="partner_id" value="<?php echo $partner['id']; ?>">
-
+                    <form id="profileForm">
                         <div class="box-body">
-                            <div class="alert alert-info">
-                                <i class="fa fa-info-circle"></i> <?php echo $this->lang->line('update_giving_preferences'); ?>
-                            </div>
-
-                            <div class="form-group">
-                                <label><?php echo $this->lang->line('giving_type'); ?></label>
-                                <select class="form-control" name="giving_type_id">
-                                    <option value=""><?php echo $this->lang->line('select'); ?></option>
-                                    <?php foreach ($giving_types as $type): ?>
-                                        <option value="<?php echo $type['id']; ?>"
-                                                <?php echo ($partner['giving_type_id'] == $type['id']) ? 'selected' : ''; ?>>
-                                            <?php echo $type['name']; ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-
-                            <div class="form-group">
-                                <label><?php echo $this->lang->line('giving_frequency'); ?></label>
-                                <select class="form-control" name="giving_frequency_id">
-                                    <option value=""><?php echo $this->lang->line('select'); ?></option>
-                                    <?php foreach ($giving_frequencies as $freq): ?>
-                                        <option value="<?php echo $freq['id']; ?>"
-                                                <?php echo ($partner['giving_frequency_id'] == $freq['id']) ? 'selected' : ''; ?>>
-                                            <?php echo $freq['name']; ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label><?php echo $this->lang->line('contribution_amount'); ?></label>
-                                        <input type="number" class="form-control" name="contribution_amount"
-                                               value="<?php echo $partner['contribution_amount']; ?>"
-                                               step="0.01" min="0">
+                                        <label for="firstname">First Name <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="firstname" name="firstname" 
+                                               value="<?php echo $partner['firstname']; ?>" required>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label><?php echo $this->lang->line('currency'); ?></label>
-                                        <select class="form-control" name="currency">
-                                            <option value="USD" <?php echo ($partner['currency'] == 'USD') ? 'selected' : ''; ?>>USD - US Dollar</option>
-                                            <option value="ZWL" <?php echo ($partner['currency'] == 'ZWL') ? 'selected' : ''; ?>>ZWL - Zimbabwe Dollar</option>
-                                            <option value="ZAR" <?php echo ($partner['currency'] == 'ZAR') ? 'selected' : ''; ?>>ZAR - South African Rand</option>
+                                        <label for="lastname">Last Name <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="lastname" name="lastname" 
+                                               value="<?php echo $partner['lastname']; ?>" required>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="email">Email</label>
+                                <input type="email" class="form-control" id="email" name="email" 
+                                       value="<?php echo $partner['email']; ?>" readonly>
+                                <small class="text-muted">Email cannot be changed. Contact admin if needed.</small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="mobileno">Phone Number <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="mobileno" name="mobileno" 
+                                       value="<?php echo $partner['mobileno']; ?>" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="address">Address</label>
+                                <textarea class="form-control" id="address" name="address" rows="3"><?php echo $partner['address']; ?></textarea>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="city">City</label>
+                                        <input type="text" class="form-control" id="city" name="city" 
+                                               value="<?php echo $partner['city']; ?>">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="state">State</label>
+                                        <input type="text" class="form-control" id="state" name="state" 
+                                               value="<?php echo $partner['state']; ?>">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="zip_code">ZIP Code</label>
+                                        <input type="text" class="form-control" id="zip_code" name="zip_code" 
+                                               value="<?php echo $partner['zip_code']; ?>">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="notes">Notes</label>
+                                <textarea class="form-control" id="notes" name="notes" rows="3"><?php echo $partner['notes']; ?></textarea>
+                            </div>
+                        </div>
+                        <div class="box-footer">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fa fa-save"></i> Update Profile
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Giving Settings -->
+            <div class="col-md-6">
+                <div class="box box-success">
+                    <div class="box-header with-border">
+                        <h3 class="box-title"><i class="fa fa-heart"></i> Giving Settings</h3>
+                    </div>
+                    <form id="givingSettingsForm">
+                        <div class="box-body">
+                            <div class="form-group">
+                                <label>Giving Types & Amounts <span class="text-danger">*</span></label>
+                                <div id="giving-types-container">
+                                    <?php if (!empty($current_settings)): ?>
+                                        <?php foreach ($current_settings as $index => $setting): ?>
+                                            <div class="row giving-type-row" data-index="<?php echo $index; ?>">
+                                                <div class="col-md-6">
+                                                    <select class="form-control giving-type-select" name="giving_types[]" required>
+                                                        <option value="">Select Giving Type</option>
+                                                        <?php foreach ($giving_types as $type): ?>
+                                                            <option value="<?php echo $type->id; ?>" 
+                                                                    <?php echo ($type->id == $setting['giving_type_id']) ? 'selected' : ''; ?>>
+                                                                <?php echo $type->name; ?>
+                                                            </option>
+                                                        <?php endforeach; ?>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <input type="number" class="form-control amount-input" name="amounts[]" 
+                                                           placeholder="Amount" value="<?php echo $setting['amount']; ?>" 
+                                                           min="0" step="0.01" required>
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <button type="button" class="btn btn-danger btn-sm remove-giving-type">
+                                                        <i class="fa fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <div class="row giving-type-row" data-index="0">
+                                            <div class="col-md-6">
+                                                <select class="form-control giving-type-select" name="giving_types[]" required>
+                                                    <option value="">Select Giving Type</option>
+                                                    <?php foreach ($giving_types as $type): ?>
+                                                        <option value="<?php echo $type->id; ?>"><?php echo $type->name; ?></option>
+                                                    <?php endforeach; ?>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <input type="number" class="form-control amount-input" name="amounts[]" 
+                                                       placeholder="Amount" min="0" step="0.01" required>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <button type="button" class="btn btn-danger btn-sm remove-giving-type">
+                                                    <i class="fa fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
+                                <button type="button" class="btn btn-success btn-sm" id="add-giving-type">
+                                    <i class="fa fa-plus"></i> Add Giving Type
+                                </button>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="frequency_id">Giving Frequency <span class="text-danger">*</span></label>
+                                <select class="form-control" id="frequency_id" name="frequency_id" required>
+                                    <option value="">Select Frequency</option>
+                                    <?php foreach ($giving_frequencies as $frequency): ?>
+                                        <option value="<?php echo $frequency->id; ?>" 
+                                                <?php echo (!empty($current_settings) && $current_settings[0]['frequency_id'] == $frequency->id) ? 'selected' : ''; ?>>
+                                            <?php echo $frequency->name; ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="box-footer">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fa fa-save"></i> Update Giving Settings
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Contribution -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="box box-info">
+                    <div class="box-header with-border">
+                        <h3 class="box-title"><i class="fa fa-plus"></i> Add New Contribution</h3>
+                    </div>
+                    <form id="contributionForm">
+                        <div class="box-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="contribution_giving_type_id">Giving Type <span class="text-danger">*</span></label>
+                                        <select class="form-control" id="contribution_giving_type_id" name="giving_type_id" required>
+                                            <option value="">Select Giving Type</option>
+                                            <?php foreach ($giving_types as $type): ?>
+                                                <option value="<?php echo $type->id; ?>"><?php echo $type->name; ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="amount">Amount <span class="text-danger">*</span></label>
+                                        <input type="number" class="form-control" id="amount" name="amount" 
+                                               min="0" step="0.01" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="currency">Currency</label>
+                                        <select class="form-control" id="currency" name="currency">
+                                            <option value="USD">USD</option>
+                                            <option value="ZWL">ZWL</option>
+                                            <option value="EUR">EUR</option>
                                         </select>
                                     </div>
                                 </div>
                             </div>
-
+                            
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="contribution_date">Contribution Date <span class="text-danger">*</span></label>
+                                        <input type="date" class="form-control" id="contribution_date" name="contribution_date" 
+                                               value="<?php echo date('Y-m-d'); ?>" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="payment_method">Payment Method <span class="text-danger">*</span></label>
+                                        <select class="form-control" id="payment_method" name="payment_method" required>
+                                            <option value="">Select Payment Method</option>
+                                            <option value="bank_transfer">Bank Transfer</option>
+                                            <option value="mobile_money">Mobile Money</option>
+                                            <option value="cash">Cash</option>
+                                            <option value="check">Check</option>
+                                            <option value="other">Other</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="transaction_id">Transaction ID</label>
+                                        <input type="text" class="form-control" id="transaction_id" name="transaction_id" 
+                                               placeholder="Optional">
+                                    </div>
+                                </div>
+                            </div>
+                            
                             <div class="form-group">
-                                <label><?php echo $this->lang->line('notes'); ?></label>
-                                <textarea class="form-control" name="notes" rows="4"><?php echo $partner['notes']; ?></textarea>
+                                <label for="contribution_notes">Notes</label>
+                                <textarea class="form-control" id="contribution_notes" name="notes" rows="3" 
+                                          placeholder="Additional notes about this contribution"></textarea>
                             </div>
                         </div>
-
                         <div class="box-footer">
-                            <a href="<?php echo base_url('user/partner'); ?>" class="btn btn-default">
-                                <i class="fa fa-arrow-left"></i> <?php echo $this->lang->line('back'); ?>
-                            </a>
-                            <button type="submit" class="btn btn-success pull-right">
-                                <i class="fa fa-save"></i> <?php echo $this->lang->line('save'); ?>
+                            <button type="submit" class="btn btn-info">
+                                <i class="fa fa-plus"></i> Submit Contribution
                             </button>
                         </div>
                     </form>
@@ -167,35 +269,108 @@
 
 <script>
 $(document).ready(function() {
-    $('#settingsForm').submit(function(e) {
+    // Profile form submission
+    $('#profileForm').on('submit', function(e) {
         e.preventDefault();
-
-        var formData = $(this).serialize();
-
+        
         $.ajax({
-            url: $(this).attr('action'),
+            url: '<?php echo base_url("partnerdashboard/update-profile"); ?>',
             type: 'POST',
-            data: formData,
+            data: $(this).serialize(),
             dataType: 'json',
-            beforeSend: function() {
-                $('button[type="submit"]').prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> <?php echo $this->lang->line('saving'); ?>...');
-            },
             success: function(response) {
-                if (response.status == 'success') {
-                    successMsg(response.message);
-                    setTimeout(function() {
-                        window.location.reload();
-                    }, 1500);
+                if (response.status) {
+                    toastr.success(response.message);
                 } else {
-                    errorMsg(response.message);
-                    $('button[type="submit"]').prop('disabled', false).html('<i class="fa fa-save"></i> <?php echo $this->lang->line('save'); ?>');
+                    toastr.error(response.message);
                 }
             },
             error: function() {
-                errorMsg('<?php echo $this->lang->line('error_occurred'); ?>');
-                $('button[type="submit"]').prop('disabled', false).html('<i class="fa fa-save"></i> <?php echo $this->lang->line('save'); ?>');
+                toastr.error('An error occurred. Please try again.');
             }
         });
+    });
+
+    // Giving settings form submission
+    $('#givingSettingsForm').on('submit', function(e) {
+        e.preventDefault();
+        
+        $.ajax({
+            url: '<?php echo base_url("partnerdashboard/update-giving-settings"); ?>',
+            type: 'POST',
+            data: $(this).serialize(),
+            dataType: 'json',
+            success: function(response) {
+                if (response.status) {
+                    toastr.success(response.message);
+                } else {
+                    toastr.error(response.message);
+                }
+            },
+            error: function() {
+                toastr.error('An error occurred. Please try again.');
+            }
+        });
+    });
+
+    // Contribution form submission
+    $('#contributionForm').on('submit', function(e) {
+        e.preventDefault();
+        
+        $.ajax({
+            url: '<?php echo base_url("partnerdashboard/add-contribution"); ?>',
+            type: 'POST',
+            data: $(this).serialize(),
+            dataType: 'json',
+            success: function(response) {
+                if (response.status) {
+                    toastr.success(response.message);
+                    $('#contributionForm')[0].reset();
+                    $('#contribution_date').val('<?php echo date('Y-m-d'); ?>');
+                } else {
+                    toastr.error(response.message);
+                }
+            },
+            error: function() {
+                toastr.error('An error occurred. Please try again.');
+            }
+        });
+    });
+
+    // Add giving type row
+    $('#add-giving-type').on('click', function() {
+        var index = $('.giving-type-row').length;
+        var newRow = `
+            <div class="row giving-type-row" data-index="${index}">
+                <div class="col-md-6">
+                    <select class="form-control giving-type-select" name="giving_types[]" required>
+                        <option value="">Select Giving Type</option>
+                        <?php foreach ($giving_types as $type): ?>
+                            <option value="<?php echo $type->id; ?>"><?php echo $type->name; ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <input type="number" class="form-control amount-input" name="amounts[]" 
+                           placeholder="Amount" min="0" step="0.01" required>
+                </div>
+                <div class="col-md-2">
+                    <button type="button" class="btn btn-danger btn-sm remove-giving-type">
+                        <i class="fa fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+        $('#giving-types-container').append(newRow);
+    });
+
+    // Remove giving type row
+    $(document).on('click', '.remove-giving-type', function() {
+        if ($('.giving-type-row').length > 1) {
+            $(this).closest('.giving-type-row').remove();
+        } else {
+            toastr.warning('At least one giving type is required.');
+        }
     });
 });
 </script>

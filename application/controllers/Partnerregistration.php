@@ -17,9 +17,36 @@ class Partnerregistration extends Front_Controller {
         $this->load->model('Frequency_model');
         $this->load->model('Student_model');
         $this->load->model('Staff_model');
+        $this->load->model('cms_page_model');
         $this->load->library('form_validation');
         $this->load->library('email');
+        $this->load->library('module_lib');
+        $this->load->library('captchalib');
+        $this->load->library('cart');
         $this->load->helper(['url', 'form']);
+
+        // Load settings data for theme
+        $this->data['setting_data'] = $this->setting_model->get();
+
+        // Load course setting if module exists
+        if ($this->module_lib->hasModule('online_course')) {
+            $this->load->model('course_model');
+            $this->data['course_setting'] = $this->course_model->getOnlineCourseSettings();
+        } else {
+            // Initialize empty course_setting to avoid undefined variable errors
+            $this->data['course_setting'] = (object)array('guest_login' => 0);
+        }
+
+        // Load currencies if available
+        if ($this->module_lib->hasModule('online_course')) {
+            $this->load->model('currency_model');
+            $this->data['currencies'] = $this->currency_model->get();
+        } else {
+            $this->data['currencies'] = array();
+        }
+
+        // Set theme from settings or use default
+        $this->data['theme'] = $this->data['theme'] ?? 'default';
 
         // Set active menu for partner section
         $this->data['active_menu'] = 'partners';
@@ -30,9 +57,15 @@ class Partnerregistration extends Front_Controller {
      */
     public function index() {
         $this->data['title'] = 'Become a Partner';
-        $this->data['page'] = 'registration';
+        $this->data['page'] = array(
+            'title' => 'Become a Partner',
+            'meta_title' => 'Become a Partner - Support Education',
+            'meta_keyword' => 'partner, donate, support, education',
+            'meta_description' => 'Join us as a partner and make a difference in students lives'
+        );
+        $this->data['page_side_bar'] = false;
 
-        $this->load->view('themes/' . $this->data['theme'] . '/partnerregistration/index', $this->data);
+        $this->load_theme('partnerregistration/index');
     }
 
     /**
@@ -43,7 +76,7 @@ class Partnerregistration extends Front_Controller {
         if (!in_array($account_type, ['individual', 'organization'])) {
             redirect('partnerregistration');
         }
-
+        
         // Load giving types and frequencies with error handling
         $giving_types = $this->Type_model->getAll();
         $giving_frequencies = $this->Frequency_model->getAll();
@@ -62,12 +95,18 @@ class Partnerregistration extends Front_Controller {
         }
 
         $this->data['title'] = 'Partner Registration';
-        $this->data['page'] = 'registration_form';
+        $this->data['page'] = array(
+            'title' => 'Partner Registration - ' . ucfirst($account_type),
+            'meta_title' => 'Partner Registration',
+            'meta_keyword' => 'partner registration, donate, support',
+            'meta_description' => 'Register as a partner to support our educational mission'
+        );
+        $this->data['page_side_bar'] = false;
         $this->data['account_type'] = $account_type;
         $this->data['giving_types'] = $giving_types;
         $this->data['giving_frequencies'] = $giving_frequencies;
 
-        $this->load->view('themes/' . $this->data['theme'] . '/partnerregistration/register', $this->data);
+        $this->load_theme('partnerregistration/register');
     }
 
     /**
@@ -171,47 +210,86 @@ class Partnerregistration extends Front_Controller {
             return;
         }
 
+        // Calculate total contribution amount from multiple types
+        $giving_types_selected = $this->input->post('giving_types') ?? [];
+        $giving_amounts = $this->input->post('giving_amounts') ?? [];
+        $total_contribution = 0;
+
+        foreach ($giving_types_selected as $type_id) {
+            if (isset($giving_amounts[$type_id]) && !empty($giving_amounts[$type_id])) {
+                $total_contribution += floatval($giving_amounts[$type_id]);
+            }
+        }
+
         // Prepare partner data
+        $student_id = $this->input->post('student_id');
+        $giving_frequency_id = $this->input->post('giving_frequency_id');
+        $organization_name = $this->input->post('organization_name');
+        $organization_type = $this->input->post('organization_type');
+
         $partner_data = [
+            'account_type' => $account_type,
+            'organization_name' => !empty($organization_name) ? $organization_name : NULL,
+            'organization_type' => !empty($organization_type) ? $organization_type : NULL,
             'firstname' => $this->input->post('firstname'),
             'lastname' => $this->input->post('lastname'),
             'email' => $this->input->post('email'),
             'mobileno' => $this->input->post('mobileno'),
-            'address' => $this->input->post('address'),
-            'city' => $this->input->post('city'),
-            'state' => $this->input->post('state'),
-            'country' => $this->input->post('country'),
-            'zipcode' => $this->input->post('zipcode'),
-            'giving_type_id' => $this->input->post('giving_type_id'),
-            'giving_frequency_id' => $this->input->post('giving_frequency_id'),
-            'contribution_amount' => $this->input->post('contribution_amount'),
-            'currency' => $this->input->post('currency', 'USD'),
+            'address' => $this->input->post('address') ?: NULL,
+            'city' => $this->input->post('city') ?: NULL,
+            'state' => $this->input->post('state') ?: NULL,
+            'country' => $this->input->post('country') ?: 'Zimbabwe',
+            'zip_code' => $this->input->post('zipcode') ?: NULL,
+            'giving_frequency_id' => !empty($giving_frequency_id) ? $giving_frequency_id : NULL,
+            'contribution_amount' => $total_contribution,
+            'total_contribution_amount' => 0,
+            'currency' => $this->input->post('currency') ?? 'USD',
             'start_date' => date('Y-m-d'),
-            'status' => 'inactive', // Pending approval
-            'notes' => $this->input->post('notes'),
-            'student_id' => $this->input->post('student_id'),
-            'is_active' => 1
+            'status' => 'pending', // Pending admin approval
+            'notes' => $this->input->post('notes') ?: NULL,
+            'student_id' => !empty($student_id) ? $student_id : NULL,
+            'is_active' => 1,
+            'created_at' => date('Y-m-d H:i:s')
         ];
-
-        // Add organization fields if applicable
-        if ($account_type == 'organization') {
-            $partner_data['notes'] = "Organization: " . $this->input->post('organization_name') .
-                                    " (Type: " . $this->input->post('organization_type') . ")\n" .
-                                    $partner_data['notes'];
-        }
 
         // Generate partner code
         $partner_data['partner_code'] = $this->Partner_model->generatePartnerCode();
+
+        // Check if user wants to create account with password
+        $create_account = $this->input->post('create_account');
+        $password = $this->input->post('password');
+
+        if ($create_account == '1' && !empty($password)) {
+            // Generate username from email or firstname
+            $email_parts = explode('@', $partner_data['email']);
+            $partner_data['username'] = strtolower($email_parts[0]);
+
+            // Check if username exists, append number if needed
+            $username_check = $this->db->where('username', $partner_data['username'])->get('partners')->row();
+            if ($username_check) {
+                $partner_data['username'] = $partner_data['username'] . rand(100, 999);
+            }
+
+            $partner_data['password'] = password_hash($password, PASSWORD_DEFAULT);
+        }
 
         // Insert partner
         $partner_id = $this->Partner_model->add($partner_data);
 
         if ($partner_id) {
-            // Check if user wants to create account
-            $create_account = $this->input->post('create_account');
-
-            if ($create_account == '1') {
-                $this->createPartnerAccount($partner_id, $partner_data);
+            // Save multiple giving types with amounts
+            if (!empty($giving_types_selected)) {
+                foreach ($giving_types_selected as $type_id) {
+                    if (isset($giving_amounts[$type_id]) && !empty($giving_amounts[$type_id])) {
+                        $this->db->insert('partner_giving_types', [
+                            'partner_id' => $partner_id,
+                            'giving_type_id' => $type_id,
+                            'amount' => floatval($giving_amounts[$type_id]),
+                            'currency' => $partner_data['currency'],
+                            'created_at' => date('Y-m-d H:i:s')
+                        ]);
+                    }
+                }
             }
 
             // Send confirmation email
@@ -274,23 +352,31 @@ class Partnerregistration extends Front_Controller {
      * Send confirmation email
      */
     private function sendConfirmationEmail($partner_data, $partner_id) {
-        $this->load->library('email');
+        try {
+            $this->load->library('email');
 
-        $config['mailtype'] = 'html';
-        $this->email->initialize($config);
+            $config['mailtype'] = 'html';
+            $this->email->initialize($config);
 
-        $this->email->from('noreply@rhemazimbabwe.com', 'Rhema Zimbabwe');
-        $this->email->to($partner_data['email']);
-        $this->email->subject('Partner Registration Confirmation');
+            $this->email->from('noreply@rhemazimbabwe.com', 'Rhema Zimbabwe');
+            $this->email->to($partner_data['email']);
+            $this->email->subject('Partner Registration Confirmation');
 
-        $message = $this->load->view('themes/default/partnerregistration/email/confirmation', [
-            'partner_data' => $partner_data,
-            'partner_id' => $partner_id,
-            'base_url' => base_url()
-        ], TRUE);
+            $message = $this->load->view('themes/default/partnerregistration/email/confirmation', [
+                'partner_data' => $partner_data,
+                'partner_id' => $partner_id,
+                'base_url' => base_url()
+            ], TRUE);
 
-        $this->email->message($message);
-        $this->email->send();
+            $this->email->message($message);
+
+            // Attempt to send email, but don't fail if mail server is not configured
+            @$this->email->send();
+
+        } catch (Exception $e) {
+            // Log error but don't fail the registration
+            log_message('error', 'Partner registration email failed: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -308,10 +394,16 @@ class Partnerregistration extends Front_Controller {
         }
 
         $this->data['title'] = 'Registration Successful';
-        $this->data['page'] = 'success';
+        $this->data['page'] = array(
+            'title' => 'Registration Successful',
+            'meta_title' => 'Registration Successful',
+            'meta_keyword' => 'partner registration success',
+            'meta_description' => 'Your partner registration has been submitted successfully'
+        );
+        $this->data['page_side_bar'] = false;
         $this->data['partner'] = $partner;
 
-        $this->load->view('themes/' . $this->data['theme'] . '/partnerregistration/success', $this->data);
+        $this->load_theme('partnerregistration/success');
     }
 
     /**
@@ -319,11 +411,15 @@ class Partnerregistration extends Front_Controller {
      */
     public function checkStatus() {
         $this->data['title'] = 'Check Registration Status';
-        $this->data['page'] = 'check_status';
+        $this->data['page'] = array(
+            'title' => 'Check Registration Status',
+            'meta_title' => 'Check Partner Registration Status',
+            'meta_keyword' => 'partner status, registration check',
+            'meta_description' => 'Check your partner registration status'
+        );
+        $this->data['page_side_bar'] = false;
 
-        $this->load->view('themes/default/partnerregistration/header', $this->data);
-        $this->load->view('themes/default/partnerregistration/check_status', $this->data);
-        $this->load->view('themes/default/partnerregistration/footer', $this->data);
+        $this->load_theme('partnerregistration/check_status');
     }
 
     /**
@@ -357,16 +453,20 @@ class Partnerregistration extends Front_Controller {
             $status_class = 'info';
 
             switch ($partner->status) {
+                case 'pending':
+                    $status_text = 'Pending Approval';
+                    $status_class = 'warning';
+                    break;
                 case 'active':
                     $status_text = 'Approved - Active';
                     $status_class = 'success';
                     break;
                 case 'inactive':
-                    $status_text = 'Pending Approval';
-                    $status_class = 'warning';
+                    $status_text = 'Inactive';
+                    $status_class = 'info';
                     break;
                 case 'suspended':
-                    $status_text = 'Suspended';
+                    $status_text = 'Suspended / Rejected';
                     $status_class = 'danger';
                     break;
             }

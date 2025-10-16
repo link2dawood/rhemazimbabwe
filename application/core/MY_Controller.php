@@ -309,7 +309,7 @@ class Front_Controller extends CI_Controller
     protected function load_theme($content = null, $layout = true)
     {
 
-        $this->data['main_menus']     = '';
+        $this->data['main_menus']     = array();
         $this->data['school_setting'] = $this->school_details;
         $this->data['front_setting']  = $this->front_setting;
         $menu_list                    = $this->cms_menu_model->getBySlug('main-menu');
@@ -321,7 +321,18 @@ class Front_Controller extends CI_Controller
 
         if (count($footer_menu_list) > 0) {
             $this->data['footer_menus'] = $this->cms_menuitems_model->getMenus($footer_menu_list['id']);
+        } else {
+            $this->data['footer_menus'] = array();
         }
+        
+        // Load module_lib if not already loaded
+        if (!isset($this->module_lib)) {
+            $this->load->library('module_lib');
+        }
+        
+        // Pass module_lib to all views
+        $this->data['module_lib'] = $this->module_lib;
+        
         $this->data['layout_type'] = $layout;
         $this->data['header']      = $this->load->view('themes/' . $this->theme_path . '/header', $this->data, true);
 
@@ -347,7 +358,7 @@ class Front_Controller extends CI_Controller
     protected function load_theme_form($content = null, $layout = true)
     {
 
-        $this->data['main_menus']     = '';
+        $this->data['main_menus']     = array();
         $this->data['school_setting'] = $this->school_details;
         $this->data['front_setting']  = $this->front_setting;
         $menu_list                    = $this->cms_menu_model->getBySlug('main-menu');
@@ -358,7 +369,18 @@ class Front_Controller extends CI_Controller
 
         if (count($footer_menu_list > 0)) {
             $this->data['footer_menus'] = $this->cms_menuitems_model->getMenus($footer_menu_list['id']);
+        } else {
+            $this->data['footer_menus'] = array();
         }
+        
+        // Load module_lib if not already loaded
+        if (!isset($this->module_lib)) {
+            $this->load->library('module_lib');
+        }
+        
+        // Pass module_lib to all views
+        $this->data['module_lib'] = $this->module_lib;
+        
         $this->data['header'] = $this->load->view('themes/' . $this->theme_path . '/header', $this->data, true);
 
         $this->data['slider'] = $this->load->view('themes/' . $this->theme_path . '/home_slider', $this->data, true);

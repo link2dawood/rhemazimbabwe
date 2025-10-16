@@ -52,6 +52,10 @@ class Partner_model extends MY_Model
             $this->db->where('partners.status', $filters['status']);
         }
 
+        if (isset($filters['status_not'])) {
+            $this->db->where('partners.status !=', $filters['status_not']);
+        }
+
         if (isset($filters['giving_type_id'])) {
             $this->db->where('partners.giving_type_id', $filters['giving_type_id']);
         }
@@ -110,13 +114,39 @@ class Partner_model extends MY_Model
     }
 
     /**
-     * Get partner by student ID
+     * Get partners by student ID
      * @param int $student_id
-     * @return object|null
+     * @return array
      */
     public function getByStudentId($student_id)
     {
-        return $this->db->where('student_id', $student_id)->get('partners')->row();
+        $this->db->select('partners.*,
+                          giving_frequencies.name as frequency_name,
+                          giving_types.name as type_name')
+                 ->from('partners')
+                 ->join('giving_frequencies', 'giving_frequencies.id = partners.giving_frequency_id', 'left')
+                 ->join('giving_types', 'giving_types.id = partners.giving_type_id', 'left')
+                 ->where('partners.student_id', $student_id);
+        
+        return $this->db->get()->result();
+    }
+
+    /**
+     * Get partners by staff ID
+     * @param int $staff_id
+     * @return array
+     */
+    public function getByStaffId($staff_id)
+    {
+        $this->db->select('partners.*,
+                          giving_frequencies.name as frequency_name,
+                          giving_types.name as type_name')
+                 ->from('partners')
+                 ->join('giving_frequencies', 'giving_frequencies.id = partners.giving_frequency_id', 'left')
+                 ->join('giving_types', 'giving_types.id = partners.giving_type_id', 'left')
+                 ->where('partners.created_by', $staff_id);
+        
+        return $this->db->get()->result();
     }
 
     /**
@@ -409,7 +439,7 @@ class Partner_model extends MY_Model
      */
     public function updateStatus($id, $status)
     {
-        $valid_statuses = array('active', 'inactive', 'suspended');
+        $valid_statuses = array('pending', 'active', 'inactive', 'suspended');
 
         if (!in_array($status, $valid_statuses)) {
             return false;

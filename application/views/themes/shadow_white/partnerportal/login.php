@@ -1,8 +1,8 @@
 <style>
     .partner-login-section {
-        padding: 80px 0;
+        padding: 60px 0;
+        margin-top: 40px;
         background: #f8f9fa;
-        margin-top: 20px;
     }
 
     .login-card {
@@ -153,17 +153,17 @@
                             <span>OR</span>
                         </div>
 
-                        <div class="text-center">
+                        <!-- <div class="text-center">
                             <a href="<?php echo base_url('partnerportal/forgot_password'); ?>">
                                 <i class="fa fa-question-circle"></i> Forgot Password?
                             </a>
-                        </div>
+                        </div> -->
                     </form>
 
                     <div class="footer-links">
                         <p>
                             Don't have an account?
-                            <a href="<?php echo base_url('partnerportal/register'); ?>">Register Here</a>
+                            <a href="<?php echo base_url('partnerregistration/register'); ?>">Register Here</a>
                         </p>
                     </div>
                 </div>

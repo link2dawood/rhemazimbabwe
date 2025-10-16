@@ -16,49 +16,167 @@ class Permission_model extends MY_Model
      * @param bool $active_only
      * @return array
      */
-    public function getAllTypes($active_only = true)
+    public function getAllPermissionTypes($active_only = true)
     {
         if ($active_only) {
             $this->db->where('is_active', 1);
         }
 
-        $this->db->order_by('sort_order', 'ASC');
+        $this->db->order_by('permission_name', 'ASC');
         $query = $this->db->get('partner_permission_types');
 
         return $query->result();
     }
 
     /**
-     * Get partner permissions
+     * Get permission type by ID
+     * @param int $id
+     * @return object|null
+     */
+    public function getPermissionTypeById($id)
+    {
+        return $this->db->where('id', $id)->get('partner_permission_types')->row();
+    }
+
+    /**
+     * Get permission type by code
+     * @param string $code
+     * @return object|null
+     */
+    public function getPermissionTypeByCode($code)
+    {
+        return $this->db->where('permission_code', $code)->get('partner_permission_types')->row();
+    }
+
+    /**
+     * Add new permission type
+     * @param array $data
+     * @return int|bool
+     */
+    public function addPermissionType($data)
+    {
+        if ($this->db->insert('partner_permission_types', $data)) {
+            return $this->db->insert_id();
+        }
+        return false;
+    }
+
+    /**
+     * Update permission type
+     * @param int $id
+     * @param array $data
+     * @return bool
+     */
+    public function updatePermissionType($id, $data)
+    {
+        $this->db->where('id', $id);
+        return $this->db->update('partner_permission_types', $data);
+    }
+
+    /**
+     * Delete permission type
+     * @param int $id
+     * @return bool
+     */
+    public function deletePermissionType($id)
+    {
+        // Check if permission type is being used by any partner
+        $count = $this->db->where('permission_code', $this->getPermissionTypeById($id)->permission_code)
+                          ->count_all_results('partner_permissions');
+
+        if ($count > 0) {
+            return false; // Cannot delete if in use
+        }
+
+        $this->db->where('id', $id);
+        return $this->db->delete('partner_permission_types');
+    }
+
+    /**
+     * Toggle permission type active status
+     * @param int $id
+     * @return bool
+     */
+    public function togglePermissionTypeStatus($id)
+    {
+        $permission_type = $this->getPermissionTypeById($id);
+
+        if (!$permission_type) {
+            return false;
+        }
+
+        $new_status = $permission_type->is_active ? 0 : 1;
+
+        return $this->updatePermissionType($id, array('is_active' => $new_status));
+    }
+
+    /**
+     * Get permissions for a specific partner
      * @param int $partner_id
      * @return array
      */
     public function getByPartnerId($partner_id)
     {
-        $this->db->select('partner_permissions.*,
-                          partner_permission_types.description,
-                          partner_permission_types.sort_order')
+        $this->db->select('partner_permissions.*, partner_permission_types.permission_name, partner_permission_types.description')
                  ->from('partner_permissions')
                  ->join('partner_permission_types', 'partner_permission_types.permission_code = partner_permissions.permission_code', 'left')
-                 ->where('partner_permissions.partner_id', $partner_id)
-                 ->order_by('partner_permission_types.sort_order', 'ASC');
+                 ->where('partner_permissions.partner_id', $partner_id);
 
         $query = $this->db->get();
         return $query->result();
     }
 
     /**
-     * Get permission by ID
-     * @param int $id
-     * @return object|null
+     * Grant permission to partner
+     * @param int $partner_id
+     * @param string $permission_code
+     * @param int $granted_by
+     * @param string $expires_at
+     * @return bool
      */
-    public function getById($id)
+    public function grantPermission($partner_id, $permission_code, $granted_by = null, $expires_at = null)
     {
-        return $this->db->where('id', $id)->get('partner_permissions')->row();
+        $data = array(
+            'partner_id' => $partner_id,
+            'permission_code' => $permission_code,
+            'is_granted' => 1,
+            'granted_by' => $granted_by,
+            'granted_at' => date('Y-m-d H:i:s'),
+            'expires_at' => $expires_at
+        );
+
+        // Check if permission already exists
+        $existing = $this->db->where('partner_id', $partner_id)
+                             ->where('permission_code', $permission_code)
+                             ->get('partner_permissions')
+                             ->row();
+
+        if ($existing) {
+            // Update existing
+            $this->db->where('partner_id', $partner_id);
+            $this->db->where('permission_code', $permission_code);
+            return $this->db->update('partner_permissions', $data);
+        } else {
+            // Insert new
+            return $this->db->insert('partner_permissions', $data);
+        }
     }
 
     /**
-     * Check if partner has permission
+     * Revoke permission from partner
+     * @param int $partner_id
+     * @param string $permission_code
+     * @return bool
+     */
+    public function revokePermission($partner_id, $permission_code)
+    {
+        $this->db->where('partner_id', $partner_id);
+        $this->db->where('permission_code', $permission_code);
+        return $this->db->update('partner_permissions', array('is_granted' => 0));
+    }
+
+    /**
+     * Check if partner has specific permission
      * @param int $partner_id
      * @param string $permission_code
      * @return bool
@@ -74,214 +192,30 @@ class Permission_model extends MY_Model
     }
 
     /**
-     * Grant permission to partner
-     * @param int $partner_id
+     * Get permission usage count
      * @param string $permission_code
-     * @param int $granted_by
-     * @return int|bool
+     * @return int
      */
-    public function grant($partner_id, $permission_code, $granted_by)
+    public function getPermissionUsageCount($permission_code)
     {
-        // Get permission details
-        $permission_type = $this->db->where('permission_code', $permission_code)
-                                   ->get('partner_permission_types')
-                                   ->row();
-
-        if (!$permission_type) {
-            return false;
-        }
-
-        // Check if permission already exists
-        $existing = $this->db->where('partner_id', $partner_id)
-                            ->where('permission_code', $permission_code)
-                            ->get('partner_permissions')
-                            ->row();
-
-        $data = array(
-            'partner_id' => $partner_id,
-            'permission_name' => $permission_type->permission_name,
-            'permission_code' => $permission_code,
-            'is_granted' => 1,
-            'granted_by' => $granted_by,
-            'granted_at' => date('Y-m-d H:i:s')
-        );
-
-        if ($existing) {
-            // Update existing permission
-            $this->db->where('id', $existing->id);
-            if ($this->db->update('partner_permissions', $data)) {
-                return $existing->id;
-            }
-            return false;
-        } else {
-            // Insert new permission
-            if ($this->db->insert('partner_permissions', $data)) {
-                return $this->db->insert_id();
-            }
-            return false;
-        }
+        return $this->db->where('permission_code', $permission_code)
+                        ->where('is_granted', 1)
+                        ->count_all_results('partner_permissions');
     }
 
     /**
-     * Revoke permission from partner
-     * @param int $partner_id
-     * @param string $permission_code
-     * @param int $revoked_by
-     * @return bool
-     */
-    public function revoke($partner_id, $permission_code, $revoked_by)
-    {
-        $data = array(
-            'is_granted' => 0,
-            'revoked_by' => $revoked_by,
-            'revoked_at' => date('Y-m-d H:i:s')
-        );
-
-        $this->db->where('partner_id', $partner_id);
-        $this->db->where('permission_code', $permission_code);
-
-        return $this->db->update('partner_permissions', $data);
-    }
-
-    /**
-     * Grant multiple permissions to partner
-     * @param int $partner_id
-     * @param array $permission_codes
-     * @param int $granted_by
-     * @return bool
-     */
-    public function grantMultiple($partner_id, $permission_codes, $granted_by)
-    {
-        $this->db->trans_start();
-
-        foreach ($permission_codes as $code) {
-            $this->grant($partner_id, $code, $granted_by);
-        }
-
-        $this->db->trans_complete();
-
-        return $this->db->trans_status();
-    }
-
-    /**
-     * Sync partner permissions (grant specified, revoke others)
-     * @param int $partner_id
-     * @param array $permission_codes
-     * @param int $user_id
-     * @return bool
-     */
-    public function sync($partner_id, $permission_codes, $user_id)
-    {
-        $this->db->trans_start();
-
-        // Get all permission types
-        $all_permissions = $this->getAllTypes(true);
-
-        foreach ($all_permissions as $permission_type) {
-            if (in_array($permission_type->permission_code, $permission_codes)) {
-                // Grant permission
-                $this->grant($partner_id, $permission_type->permission_code, $user_id);
-            } else {
-                // Revoke permission
-                $this->revoke($partner_id, $permission_type->permission_code, $user_id);
-            }
-        }
-
-        $this->db->trans_complete();
-
-        return $this->db->trans_status();
-    }
-
-    /**
-     * Get granted permissions for partner
-     * @param int $partner_id
+     * Get permissions as dropdown options
      * @return array
      */
-    public function getGrantedPermissions($partner_id)
+    public function getPermissionDropdown()
     {
-        $this->db->select('partner_permissions.permission_code,
-                          partner_permissions.permission_name')
-                 ->from('partner_permissions')
-                 ->where('partner_id', $partner_id)
-                 ->where('is_granted', 1);
+        $permissions = $this->getAllPermissionTypes(true);
+        $dropdown = array();
 
-        $query = $this->db->get();
-        return $query->result();
-    }
-
-    /**
-     * Delete all permissions for partner
-     * @param int $partner_id
-     * @return bool
-     */
-    public function deleteByPartnerId($partner_id)
-    {
-        $this->db->where('partner_id', $partner_id);
-        return $this->db->delete('partner_permissions');
-    }
-
-    /**
-     * Get partners by permission
-     * @param string $permission_code
-     * @param bool $granted_only
-     * @return array
-     */
-    public function getPartnersByPermission($permission_code, $granted_only = true)
-    {
-        $this->db->select('partners.*,
-                          partner_permissions.granted_at,
-                          partner_permissions.granted_by')
-                 ->from('partner_permissions')
-                 ->join('partners', 'partners.id = partner_permissions.partner_id')
-                 ->where('partner_permissions.permission_code', $permission_code);
-
-        if ($granted_only) {
-            $this->db->where('partner_permissions.is_granted', 1);
+        foreach ($permissions as $permission) {
+            $dropdown[$permission->permission_code] = $permission->permission_name;
         }
 
-        $query = $this->db->get();
-        return $query->result();
-    }
-
-    /**
-     * Get permission statistics
-     * @return array
-     */
-    public function getStatistics()
-    {
-        $this->db->select('partner_permissions.permission_code,
-                          partner_permissions.permission_name,
-                          COUNT(*) as total_grants,
-                          SUM(CASE WHEN partner_permissions.is_granted = 1 THEN 1 ELSE 0 END) as active_grants')
-                 ->from('partner_permissions')
-                 ->group_by('partner_permissions.permission_code');
-
-        $query = $this->db->get();
-        return $query->result();
-    }
-
-    /**
-     * Add permission type (admin function)
-     * @param array $data
-     * @return int|bool
-     */
-    public function addType($data)
-    {
-        if ($this->db->insert('partner_permission_types', $data)) {
-            return $this->db->insert_id();
-        }
-        return false;
-    }
-
-    /**
-     * Update permission type
-     * @param int $id
-     * @param array $data
-     * @return bool
-     */
-    public function updateType($id, $data)
-    {
-        $this->db->where('id', $id);
-        return $this->db->update('partner_permission_types', $data);
+        return $dropdown;
     }
 }

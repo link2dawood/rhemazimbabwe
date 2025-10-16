@@ -83,7 +83,17 @@
                     <div class="box-header with-border">
                         <h3 class="box-title"><i class="fa fa-list"></i> <?php echo $this->lang->line('contributions'); ?></h3>
                         <div class="box-tools pull-right">
-                            <a href="<?php echo base_url('user/partner/settings?partner_id=' . $partner['id']); ?>" class="btn btn-primary btn-sm">
+                            <?php
+                            // Determine the correct settings URL based on context
+                            if (isset($is_partner_portal) && $is_partner_portal) {
+                                // Partner portal - use partnerdashboard route
+                                $settings_url = base_url('partnerdashboard/profile');
+                            } else {
+                                // Student/Parent/Staff portal - use user/partner route
+                                $settings_url = base_url('user/partner/settings?partner_id=' . $partner['id']);
+                            }
+                            ?>
+                            <a href="<?php echo $settings_url; ?>" class="btn btn-primary btn-sm">
                                 <i class="fa fa-cog"></i> <?php echo $this->lang->line('settings'); ?>
                             </a>
                         </div>
@@ -161,14 +171,26 @@
                                                 </td>
                                                 <td class="text-right">
                                                     <div class="btn-group">
-                                                        <a href="<?php echo base_url('user/partner/printReceipt/' . $contribution['id'] . '?partner_id=' . $partner['id']); ?>"
+                                                        <?php
+                                                        // Determine the correct receipt URL based on context
+                                                        if (isset($is_partner_portal) && $is_partner_portal) {
+                                                            // Partner portal - use partnerdashboard routes
+                                                            $print_url = base_url('partnerdashboard/receipt/' . $contribution['id']);
+                                                            $download_url = base_url('partnerdashboard/receipt/' . $contribution['id']);
+                                                        } else {
+                                                            // Student/Parent/Staff portal - use user/partner routes
+                                                            $print_url = base_url('user/partner/printReceipt/' . $contribution['id'] . '?partner_id=' . $partner['id']);
+                                                            $download_url = base_url('user/partner/downloadReceipt/' . $contribution['id'] . '?partner_id=' . $partner['id']);
+                                                        }
+                                                        ?>
+                                                        <a href="<?php echo $print_url; ?>"
                                                            target="_blank"
                                                            class="btn btn-primary btn-xs"
                                                            data-toggle="tooltip"
                                                            title="<?php echo $this->lang->line('print'); ?>">
                                                             <i class="fa fa-print"></i>
                                                         </a>
-                                                        <a href="<?php echo base_url('user/partner/downloadReceipt/' . $contribution['id'] . '?partner_id=' . $partner['id']); ?>"
+                                                        <a href="<?php echo $download_url; ?>"
                                                            target="_blank"
                                                            class="btn btn-success btn-xs"
                                                            data-toggle="tooltip"
@@ -192,7 +214,17 @@
                         <?php endif; ?>
                     </div>
                     <div class="box-footer">
-                        <a href="<?php echo base_url('user/partner'); ?>" class="btn btn-default">
+                        <?php
+                        // Determine the correct back URL based on context
+                        if (isset($is_partner_portal) && $is_partner_portal) {
+                            // Partner portal - use partnerdashboard route
+                            $back_url = base_url('partnerdashboard');
+                        } else {
+                            // Student/Parent/Staff portal - use user/partner route
+                            $back_url = base_url('user/partner');
+                        }
+                        ?>
+                        <a href="<?php echo $back_url; ?>" class="btn btn-default">
                             <i class="fa fa-arrow-left"></i> <?php echo $this->lang->line('back'); ?>
                         </a>
                     </div>

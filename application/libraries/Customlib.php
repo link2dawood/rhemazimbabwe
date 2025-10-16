@@ -746,20 +746,41 @@ class Customlib
 
     public function getStudentSessionUserID()
     {
+        // Partners don't have student IDs
+        if ($this->CI->session->userdata('partner_logged_in')) {
+            return null;
+        }
+
         $student_session = $this->CI->session->all_userdata();
         $session_Array   = $this->CI->session->userdata('student');
-        $studentID       = $session_Array['student_id'];
-        return $studentID;
+
+        // Check if session array exists before accessing
+        if ($session_Array && isset($session_Array['student_id'])) {
+            return $session_Array['student_id'];
+        }
+
+        return null;
     }
 
     public function getStudentCurrentClsSection()
     {
         $session_Array = $this->CI->session->userdata('current_class');
-        return (object) $session_Array;
+
+        // Check if session array exists before accessing
+        if ($session_Array) {
+            return (object) $session_Array;
+        }
+
+        return (object) [];
     }
 
     public function getUsersID()
     {
+        // Check for partner session first
+        if ($this->CI->session->userdata('partner_logged_in')) {
+            return $this->CI->session->userdata('partner_id');
+        }
+
         $session_Array = $this->CI->session->userdata('student');
         if (!empty($session_Array)) {
             if ($session_Array['role'] == "guest") {
@@ -802,14 +823,18 @@ class Customlib
     public function getUserunreadNotification()
     {
         $user_role = $this->getUserRole();
+        $notifications = 0;
+
         if ($user_role == "parent") {
             $parent        = $this->CI->session->userdata;
             $parent_id     = $parent['student']['id'];
             $notifications = $this->CI->notification_model->countUnreadNotificationParent($parent_id);
-        }if ($user_role == "student") {
-
+        } elseif ($user_role == "student") {
             $student_id    = $this->CI->customlib->getStudentSessionUserID();
             $notifications = $this->CI->notification_model->countUnreadNotificationStudent($student_id);
+        } elseif ($user_role == "partner") {
+            // Partners don't have notifications in this system yet
+            $notifications = 0;
         }
 
         if ($notifications > 0) {
@@ -821,29 +846,59 @@ class Customlib
 
     public function getStudentSessionUserName()
     {
+        // Check for partner session first
+        if ($this->CI->session->userdata('partner_logged_in')) {
+            return $this->CI->session->userdata('partner_name');
+        }
+
         $student_session = $this->CI->session->all_userdata();
         $session_Array   = $this->CI->session->userdata('student');
-        $studentUsername = $session_Array['username'];
-        return $studentUsername;
+
+        // Check if session array exists before accessing
+        if ($session_Array && isset($session_Array['username'])) {
+            return $session_Array['username'];
+        }
+
+        return '';
     }
 
     public function getAdminSessionUserName()
     {
         $student_session = $this->CI->session->userdata('admin');
-        $username        = $student_session['username'];
-        return $username;
+
+        // Check if session array exists before accessing
+        if ($student_session && isset($student_session['username'])) {
+            return $student_session['username'];
+        }
+
+        return '';
     }
 
     public function getStudentSessionGardianname()
     {
+        // Partners don't have guardian names
+        if ($this->CI->session->userdata('partner_logged_in')) {
+            return '';
+        }
+
         $student_session = $this->CI->session->all_userdata();
         $session_Array   = $this->CI->session->userdata('student');
-        $studentUsername = $session_Array['guardian_name'];
-        return $studentUsername;
+
+        // Check if session array exists before accessing
+        if ($session_Array && isset($session_Array['guardian_name'])) {
+            return $session_Array['guardian_name'];
+        }
+
+        return '';
     }
 
     public function getUserRole()
     {
+        // Check for partner session first
+        if ($this->CI->session->userdata('partner_logged_in')) {
+            return 'partner';
+        }
+
         $user = $this->CI->session->userdata('student');
         if ($user && isset($user['role'])) {
             return $user['role'];

@@ -12,137 +12,107 @@ class Reminder_model extends MY_Model
     }
 
     /**
-     * Get all reminders with optional filters
-     * @param array $filters
+     * Get all reminder templates
+     * @param bool $active_only
      * @return array
      */
-    public function getAll($filters = array())
+    public function getAllTemplates($active_only = true)
     {
-        $this->db->select('partner_reminders.*,
-                          partners.firstname as partner_firstname,
-                          partners.lastname as partner_lastname,
-                          partners.partner_code,
-                          partners.email as partner_email,
-                          partners.mobileno as partner_mobile')
-                 ->from('partner_reminders')
-                 ->join('partners', 'partners.id = partner_reminders.partner_id');
-
-        // Apply filters
-        if (isset($filters['partner_id'])) {
-            $this->db->where('partner_reminders.partner_id', $filters['partner_id']);
+        if ($active_only) {
+            $this->db->where('is_active', 1);
         }
 
-        if (isset($filters['status'])) {
-            $this->db->where('partner_reminders.status', $filters['status']);
-        }
+        $this->db->order_by('template_name', 'ASC');
+        $query = $this->db->get('partner_reminder_templates');
 
-        if (isset($filters['reminder_type'])) {
-            $this->db->where('partner_reminders.reminder_type', $filters['reminder_type']);
-        }
-
-        if (isset($filters['date_from'])) {
-            $this->db->where('partner_reminders.reminder_date >=', $filters['date_from']);
-        }
-
-        if (isset($filters['date_to'])) {
-            $this->db->where('partner_reminders.reminder_date <=', $filters['date_to']);
-        }
-
-        $this->db->order_by('partner_reminders.reminder_date', 'ASC');
-
-        $query = $this->db->get();
         return $query->result();
     }
 
     /**
-     * Get reminder by ID
+     * Get reminder template by ID
      * @param int $id
      * @return object|null
      */
-    public function getById($id)
+    public function getTemplateById($id)
     {
-        $this->db->select('partner_reminders.*,
-                          partners.firstname as partner_firstname,
-                          partners.lastname as partner_lastname,
-                          partners.partner_code,
-                          partners.email as partner_email,
-                          partners.mobileno as partner_mobile')
-                 ->from('partner_reminders')
-                 ->join('partners', 'partners.id = partner_reminders.partner_id')
-                 ->where('partner_reminders.id', $id);
-
-        $query = $this->db->get();
-        return $query->row();
+        return $this->db->where('id', $id)->get('partner_reminder_templates')->row();
     }
 
     /**
-     * Get reminders by partner ID
-     * @param int $partner_id
-     * @param string $status
-     * @return array
+     * Add new reminder template
+     * @param array $data
+     * @return int|bool
      */
-    public function getByPartnerId($partner_id, $status = null)
+    public function addTemplate($data)
     {
-        $this->db->where('partner_id', $partner_id);
+        if ($this->db->insert('partner_reminder_templates', $data)) {
+            return $this->db->insert_id();
+        }
+        return false;
+    }
 
-        if ($status) {
-            $this->db->where('status', $status);
+    /**
+     * Update reminder template
+     * @param int $id
+     * @param array $data
+     * @return bool
+     */
+    public function updateTemplate($id, $data)
+    {
+        $this->db->where('id', $id);
+        return $this->db->update('partner_reminder_templates', $data);
+    }
+
+    /**
+     * Delete reminder template
+     * @param int $id
+     * @return bool
+     */
+    public function deleteTemplate($id)
+    {
+        $this->db->where('id', $id);
+        return $this->db->delete('partner_reminder_templates');
+    }
+
+    /**
+     * Toggle template active status
+     * @param int $id
+     * @return bool
+     */
+    public function toggleTemplateStatus($id)
+    {
+        $template = $this->getTemplateById($id);
+
+        if (!$template) {
+            return false;
         }
 
-        $this->db->order_by('reminder_date', 'DESC');
+        $new_status = $template->is_active ? 0 : 1;
+
+        return $this->updateTemplate($id, array('is_active' => $new_status));
+    }
+
+    /**
+     * Get reminders for a specific partner
+     * @param int $partner_id
+     * @param int $limit
+     * @return array
+     */
+    public function getByPartnerId($partner_id, $limit = null)
+    {
+        $this->db->where('partner_id', $partner_id);
+        $this->db->order_by('reminder_date', 'ASC');
+
+        if ($limit) {
+            $this->db->limit($limit);
+        }
 
         $query = $this->db->get('partner_reminders');
         return $query->result();
     }
 
     /**
-     * Get pending reminders for today
-     * @return array
-     */
-    public function getPendingForToday()
-    {
-        $today = date('Y-m-d');
-
-        $this->db->select('partner_reminders.*,
-                          partners.firstname as partner_firstname,
-                          partners.lastname as partner_lastname,
-                          partners.partner_code,
-                          partners.email as partner_email,
-                          partners.mobileno as partner_mobile')
-                 ->from('partner_reminders')
-                 ->join('partners', 'partners.id = partner_reminders.partner_id')
-                 ->where('partner_reminders.reminder_date', $today)
-                 ->where('partner_reminders.status', 'pending')
-                 ->order_by('partner_reminders.reminder_time', 'ASC');
-
-        $query = $this->db->get();
-        return $query->result();
-    }
-
-    /**
-     * Get overdue reminders
-     * @return array
-     */
-    public function getOverdue()
-    {
-        $today = date('Y-m-d');
-
-        $this->db->select('partner_reminders.*,
-                          partners.firstname as partner_firstname,
-                          partners.lastname as partner_lastname,
-                          partners.partner_code')
-                 ->from('partner_reminders')
-                 ->join('partners', 'partners.id = partner_reminders.partner_id')
-                 ->where('partner_reminders.reminder_date <', $today)
-                 ->where('partner_reminders.status', 'pending')
-                 ->order_by('partner_reminders.reminder_date', 'ASC');
-
-        $query = $this->db->get();
-        return $query->result();
-    }
-
-    /**
-     * Add new reminder
+     * Add reminder for partner
      * @param array $data
      * @return int|bool
      */
@@ -178,27 +148,51 @@ class Reminder_model extends MY_Model
     }
 
     /**
+     * Toggle reminder status
+     * @param int $id
+     * @param int $is_active
+     * @return bool
+     */
+    public function toggleStatus($id, $is_active)
+    {
+        $this->db->where('id', $id);
+        return $this->db->update('partner_reminders', array('is_active' => $is_active));
+    }
+
+    /**
+     * Get pending reminders
+     * @param string $date
+     * @return array
+     */
+    public function getPendingReminders($date = null)
+    {
+        if (!$date) {
+            $date = date('Y-m-d');
+        }
+
+        $this->db->select('partner_reminders.*, partners.firstname, partners.lastname, partners.email, partners.mobileno')
+                 ->from('partner_reminders')
+                 ->join('partners', 'partners.id = partner_reminders.partner_id', 'left')
+                 ->where('partner_reminders.reminder_date', $date)
+                 ->where('partner_reminders.status', 'pending')
+                 ->where('partners.is_active', 1)
+                 ->where('partners.status', 'active');
+
+        $query = $this->db->get();
+        return $query->result();
+    }
+
+    /**
      * Mark reminder as sent
      * @param int $id
      * @return bool
      */
     public function markAsSent($id)
     {
-        $data = array(
+        return $this->update($id, array(
             'status' => 'sent',
             'sent_at' => date('Y-m-d H:i:s')
-        );
-
-        // Check if recurring
-        $reminder = $this->getById($id);
-
-        if ($reminder && $reminder->is_recurring && $reminder->next_reminder_date) {
-            $data['reminder_date'] = $reminder->next_reminder_date;
-            $data['next_reminder_date'] = $this->calculateNextReminderDate($reminder->next_reminder_date, $reminder->recurrence_pattern);
-            $data['status'] = 'pending';
-        }
-
-        return $this->update($id, $data);
+        ));
     }
 
     /**
@@ -212,65 +206,28 @@ class Reminder_model extends MY_Model
     }
 
     /**
-     * Cancel reminder
-     * @param int $id
-     * @return bool
-     */
-    public function cancel($id)
-    {
-        return $this->update($id, array('status' => 'cancelled'));
-    }
-
-    /**
-     * Calculate next reminder date based on recurrence pattern
-     * @param string $current_date
-     * @param string $pattern
-     * @return string|null
-     */
-    public function calculateNextReminderDate($current_date, $pattern)
-    {
-        if (!$pattern) {
-            return null;
-        }
-
-        switch ($pattern) {
-            case 'daily':
-                return date('Y-m-d', strtotime($current_date . ' + 1 day'));
-
-            case 'weekly':
-                return date('Y-m-d', strtotime($current_date . ' + 1 week'));
-
-            case 'monthly':
-                return date('Y-m-d', strtotime($current_date . ' + 1 month'));
-
-            case 'yearly':
-                return date('Y-m-d', strtotime($current_date . ' + 1 year'));
-
-            default:
-                return null;
-        }
-    }
-
-    /**
-     * Create contribution reminder for partner
+     * Create reminder from template
      * @param int $partner_id
+     * @param int $template_id
      * @param string $reminder_date
      * @param int $created_by
      * @return int|bool
      */
-    public function createContributionReminder($partner_id, $reminder_date, $created_by)
+    public function createFromTemplate($partner_id, $template_id, $reminder_date, $created_by = null)
     {
+        $template = $this->getTemplateById($template_id);
+
+        if (!$template) {
+            return false;
+        }
+
         $data = array(
             'partner_id' => $partner_id,
-            'reminder_type' => 'contribution_due',
+            'title' => $template->template_name,
             'reminder_date' => $reminder_date,
-            'title' => 'Contribution Due Reminder',
-            'message' => 'This is a friendly reminder that your contribution is due.',
+            'reminder_type' => $template->reminder_type,
             'send_via' => 'email',
             'status' => 'pending',
-            'is_recurring' => 1,
-            'recurrence_pattern' => 'monthly',
-            'next_reminder_date' => $this->calculateNextReminderDate($reminder_date, 'monthly'),
             'created_by' => $created_by
         );
 
@@ -278,320 +235,54 @@ class Reminder_model extends MY_Model
     }
 
     /**
-     * Get reminder count by status
+     * Get reminder statistics
      * @return array
      */
-    public function getCountByStatus()
+    public function getReminderStats()
     {
-        $this->db->select('status, COUNT(*) as count')
-                 ->from('partner_reminders')
-                 ->group_by('status');
+        $stats = array();
 
-        $query = $this->db->get();
-        $result = array();
+        // Total reminders
+        $stats['total'] = $this->db->count_all_results('partner_reminders');
 
-        foreach ($query->result() as $row) {
-            $result[$row->status] = $row->count;
-        }
+        // Pending reminders
+        $stats['pending'] = $this->db->where('status', 'pending')->count_all_results('partner_reminders');
 
-        return $result;
-    }
+        // Sent reminders
+        $stats['sent'] = $this->db->where('status', 'sent')->count_all_results('partner_reminders');
 
-    /**
-     * Get upcoming reminders
-     * @param int $days
-     * @return array
-     */
-    public function getUpcoming($days = 7)
-    {
-        $today = date('Y-m-d');
-        $future_date = date('Y-m-d', strtotime("+{$days} days"));
+        // Failed reminders
+        $stats['failed'] = $this->db->where('status', 'failed')->count_all_results('partner_reminders');
 
-        $this->db->select('partner_reminders.*,
-                          partners.firstname as partner_firstname,
-                          partners.lastname as partner_lastname,
-                          partners.partner_code')
-                 ->from('partner_reminders')
-                 ->join('partners', 'partners.id = partner_reminders.partner_id')
-                 ->where('partner_reminders.reminder_date >=', $today)
-                 ->where('partner_reminders.reminder_date <=', $future_date)
-                 ->where('partner_reminders.status', 'pending')
-                 ->order_by('partner_reminders.reminder_date', 'ASC');
-
-        $query = $this->db->get();
-        return $query->result();
-    }
-
-    /**
-     * ========================================
-     * AUTOMATED REMINDER GENERATION METHODS
-     * ========================================
-     */
-
-    /**
-     * Generate contribution reminders for all active partners
-     * Called by cron job daily
-     * @return array Statistics about generated reminders
-     */
-    public function generateContributionReminders()
-    {
-        $this->load->model('partner_model');
-        $this->load->model('contribution_model');
-
-        $stats = array(
-            'total_checked' => 0,
-            'reminders_created' => 0,
-            'errors' => array()
-        );
-
-        // Get all active partners
-        $partners = $this->partner_model->getAll(array('is_active' => 1, 'status' => 'active'));
-
-        foreach ($partners as $partner) {
-            $stats['total_checked']++;
-
-            try {
-                // Calculate next expected contribution date based on frequency
-                $next_contribution_date = $this->calculateNextContributionDate($partner);
-
-                if (!$next_contribution_date) {
-                    continue; // Skip if can't calculate
-                }
-
-                // Check if reminder already exists for this date
-                $existing_reminder = $this->db->where('partner_id', $partner['id'])
-                                             ->where('reminder_type', 'contribution')
-                                             ->where('reminder_date', $next_contribution_date)
-                                             ->where('status !=', 'cancelled')
-                                             ->get('partner_reminders')
-                                             ->row();
-
-                if ($existing_reminder) {
-                    continue; // Reminder already exists
-                }
-
-                // Check if contribution was already made
-                $contribution_exists = $this->contribution_model->checkContributionForDate(
-                    $partner['id'],
-                    $next_contribution_date
-                );
-
-                if ($contribution_exists) {
-                    continue; // Contribution already made
-                }
-
-                // Create reminder (send 3 days before due date)
-                $reminder_date = date('Y-m-d', strtotime($next_contribution_date . ' -3 days'));
-
-                if ($reminder_date <= date('Y-m-d')) {
-                    $reminder_date = date('Y-m-d'); // Send today if already past reminder date
-                }
-
-                $reminder_data = array(
-                    'partner_id' => $partner['id'],
-                    'reminder_type' => 'contribution',
-                    'reminder_date' => $reminder_date,
-                    'message' => $this->generateReminderMessage($partner),
-                    'status' => 'pending',
-                    'send_email' => 1,
-                    'send_sms' => 1,
-                    'created_at' => date('Y-m-d H:i:s'),
-                    'created_by' => 0 // System generated
-                );
-
-                $this->add($reminder_data);
-                $stats['reminders_created']++;
-
-            } catch (Exception $e) {
-                $stats['errors'][] = "Partner ID {$partner['id']}: " . $e->getMessage();
-            }
-        }
+        // Today's reminders
+        $stats['today'] = $this->db->where('reminder_date', date('Y-m-d'))->count_all_results('partner_reminders');
 
         return $stats;
     }
 
     /**
-     * Calculate next expected contribution date for partner
-     * @param array $partner Partner data
-     * @return string|null Next contribution date (Y-m-d) or null
+     * Get reminder types dropdown
+     * @return array
      */
-    private function calculateNextContributionDate($partner)
+    public function getReminderTypesDropdown()
     {
-        $this->load->model('contribution_model');
-        $this->load->model('frequency_model');
-
-        // Get last contribution
-        $last_contribution = $this->contribution_model->getLastContribution($partner['id']);
-
-        $start_date = $last_contribution ? $last_contribution['contribution_date'] : $partner['start_date'];
-
-        if (!$start_date) {
-            return null;
-        }
-
-        // Get frequency details
-        $frequency = $this->frequency_model->get($partner['giving_frequency_id']);
-
-        if (!$frequency) {
-            return null;
-        }
-
-        // Calculate next date based on frequency
-        switch ($frequency['interval_type']) {
-            case 'daily':
-                $next_date = date('Y-m-d', strtotime($start_date . ' +' . $frequency['interval_value'] . ' days'));
-                break;
-
-            case 'weekly':
-                $next_date = date('Y-m-d', strtotime($start_date . ' +' . $frequency['interval_value'] . ' weeks'));
-                break;
-
-            case 'monthly':
-                $next_date = date('Y-m-d', strtotime($start_date . ' +' . $frequency['interval_value'] . ' months'));
-                break;
-
-            case 'quarterly':
-                $next_date = date('Y-m-d', strtotime($start_date . ' +' . ($frequency['interval_value'] * 3) . ' months'));
-                break;
-
-            case 'yearly':
-                $next_date = date('Y-m-d', strtotime($start_date . ' +' . $frequency['interval_value'] . ' years'));
-                break;
-
-            default:
-                return null;
-        }
-
-        // Only return if next date is in the future
-        return ($next_date > date('Y-m-d')) ? $next_date : null;
-    }
-
-    /**
-     * Generate reminder message for partner
-     * @param array $partner Partner data
-     * @return string Reminder message
-     */
-    private function generateReminderMessage($partner)
-    {
-        $this->load->model('type_model');
-        $this->load->model('frequency_model');
-
-        $giving_type = $this->type_model->get($partner['giving_type_id']);
-        $frequency = $this->frequency_model->get($partner['giving_frequency_id']);
-
-        $message = "Dear {$partner['firstname']}, this is a friendly reminder about your ";
-        $message .= $frequency ? $frequency['name'] : '';
-        $message .= " contribution to our school. ";
-        $message .= "Amount: {$partner['currency']} {$partner['contribution_amount']}. ";
-        $message .= "Thank you for your continued support!";
-
-        return $message;
-    }
-
-    /**
-     * Process due reminders (send emails/SMS)
-     * Called by cron job
-     * @return array Statistics about processed reminders
-     */
-    public function processDueReminders()
-    {
-        $this->load->library('email');
-        $this->load->library('smsgateway');
-        $this->load->model('partner_model');
-        $this->load->model('messages_model');
-        $this->load->model('setting_model');
-
-        $stats = array(
-            'total_processed' => 0,
-            'emails_sent' => 0,
-            'sms_sent' => 0,
-            'failed' => 0,
-            'errors' => array()
+        return array(
+            'contribution' => 'Contribution Reminder',
+            'follow_up' => 'Follow Up',
+            'renewal' => 'Renewal',
+            'other' => 'Other'
         );
-
-        // Get reminders due today
-        $today = date('Y-m-d');
-        $due_reminders = $this->db->select('partner_reminders.*,
-                                           partners.firstname, partners.lastname,
-                                           partners.email, partners.phone,
-                                           partners.partner_code, partners.currency,
-                                           partners.contribution_amount, partners.giving_type_id,
-                                           partners.giving_frequency_id')
-                                  ->from('partner_reminders')
-                                  ->join('partners', 'partners.id = partner_reminders.partner_id')
-                                  ->where('partner_reminders.reminder_date <=', $today)
-                                  ->where('partner_reminders.status', 'pending')
-                                  ->get()
-                                  ->result_array();
-
-        foreach ($due_reminders as $reminder) {
-            $stats['total_processed']++;
-
-            try {
-                $email_sent = false;
-                $sms_sent = false;
-
-                // Send Email
-                if ($reminder['send_email'] && $reminder['email']) {
-                    $email_sent = $this->sendReminderEmail($reminder);
-                    if ($email_sent) {
-                        $stats['emails_sent']++;
-                    }
-                }
-
-                // Send SMS
-                if ($reminder['send_sms'] && $reminder['phone']) {
-                    $sms_sent = $this->sendReminderSMS($reminder);
-                    if ($sms_sent) {
-                        $stats['sms_sent']++;
-                    }
-                }
-
-                // Update reminder status
-                if ($email_sent || $sms_sent) {
-                    $this->db->where('id', $reminder['id'])
-                            ->update('partner_reminders', array(
-                                'status' => 'sent',
-                                'sent_at' => date('Y-m-d H:i:s'),
-                                'email_sent' => $email_sent ? 1 : 0,
-                                'sms_sent' => $sms_sent ? 1 : 0
-                            ));
-                } else {
-                    $stats['failed']++;
-                    $this->db->where('id', $reminder['id'])
-                            ->update('partner_reminders', array('status' => 'failed'));
-                }
-
-            } catch (Exception $e) {
-                $stats['errors'][] = "Reminder ID {$reminder['id']}: " . $e->getMessage();
-                $stats['failed']++;
-            }
-        }
-
-        return $stats;
     }
 
     /**
-     * Send reminder email to partner
-     * @param array $reminder Reminder data with partner info
-     * @return bool Success
+     * Get timing options dropdown
+     * @return array
      */
-    private function sendReminderEmail($reminder)
+    public function getTimingOptionsDropdown()
     {
-        // This method should integrate with the email system
-        // Implementation depends on your email configuration
-        return true; // Placeholder
-    }
-
-    /**
-     * Send reminder SMS to partner
-     * @param array $reminder Reminder data with partner info
-     * @return bool Success
-     */
-    private function sendReminderSMS($reminder)
-    {
-        // This method should integrate with the SMS gateway
-        // Implementation depends on your SMS configuration
-        return true; // Placeholder
+        return array(
+            'before' => 'Before Due Date',
+            'after' => 'After Due Date'
+        );
     }
 }

@@ -45,6 +45,7 @@ if ($this->customlib->getRTL() != "") {
 ?>
         <link rel="stylesheet" href="<?php echo base_url(); ?>backend/dist/css/font-awesome.min.css">
         <link rel="stylesheet" href="<?php echo base_url(); ?>backend/dist/css/ionicons.min.css">
+        <link rel="stylesheet" href="<?php echo base_url(); ?>backend/dist/css/sidebar-fix.css">
         <link rel="stylesheet" href="<?php echo base_url(); ?>backend/plugins/iCheck/flat/blue.css">
         <link rel="stylesheet" href="<?php echo base_url(); ?>backend/plugins/morris/morris.css">
         <link rel="stylesheet" href="<?php echo base_url(); ?>backend/plugins/jvectormap/jquery-jvectormap-1.2.2.css">
@@ -95,7 +96,7 @@ if ($this->customlib->getRTL() != "") {
          var baseurl = "<?php echo base_url(); ?>";
     </script>
 
-    <body class="hold-transition skin-blue fixed sidebar-mini">
+    <body class="hold-transition skin-blue fixed">
          <?php
 if ($this->config->item('SSLK') == "") {
     ?>
@@ -129,6 +130,33 @@ if ($this->config->item('SSLK') == "") {
         }
     }
     checksidebar();
+    
+    // Force sidebar to be visible - override collapsed state
+    function forceSidebarVisible() {
+        var body = document.getElementsByTagName('body')[0];
+        var sidebar = document.querySelector('.main-sidebar');
+        
+        if (sidebar) {
+            // Remove collapsed classes
+            body.classList.remove('sidebar-collapse');
+            body.classList.remove('sidebar-mini');
+            
+            // Force sidebar visibility
+            sidebar.style.display = 'block';
+            sidebar.style.visibility = 'visible';
+            sidebar.style.opacity = '1';
+            sidebar.style.transform = 'translate(0, 0)';
+            sidebar.style.width = '200px';
+        }
+    }
+    
+    // Run on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        forceSidebarVisible();
+    });
+    
+    // Run after a short delay to ensure all scripts have loaded
+    setTimeout(forceSidebarVisible, 100);
 
 </script>
         <div class="wrapper">
@@ -375,6 +403,8 @@ if ($this->customlib->getUserRole() == 'student') {
     echo $this->lang->line("student");
 } elseif ($this->customlib->getUserRole() == 'parent') {
     echo $this->lang->line("parent");
+} elseif ($this->customlib->getUserRole() == 'partner') {
+    echo "Partner";
 } elseif ($this->customlib->getUserRole() == 'guest') {
     echo $this->lang->line("guest");
 }
@@ -412,7 +442,7 @@ if ($this->module_lib->hasModule('google_authenticator') && $this->module_lib->h
             <aside class="main-sidebar" id="alert2">
 
                 <?php
-if ($role == 'student' || $role == 'parent') {
+if ($role == 'student' || $role == 'parent' || $role == 'partner') {
     ?>
                 <section class="sidebar <?php echo ($is_lock_panel) ? "disable-sidebar" : "" ?>">
 
@@ -576,6 +606,65 @@ $ntf = $this->customlib->getUserunreadNotification();
                         <?php }?>
                     </ul>
 
+                </section>
+                <?php } elseif ($role == 'partner') {?>
+                <section class="sidebar <?php echo ($is_lock_panel) ? "disable-sidebar" : "" ?>">
+                    <ul class="sessionul fixedmenu">
+                        <li class="removehover accurrent">
+                            <a data-toggle="modal" data-target="#user_sessionModal"><span><?php echo $this->lang->line('current_session') . ": " . $this->setting_model->getCurrentSessionName(); ?></span><i class="fa fa-pencil pull-right"></i></a>
+                        </li>
+                    </ul>
+                    <ul class="sidebar-menu verttop38" id="sibe-box">
+                        <li class="treeview <?php echo set_Topmenu('dashboard'); ?>">
+                            <a href="<?php echo base_url(); ?>partnerdashboard">
+                                <i class="fa fa-television"></i> <span> <?php echo $this->lang->line('dashboard'); ?></span>
+                            </a>
+                        </li>
+
+                        <li class="<?php echo set_Topmenu('profile'); ?>"><a href="<?php echo base_url(); ?>partnerdashboard/profile"><i class="fa fa-user-plus ftlayer"></i> <span><?php echo $this->lang->line('my_profile'); ?></span></a></li>
+
+                        <li class="treeview <?php echo set_Topmenu('contributions'); ?>">
+                            <a href="#">
+                                <i class="fa fa-money ftlayer"></i> <span><?php echo $this->lang->line('contributions'); ?></span> <i class="fa fa-angle-left pull-right"></i>
+                            </a>
+                            <ul class="treeview-menu">
+                                <li class="<?php echo set_Submenu('contributions/list'); ?>">
+                                    <a href="<?php echo base_url(); ?>partnerdashboard/contributions">
+                                        <i class="fa fa-angle-double-right"></i> <?php echo $this->lang->line('my_contributions'); ?>
+                                    </a>
+                                </li>
+                                <li class="<?php echo set_Submenu('contributions/add'); ?>">
+                                    <a href="<?php echo base_url(); ?>partnerdashboard/add_contribution">
+                                        <i class="fa fa-angle-double-right"></i> <?php echo $this->lang->line('add_contribution'); ?>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <li class="treeview <?php echo set_Topmenu('reports'); ?>">
+                            <a href="#">
+                                <i class="fa fa-bar-chart ftlayer"></i> <span><?php echo $this->lang->line('reports'); ?></span> <i class="fa fa-angle-left pull-right"></i>
+                            </a>
+                            <ul class="treeview-menu">
+                                <li class="<?php echo set_Submenu('reports/statement'); ?>">
+                                    <a href="<?php echo base_url(); ?>partnerdashboard/statement">
+                                        <i class="fa fa-angle-double-right"></i> <?php echo $this->lang->line('partner_statement'); ?>
+                                    </a>
+                                </li>
+                                <li class="<?php echo set_Submenu('reports/balance'); ?>">
+                                    <a href="<?php echo base_url(); ?>partnerdashboard/balance_report">
+                                        <i class="fa fa-angle-double-right"></i> <?php echo $this->lang->line('balance_report'); ?>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <li class="<?php echo set_Topmenu('settings'); ?>"><a href="<?php echo base_url(); ?>partnerdashboard/settings"><i class="fa fa-cog ftlayer"></i> <span><?php echo $this->lang->line('settings'); ?></span></a></li>
+
+                        <li class="<?php echo set_Topmenu('notes'); ?>"><a href="<?php echo base_url(); ?>partnerdashboard/notes"><i class="fa fa-sticky-note ftlayer"></i> <span><?php echo $this->lang->line('notes'); ?></span></a></li>
+
+                        <li class="<?php echo set_Topmenu('reminders'); ?>"><a href="<?php echo base_url(); ?>partnerdashboard/reminders"><i class="fa fa-bell ftlayer"></i> <span><?php echo $this->lang->line('reminders'); ?></span></a></li>
+                    </ul>
                 </section>
                 <?php } elseif ($role == 'guest') {?>
                 <section class="sidebar">

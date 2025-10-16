@@ -92,7 +92,7 @@ class Partnerportal extends Front_Controller
         echo json_encode($result);
     }
 
-    // Registration Page
+    // Registration Page - Redirect to comprehensive registration
     public function register()
     {
         // If already logged in, redirect to dashboard
@@ -100,19 +100,8 @@ class Partnerportal extends Front_Controller
             redirect('partnerdashboard');
         }
 
-        $this->data['title'] = 'Partner Registration';
-        $this->data['active_menu'] = 'partner-registration';
-        $this->data['giving_types'] = $this->type_model->getAll();
-        $this->data['giving_frequencies'] = $this->frequency_model->getAll();
-        $this->data['page'] = array(
-            'title' => 'Partner Registration',
-            'meta_title' => 'Partner Registration',
-            'meta_keyword' => 'partner, registration',
-            'meta_description' => 'Partner Portal Registration'
-        );
-        $this->data['page_side_bar'] = false;
-
-        $this->load_theme('partnerportal/register', true);
+        // Redirect to the new comprehensive partner registration page
+        redirect('partnerregistration');
     }
 
     // Process Registration

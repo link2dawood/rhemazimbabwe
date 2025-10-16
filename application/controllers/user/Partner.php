@@ -4,137 +4,153 @@ if (!defined('BASEPATH')) {
     exit('No direct script access allowed');
 }
 
-class Partner extends Student_Controller
+class Partner extends CI_Controller
 {
     public function __construct()
     {
         parent::__construct();
+        
+        // Load libraries first
+        $this->load->library('Customlib');
+        $this->load->database();
+        $this->load->helper('custom');
+        
+        // Load Module_model before module_lib
+        $this->load->model('Module_model');
+        
+        // Load language_model first as setting_model depends on it
+        $this->load->model('language_model');
+        
+        // Load setting_model second as other models depend on it
+        $this->load->model('setting_model');
+        
+        // Load auth library after setting_model (auth depends on setting_model)
+        $this->load->library('auth');
+        
+        // Load module libraries after their dependencies
+        $this->load->library('module_lib');
+        $this->load->library('studentmodule_lib');
+        
+        // Load other models
         $this->load->model(array(
             'partner_model',
             'contribution_model',
-            'giving_type_model',
-            'giving_frequency_model'
+            'partner_giving_setting_model',
+            'type_model',
+            'frequency_model',
+            'student_model',
+            'staff_model',
+            'calendar_model',
+            'notification_model'
         ));
-        $this->load->library('Customlib');
 
         // Set active menu
         $this->session->set_userdata('top_menu', 'partner');
 
         // Load language file
-        $this->lang->load('partners', $this->session->userdata('student')['language']['language']);
+        $student_lang = $this->session->userdata('student');
+        $language = isset($student_lang['language']['language']) ? $student_lang['language']['language'] : 'English';
+        
+        // Try to load partners language file, fallback to English if not found
+        if (!$this->lang->load('partners', $language)) {
+            $this->lang->load('partners', 'English');
+        }
     }
 
-    // Partner Dashboard
+    // Partner Dashboard - Show student's partners
     public function index()
     {
-        $data = [];
-        $data['title'] = $this->lang->line('partner_dashboard');
-        $data['page'] = 'partner_dashboard';
-
         $student_data = $this->customlib->getLoggedInUserData();
         $role = $this->customlib->getUserRole();
 
+        $data = [];
+        $data['title'] = $this->lang->line('my_partners');
+        $data['page'] = 'partner_dashboard';
         $data['role'] = $role;
         $data['student_data'] = $student_data;
 
-        // Get partner records linked to this user
+        // Get partners based on user role
         if ($role == 'student') {
             $student_id = $this->customlib->getStudentSessionUserID();
             $student = $this->student_model->get($student_id);
-
-            // Check by student_id, email, or phone
-            $partners = $this->partner_model->getPartnersByStudentOrContact(
-                $student_id,
-                $student['email'],
-                $student['mobileno']
-            );
+            
+            // Get partners created by this student
+            $data['partners'] = $this->partner_model->getByStudentId($student_id);
+            $data['user_id'] = $student_id;
+            $data['user_type'] = 'student';
         } elseif ($role == 'parent') {
             $parent_id = $this->customlib->getUsersID();
             $parent = $this->student_model->getParent($parent_id);
-
-            // Check by email or phone
-            $partners = $this->partner_model->getPartnersByContact(
-                $parent['guardian_email'] ?? '',
-                $parent['guardian_phone'] ?? ''
+            
+            // Get partners by email or phone matching
+            $data['partners'] = $this->partner_model->getPartnersByStudentOrContact(
+                null, 
+                $parent['guardian_email'], 
+                $parent['guardian_phone']
             );
-        } else {
-            // Staff
+            $data['user_id'] = $parent_id;
+            $data['user_type'] = 'parent';
+        } elseif ($role == 'staff') {
             $staff_id = $this->customlib->getStaffID();
             $staff = $this->staff_model->get($staff_id);
-
-            // Check by staff_id or email
-            $partners = $this->partner_model->getPartnersByStaffOrContact(
-                $staff_id,
-                $staff['email'] ?? ''
-            );
-        }
-
-        $data['partners'] = $partners;
-
-        // Get statistics if partner exists
-        if (!empty($partners)) {
-            $partner_ids = array_column($partners, 'id');
-            $data['statistics'] = $this->getPartnerStatistics($partner_ids);
+            
+            // Get partners created by this staff
+            $data['partners'] = $this->partner_model->getByStaffId($staff_id);
+            $data['user_id'] = $staff_id;
+            $data['user_type'] = 'staff';
         } else {
-            $data['statistics'] = null;
+            $data['partners'] = [];
         }
+
+        // Get giving types and frequencies for add partner form
+        $data['giving_types'] = $this->type_model->getAll();
+        $data['giving_frequencies'] = $this->frequency_model->getAll();
+
+        // Make libraries available in views
+        $data['module_lib'] = $this->module_lib;
+        $data['studentmodule_lib'] = $this->studentmodule_lib;
+        $data['auth'] = $this->auth;
 
         $this->load->view('layout/student/header', $data);
         $this->load->view('user/partner/dashboard', $data);
         $this->load->view('layout/student/footer', $data);
     }
 
-    // Partner Registration Form
+    // Partner Registration - Redirect to new registration system
     public function register()
     {
+        $student_data = $this->customlib->getLoggedInUserData();
+        $role = $this->customlib->getUserRole();
+
+        // Redirect students and staff to their respective partner registration pages
+        if ($role == 'student') {
+            redirect(base_url('user/partner_registration/student_register'));
+        } elseif ($role == 'staff') {
+            redirect(base_url('user/partner_registration/staff_register'));
+        }
+
+        // Only parents can register directly from partner portal
         $data = [];
         $data['title'] = $this->lang->line('become_a_partner');
         $data['page'] = 'partner_register';
-
-        $student_data = $this->customlib->getLoggedInUserData();
-        $role = $this->customlib->getUserRole();
 
         $data['role'] = $role;
         $data['student_data'] = $student_data;
 
         // Get giving types and frequencies
-        $data['giving_types'] = $this->giving_type_model->get();
-        $data['giving_frequencies'] = $this->giving_frequency_model->get();
+        $data['giving_types'] = $this->type_model->getAll();
+        $data['giving_frequencies'] = $this->frequency_model->getAll();
 
-        // Pre-fill data based on role
-        if ($role == 'student') {
-            $student_id = $this->customlib->getStudentSessionUserID();
-            $student = $this->student_model->get($student_id);
-            $data['prefill'] = [
-                'firstname' => $student['firstname'],
-                'lastname' => $student['lastname'],
-                'email' => $student['email'],
-                'mobileno' => $student['mobileno'],
-                'address' => $student['permanent_address'] ?? '',
-                'student_id' => $student_id
-            ];
-        } elseif ($role == 'parent') {
+        // Pre-fill data for parents only
+        if ($role == 'parent') {
             $parent_id = $this->customlib->getUsersID();
             $parent = $this->student_model->getParent($parent_id);
-            $data['prefill'] = [
+            $data['prefill_data'] = array(
                 'firstname' => $parent['guardian_name'] ?? '',
-                'lastname' => '',
+                'lastname' => $parent['guardian_surname'] ?? '',
                 'email' => $parent['guardian_email'] ?? '',
-                'mobileno' => $parent['guardian_phone'] ?? '',
-                'address' => $parent['guardian_address'] ?? ''
-            ];
-        } else {
-            // Staff
-            $staff_id = $this->customlib->getStaffID();
-            $staff = $this->staff_model->get($staff_id);
-            $data['prefill'] = [
-                'firstname' => $staff['name'] ?? '',
-                'lastname' => '',
-                'email' => $staff['email'] ?? '',
-                'mobileno' => $staff['contact_no'] ?? '',
-                'address' => $staff['address'] ?? '',
-                'staff_id' => $staff_id
-            ];
+                'mobileno' => $parent['guardian_phone'] ?? ''
+            );
         }
 
         $this->load->view('layout/student/header', $data);
@@ -142,27 +158,64 @@ class Partner extends Student_Controller
         $this->load->view('layout/student/footer', $data);
     }
 
-    // Submit Partner Registration
-    public function submitRegistration()
+    // Add Partner Form
+    public function add()
     {
-        // Validation rules
-        $this->form_validation->set_rules('firstname', $this->lang->line('first_name'), 'trim|required|xss_clean');
-        $this->form_validation->set_rules('lastname', $this->lang->line('last_name'), 'trim|required|xss_clean');
-        $this->form_validation->set_rules('email', $this->lang->line('email'), 'trim|required|valid_email|xss_clean');
-        $this->form_validation->set_rules('mobileno', $this->lang->line('phone'), 'trim|required|xss_clean');
-        $this->form_validation->set_rules('account_type', 'Account Type', 'trim|required|xss_clean');
+        $student_data = $this->customlib->getLoggedInUserData();
+        $role = $this->customlib->getUserRole();
 
-        if ($this->form_validation->run() == false) {
-            echo json_encode(['status' => 'error', 'message' => validation_errors()]);
+        $data = [];
+        $data['title'] = $this->lang->line('add_partner');
+        $data['page'] = 'add_partner';
+        $data['role'] = $role;
+        $data['student_data'] = $student_data;
+
+        // Get giving types and frequencies
+        $data['giving_types'] = $this->type_model->getAll();
+        $data['giving_frequencies'] = $this->frequency_model->getAll();
+
+        // Make libraries available in views
+        $data['module_lib'] = $this->module_lib;
+        $data['studentmodule_lib'] = $this->studentmodule_lib;
+        $data['auth'] = $this->auth;
+
+        $this->load->view('layout/student/header', $data);
+        $this->load->view('user/partner/add_partner', $data);
+        $this->load->view('layout/student/footer', $data);
+    }
+
+    // Process Add Partner
+    public function process_add()
+    {
+        $this->load->library('form_validation');
+        
+        $this->form_validation->set_rules('firstname', 'First Name', 'required|trim');
+        $this->form_validation->set_rules('lastname', 'Last Name', 'required|trim');
+        $this->form_validation->set_rules('email', 'Email', 'required|valid_email|trim');
+        $this->form_validation->set_rules('mobileno', 'Mobile Number', 'required|trim');
+        $this->form_validation->set_rules('giving_type_id', 'Giving Type', 'required|numeric');
+        $this->form_validation->set_rules('giving_frequency_id', 'Giving Frequency', 'required|numeric');
+        $this->form_validation->set_rules('contribution_amount', 'Contribution Amount', 'required|numeric|greater_than[0]');
+
+        if ($this->form_validation->run() == FALSE) {
+            $this->session->set_flashdata('error', validation_errors());
+            redirect('user/partner/add');
             return;
         }
 
-        // Prepare data
-        $partner_data = [
-            'partner_code' => $this->generatePartnerCode(),
-            'account_type' => $this->input->post('account_type'),
-            'organization_name' => $this->input->post('organization_name'),
-            'organization_type' => $this->input->post('organization_type'),
+        $role = $this->customlib->getUserRole();
+        $user_id = null;
+
+        // Get user ID based on role
+        if ($role == 'student') {
+            $user_id = $this->customlib->getStudentSessionUserID();
+        } elseif ($role == 'staff') {
+            $user_id = $this->customlib->getStaffID();
+        } elseif ($role == 'parent') {
+            $user_id = $this->customlib->getUsersID();
+        }
+
+        $partner_data = array(
             'firstname' => $this->input->post('firstname'),
             'lastname' => $this->input->post('lastname'),
             'email' => $this->input->post('email'),
@@ -170,259 +223,256 @@ class Partner extends Student_Controller
             'address' => $this->input->post('address'),
             'city' => $this->input->post('city'),
             'state' => $this->input->post('state'),
-            'country' => $this->input->post('country') ?? 'Zimbabwe',
+            'country' => $this->input->post('country'),
             'zip_code' => $this->input->post('zip_code'),
             'giving_type_id' => $this->input->post('giving_type_id'),
             'giving_frequency_id' => $this->input->post('giving_frequency_id'),
             'contribution_amount' => $this->input->post('contribution_amount'),
-            'currency' => $this->input->post('currency') ?? 'USD',
+            'currency' => $this->input->post('currency') ?: 'USD',
+            'start_date' => $this->input->post('start_date'),
+            'end_date' => $this->input->post('end_date'),
             'notes' => $this->input->post('notes'),
-            'student_id' => $this->input->post('student_id'),
-            'staff_id' => $this->input->post('staff_id'),
-            'status' => 'inactive', // Pending admin approval
+            'status' => 'active',
+            'is_active' => 1,
+            'created_by' => $user_id,
             'created_at' => date('Y-m-d H:i:s')
-        ];
+        );
 
-        // Insert partner
+        // Set student_id or staff_id based on role
+        if ($role == 'student') {
+            $partner_data['student_id'] = $user_id;
+        } elseif ($role == 'staff') {
+            $partner_data['staff_id'] = $user_id;
+        }
+
         $partner_id = $this->partner_model->add($partner_data);
 
         if ($partner_id) {
-            // Send confirmation email
-            $this->sendConfirmationEmail($partner_data, $partner_id);
-
-            echo json_encode([
-                'status' => 'success',
-                'message' => $this->lang->line('partner_added_successfully'),
-                'partner_id' => $partner_id,
-                'partner_code' => $partner_data['partner_code']
-            ]);
+            $this->session->set_flashdata('success', 'Partner added successfully!');
+            redirect('user/partner');
         } else {
-            echo json_encode([
-                'status' => 'error',
-                'message' => $this->lang->line('error_occurred')
-            ]);
+            $this->session->set_flashdata('error', 'Failed to add partner. Please try again.');
+            redirect('user/partner/add');
         }
     }
 
-    // Giving Settings
-    public function settings()
+    // Add Contribution
+    public function add_contribution($partner_id)
     {
-        $data = [];
-        $data['title'] = $this->lang->line('giving_settings');
-        $data['page'] = 'partner_settings';
+        $student_data = $this->customlib->getLoggedInUserData();
+        $role = $this->customlib->getUserRole();
 
-        $partner_id = $this->input->get('partner_id');
-
-        if (!$partner_id) {
-            redirect(base_url('user/partner'));
-        }
-
-        // Verify partner belongs to logged-in user
-        if (!$this->verifyPartnerOwnership($partner_id)) {
-            $this->session->set_flashdata('error', $this->lang->line('unauthorized'));
-            redirect(base_url('user/partner'));
-        }
-
-        $data['partner'] = $this->partner_model->get($partner_id);
-        $data['giving_types'] = $this->giving_type_model->get();
-        $data['giving_frequencies'] = $this->giving_frequency_model->get();
-
-        $this->load->view('layout/student/header', $data);
-        $this->load->view('user/partner/settings', $data);
-        $this->load->view('layout/student/footer', $data);
-    }
-
-    // Update Giving Settings
-    public function updateSettings()
-    {
-        $partner_id = $this->input->post('partner_id');
-
-        if (!$this->verifyPartnerOwnership($partner_id)) {
-            echo json_encode(['status' => 'error', 'message' => $this->lang->line('unauthorized')]);
+        // Check if user can add contribution to this partner
+        if (!$this->canManagePartner($partner_id)) {
+            $this->session->set_flashdata('error', 'You do not have permission to add contributions to this partner.');
+            redirect('user/partner');
             return;
         }
 
-        $update_data = [
-            'giving_type_id' => $this->input->post('giving_type_id'),
-            'giving_frequency_id' => $this->input->post('giving_frequency_id'),
-            'contribution_amount' => $this->input->post('contribution_amount'),
-            'currency' => $this->input->post('currency'),
-            'notes' => $this->input->post('notes')
-        ];
+        $data = [];
+        $data['title'] = $this->lang->line('add_contribution');
+        $data['page'] = 'add_contribution';
+        $data['role'] = $role;
+        $data['student_data'] = $student_data;
+        $data['partner_id'] = $partner_id;
+        $data['partner'] = $this->partner_model->get($partner_id);
 
-        if ($this->partner_model->update($partner_id, $update_data)) {
-            echo json_encode([
-                'status' => 'success',
-                'message' => $this->lang->line('partner_updated_successfully')
-            ]);
+        // Get giving types
+        $data['giving_types'] = $this->type_model->getAll();
+
+        // Make libraries available in views
+        $data['module_lib'] = $this->module_lib;
+        $data['studentmodule_lib'] = $this->studentmodule_lib;
+        $data['auth'] = $this->auth;
+
+        $this->load->view('layout/student/header', $data);
+        $this->load->view('user/partner/add_contribution', $data);
+        $this->load->view('layout/student/footer', $data);
+    }
+
+    // Process Add Contribution
+    public function process_add_contribution($partner_id)
+    {
+        $this->load->library('form_validation');
+        
+        $this->form_validation->set_rules('amount', 'Amount', 'required|numeric|greater_than[0]');
+        $this->form_validation->set_rules('giving_type_id', 'Giving Type', 'required|numeric');
+        $this->form_validation->set_rules('contribution_date', 'Contribution Date', 'required');
+
+        if ($this->form_validation->run() == FALSE) {
+            $this->session->set_flashdata('error', validation_errors());
+            redirect('user/partner/add_contribution/' . $partner_id);
+            return;
+        }
+
+        // Check if user can add contribution to this partner
+        if (!$this->canManagePartner($partner_id)) {
+            $this->session->set_flashdata('error', 'You do not have permission to add contributions to this partner.');
+            redirect('user/partner');
+            return;
+        }
+
+        $contribution_data = array(
+            'partner_id' => $partner_id,
+            'amount' => $this->input->post('amount'),
+            'giving_type_id' => $this->input->post('giving_type_id'),
+            'contribution_date' => $this->input->post('contribution_date'),
+            'payment_method' => $this->input->post('payment_method'),
+            'notes' => $this->input->post('notes'),
+            'status' => 'completed',
+            'created_by' => $this->customlib->getUsersID(),
+            'created_at' => date('Y-m-d H:i:s')
+        );
+
+        $contribution_id = $this->contribution_model->add($contribution_data);
+
+        if ($contribution_id) {
+            $this->session->set_flashdata('success', 'Contribution added successfully!');
+            redirect('user/partner/contributions/' . $partner_id);
         } else {
-            echo json_encode([
-                'status' => 'error',
-                'message' => $this->lang->line('error_occurred')
-            ]);
+            $this->session->set_flashdata('error', 'Failed to add contribution. Please try again.');
+            redirect('user/partner/add_contribution/' . $partner_id);
         }
     }
 
-    // Contribution History
-    public function contributions()
+    // View Contributions for a Partner
+    public function contributions($partner_id)
     {
+        $student_data = $this->customlib->getLoggedInUserData();
+        $role = $this->customlib->getUserRole();
+
+        // Check if user can view contributions for this partner
+        if (!$this->canManagePartner($partner_id)) {
+            $this->session->set_flashdata('error', 'You do not have permission to view contributions for this partner.');
+            redirect('user/partner');
+            return;
+        }
+
         $data = [];
-        $data['title'] = $this->lang->line('contribution_history');
-        $data['page'] = 'partner_contributions';
-
-        $partner_id = $this->input->get('partner_id');
-
-        if (!$partner_id) {
-            redirect(base_url('user/partner'));
-        }
-
-        // Verify partner belongs to logged-in user
-        if (!$this->verifyPartnerOwnership($partner_id)) {
-            $this->session->set_flashdata('error', $this->lang->line('unauthorized'));
-            redirect(base_url('user/partner'));
-        }
-
+        $data['title'] = $this->lang->line('contributions');
+        $data['page'] = 'contributions';
+        $data['role'] = $role;
+        $data['student_data'] = $student_data;
+        $data['partner_id'] = $partner_id;
         $data['partner'] = $this->partner_model->get($partner_id);
-        $data['contributions'] = $this->contribution_model->getContributionsByPartner($partner_id);
-        $data['total_contributed'] = $this->contribution_model->getTotalContributed($partner_id);
+        $data['contributions'] = $this->contribution_model->getByPartnerId($partner_id);
+
+        // Make libraries available in views
+        $data['module_lib'] = $this->module_lib;
+        $data['studentmodule_lib'] = $this->studentmodule_lib;
+        $data['auth'] = $this->auth;
 
         $this->load->view('layout/student/header', $data);
         $this->load->view('user/partner/contributions', $data);
         $this->load->view('layout/student/footer', $data);
     }
 
-    // Download Receipt
-    public function downloadReceipt($contribution_id)
+    // Check if user can manage a partner
+    private function canManagePartner($partner_id)
     {
-        $contribution = $this->contribution_model->get($contribution_id);
-
-        if (!$contribution) {
-            $this->session->set_flashdata('error', $this->lang->line('no_record_found'));
-            redirect(base_url('user/partner/contributions?partner_id=' . $this->input->get('partner_id')));
-        }
-
-        // Verify ownership
-        if (!$this->verifyPartnerOwnership($contribution['partner_id'])) {
-            $this->session->set_flashdata('error', $this->lang->line('unauthorized'));
-            redirect(base_url('user/partner'));
-        }
-
-        $data['contribution'] = $contribution;
-        $data['partner'] = $this->partner_model->get($contribution['partner_id']);
-        $data['school_setting'] = $this->setting_model->getSetting();
-
-        $this->load->view('user/partner/receipt', $data);
-    }
-
-    // Print Receipt
-    public function printReceipt($contribution_id)
-    {
-        $this->downloadReceipt($contribution_id);
-    }
-
-    // Private Helper Methods
-    private function generatePartnerCode()
-    {
-        // Generate unique partner code: P-YYYYMMDD-XXXX
-        $prefix = 'P-' . date('Ymd') . '-';
-        $random = str_pad(rand(0, 9999), 4, '0', STR_PAD_LEFT);
-        $code = $prefix . $random;
-
-        // Check if code exists, regenerate if it does
-        if ($this->partner_model->getByPartnerCode($code)) {
-            return $this->generatePartnerCode();
-        }
-
-        return $code;
-    }
-
-    private function verifyPartnerOwnership($partner_id)
-    {
+        $role = $this->customlib->getUserRole();
         $partner = $this->partner_model->get($partner_id);
 
         if (!$partner) {
             return false;
         }
 
-        $role = $this->customlib->getUserRole();
-
         if ($role == 'student') {
             $student_id = $this->customlib->getStudentSessionUserID();
-            $student = $this->student_model->get($student_id);
-
-            // Check if partner belongs to this student
-            return ($partner['student_id'] == $student_id ||
-                    $partner['email'] == $student['email'] ||
-                    $partner['mobileno'] == $student['mobileno']);
+            return $partner->student_id == $student_id;
+        } elseif ($role == 'staff') {
+            $staff_id = $this->customlib->getStaffID();
+            return $partner->created_by == $staff_id;
         } elseif ($role == 'parent') {
+            // Parents can manage partners associated with their children
             $parent_id = $this->customlib->getUsersID();
             $parent = $this->student_model->getParent($parent_id);
-
-            // Check if partner belongs to this parent
-            return ($partner['email'] == $parent['guardian_email'] ||
-                    $partner['mobileno'] == $parent['guardian_phone']);
-        } else {
-            // Staff
-            $staff_id = $this->customlib->getStaffID();
-            $staff = $this->staff_model->get($staff_id);
-
-            // Check if partner belongs to this staff
-            return ($partner['staff_id'] == $staff_id ||
-                    $partner['email'] == $staff['email']);
+            return $partner->email == $parent['guardian_email'] || $partner->mobileno == $parent['guardian_phone'];
         }
 
         return false;
     }
 
-    private function getPartnerStatistics($partner_ids)
+    // Submit Registration - Redirect to new system
+    public function submitRegistration()
     {
-        $stats = [
-            'total_partners' => count($partner_ids),
-            'active_partners' => 0,
-            'total_contributed' => 0,
-            'this_year_contributed' => 0,
-            'pending_status' => 0
-        ];
-
-        foreach ($partner_ids as $partner_id) {
-            $partner = $this->partner_model->get($partner_id);
-
-            if ($partner['status'] == 'active') {
-                $stats['active_partners']++;
-            } elseif ($partner['status'] == 'inactive') {
-                $stats['pending_status']++;
-            }
-
-            $total = $this->contribution_model->getTotalContributed($partner_id);
-            $stats['total_contributed'] += $total;
-
-            $this_year = $this->contribution_model->getYearContributed($partner_id, date('Y'));
-            $stats['this_year_contributed'] += $this_year;
-        }
-
-        return $stats;
+        redirect('user/partner_registration');
     }
 
-    private function sendConfirmationEmail($partner_data, $partner_id)
+    // Settings - Redirect to new management system
+    public function settings()
     {
-        $this->load->library('email');
+        redirect('user/partner_management');
+    }
 
-        $config = [
-            'protocol' => 'mail',
-            'mailtype' => 'html',
-            'charset' => 'utf-8',
-            'wordwrap' => TRUE
-        ];
+    // Update Settings - Redirect to new management system
+    public function updateSettings()
+    {
+        redirect('user/partner_management');
+    }
 
-        $this->email->initialize($config);
-        $this->email->from('noreply@rhemazimbabwe.com', 'Rhema Zimbabwe');
-        $this->email->to($partner_data['email']);
-        $this->email->subject('Partner Registration Confirmation - Rhema Zimbabwe');
 
-        $partner_data['base_url'] = base_url();
-        $message = $this->load->view('user/partner/email/confirmation', ['partner_data' => $partner_data], true);
+    // Download Receipt
+    public function downloadReceipt($contribution_id)
+    {
+        $contribution = $this->contribution_model->get($contribution_id);
+        
+        if (!$contribution) {
+            show_404();
+        }
 
-        $this->email->message($message);
-        $this->email->send();
+        // Check if user has permission to view this receipt
+        if (!$this->canViewReceipt($contribution)) {
+            $this->session->set_flashdata('error', 'You do not have permission to view this receipt.');
+            redirect('user/partner_management');
+            return;
+        }
+
+        $data['contribution'] = $contribution;
+        $data['giving_type'] = $this->type_model->getById($contribution['giving_type_id']);
+        
+        $this->load->view('user/partner/receipt', $data);
+    }
+
+    // Print Receipt
+    public function printReceipt($contribution_id)
+    {
+        $contribution = $this->contribution_model->get($contribution_id);
+        
+        if (!$contribution) {
+            show_404();
+        }
+
+        // Check if user has permission to view this receipt
+        if (!$this->canViewReceipt($contribution)) {
+            $this->session->set_flashdata('error', 'You do not have permission to view this receipt.');
+            redirect('user/partner_management');
+            return;
+        }
+
+        $data['contribution'] = $contribution;
+        $data['giving_type'] = $this->type_model->getById($contribution['giving_type_id']);
+        
+        $this->load->view('user/partner/receipt', $data);
+    }
+
+    /**
+     * Check if user can view receipt
+     */
+    private function canViewReceipt($contribution)
+    {
+        $role = $this->customlib->getUserRole();
+        
+        if ($role == 'student') {
+            $student_id = $this->customlib->getStudentSessionUserID();
+            return ($contribution['student_id'] == $student_id);
+        } elseif ($role == 'staff') {
+            $staff_id = $this->customlib->getStaffID();
+            return ($contribution['staff_id'] == $staff_id);
+        } elseif ($role == 'admin') {
+            return true;
+        }
+        
+        return false;
     }
 }

@@ -152,7 +152,7 @@
                                         <select class="form-control" name="giving_type_id">
                                             <option value=""><?php echo $this->lang->line('select'); ?></option>
                                             <?php foreach ($giving_types as $type): ?>
-                                                <option value="<?php echo $type['id']; ?>"><?php echo $type['name']; ?></option>
+                                                <option value="<?php echo $type->id; ?>"><?php echo $type->name; ?></option>
                                             <?php endforeach; ?>
                                         </select>
                                     </div>
@@ -163,7 +163,7 @@
                                         <select class="form-control" name="giving_frequency_id">
                                             <option value=""><?php echo $this->lang->line('select'); ?></option>
                                             <?php foreach ($giving_frequencies as $freq): ?>
-                                                <option value="<?php echo $freq['id']; ?>"><?php echo $freq['name']; ?></option>
+                                                <option value="<?php echo $freq->id; ?>"><?php echo $freq->name; ?></option>
                                             <?php endforeach; ?>
                                         </select>
                                     </div>
@@ -196,8 +196,8 @@
                             </div>
 
                             <!-- Hidden Fields -->
-                            <input type="hidden" name="student_id" value="<?php echo $prefill['student_id'] ?? ''; ?>">
-                            <input type="hidden" name="staff_id" value="<?php echo $prefill['staff_id'] ?? ''; ?>">
+                            <input type="hidden" name="student_id" value="<?php echo isset($prefill['student_id']) ? $prefill['student_id'] : ''; ?>">
+                            <input type="hidden" name="staff_id" value="<?php echo isset($prefill['staff_id']) ? $prefill['staff_id'] : ''; ?>">
 
                         </div>
                         <div class="box-footer">

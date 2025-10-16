@@ -4,7 +4,7 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
 
 <div class="content-wrapper">
     <section class="content-header">
-        <h1><i class="fa fa-users"></i> <?php echo $this->lang->line('partners'); ?></h1>
+        <h1><i class="fa fa-handshake-o"></i> <?php echo $this->lang->line('partners'); ?></h1>
     </section>
 
     <section class="content">
@@ -12,91 +12,170 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
             <div class="col-md-12">
                 <div class="box box-primary" id="partnerlist">
                     <div class="box-header ptbnull">
-                        <h3 class="box-title titlefix"><?php echo $this->lang->line('partner_list'); ?></h3>
+                        <h3 class="box-title titlefix">Partner List</h3>
                         <div class="box-tools pull-right">
                             <?php if ($this->rbac->hasPrivilege('partners', 'can_add')) { ?>
                                 <a href="<?php echo base_url() ?>admin/partners/add" class="btn btn-primary btn-sm">
-                                    <i class="fa fa-plus"></i> <?php echo $this->lang->line('add_partner'); ?>
+                                    <i class="fa fa-plus"></i> Add Partner
                                 </a>
                             <?php } ?>
                         </div>
                     </div>
                     <div class="box-body">
-                        <div class="mailbox-controls">
-                            <?php if ($this->session->flashdata('msg')) {
-                                echo $this->session->flashdata('msg');
-                                $this->session->unset_userdata('msg');
-                            } ?>
-                        </div>
+                        <?php if ($this->session->flashdata('msg')) {
+                            echo $this->session->flashdata('msg');
+                        } ?>
 
                         <!-- Filters -->
-                        <div class="row">
-                            <div class="col-md-12">
-                                <form role="form" id="searchform" method="post">
-                                    <div class="col-md-3">
-                                        <div class="form-group">
-                                            <label><?php echo $this->lang->line('status'); ?></label>
-                                            <select class="form-control" name="status" id="status">
-                                                <option value=""><?php echo $this->lang->line('select'); ?></option>
-                                                <option value="active"><?php echo $this->lang->line('active'); ?></option>
-                                                <option value="inactive"><?php echo $this->lang->line('inactive'); ?></option>
-                                                <option value="suspended"><?php echo $this->lang->line('suspended'); ?></option>
-                                            </select>
-                                        </div>
+                        <form role="form" id="searchform" method="post" action="<?php echo base_url('admin/partners'); ?>">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label>Status</label>
+                                        <select class="form-control" name="status" id="status">
+                                            <option value="">All Status</option>
+                                            <option value="active" <?php echo $this->input->post('status') == 'active' ? 'selected' : ''; ?>>Active</option>
+                                            <option value="inactive" <?php echo $this->input->post('status') == 'inactive' ? 'selected' : ''; ?>>Inactive</option>
+                                            <option value="suspended" <?php echo $this->input->post('status') == 'suspended' ? 'selected' : ''; ?>>Suspended</option>
+                                        </select>
                                     </div>
-                                    <div class="col-md-3">
-                                        <div class="form-group">
-                                            <label><?php echo $this->lang->line('giving_type'); ?></label>
-                                            <select class="form-control" name="giving_type_id" id="giving_type_id">
-                                                <option value=""><?php echo $this->lang->line('select'); ?></option>
-                                                <?php foreach ($giving_types as $type) { ?>
-                                                    <option value="<?php echo $type->id ?>"><?php echo $type->name ?></option>
-                                                <?php } ?>
-                                            </select>
-                                        </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label>Giving Type</label>
+                                        <select class="form-control" name="giving_type_id" id="giving_type_id">
+                                            <option value="">All Types</option>
+                                            <?php foreach ($giving_types as $type) { ?>
+                                                <option value="<?php echo $type->id ?>" <?php echo $this->input->post('giving_type_id') == $type->id ? 'selected' : ''; ?>>
+                                                    <?php echo $type->name ?>
+                                                </option>
+                                            <?php } ?>
+                                        </select>
                                     </div>
-                                    <div class="col-md-3">
-                                        <div class="form-group">
-                                            <label><?php echo $this->lang->line('giving_frequency'); ?></label>
-                                            <select class="form-control" name="giving_frequency_id" id="giving_frequency_id">
-                                                <option value=""><?php echo $this->lang->line('select'); ?></option>
-                                                <?php foreach ($giving_frequencies as $frequency) { ?>
-                                                    <option value="<?php echo $frequency->id ?>"><?php echo $frequency->name ?></option>
-                                                <?php } ?>
-                                            </select>
-                                        </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label>Giving Frequency</label>
+                                        <select class="form-control" name="giving_frequency_id" id="giving_frequency_id">
+                                            <option value="">All Frequencies</option>
+                                            <?php foreach ($giving_frequencies as $frequency) { ?>
+                                                <option value="<?php echo $frequency->id ?>" <?php echo $this->input->post('giving_frequency_id') == $frequency->id ? 'selected' : ''; ?>>
+                                                    <?php echo $frequency->name ?>
+                                                </option>
+                                            <?php } ?>
+                                        </select>
                                     </div>
-                                    <div class="col-md-3">
-                                        <div class="form-group">
-                                            <label>&nbsp;</label>
-                                            <button type="button" class="btn btn-primary btn-block" id="search_btn">
-                                                <i class="fa fa-search"></i> <?php echo $this->lang->line('search'); ?>
-                                            </button>
-                                        </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label>&nbsp;</label>
+                                        <button type="submit" class="btn btn-primary btn-block">
+                                            <i class="fa fa-search"></i> Search
+                                        </button>
                                     </div>
-                                </form>
+                                </div>
                             </div>
-                        </div>
+                        </form>
 
-                        <div class="mailbox-messages table-responsive">
-                            <table class="table table-striped table-bordered table-hover ajaxlist" id="partnerDataTable" data-export-title="<?php echo $this->lang->line('partner_list'); ?>">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-bordered table-hover">
                                 <thead>
                                     <tr>
-                                        <th><?php echo $this->lang->line('partner_code'); ?></th>
-                                        <th><?php echo $this->lang->line('partner_name'); ?></th>
-                                        <th><?php echo $this->lang->line('email'); ?></th>
-                                        <th><?php echo $this->lang->line('phone'); ?></th>
-                                        <th><?php echo $this->lang->line('giving_type'); ?></th>
-                                        <th><?php echo $this->lang->line('frequency'); ?></th>
-                                        <th><?php echo $this->lang->line('contribution_amount'); ?></th>
-                                        <th><?php echo $this->lang->line('status'); ?></th>
-                                        <th class="text-right no-print"><?php echo $this->lang->line('action'); ?></th>
+                                        <th>Partner Code</th>
+                                        <th>Partner Name</th>
+                                        <th>Email</th>
+                                        <th>Phone</th>
+                                        <th>Giving Type</th>
+                                        <th>Frequency</th>
+                                        <th>Amount</th>
+                                        <th>Status</th>
+                                        <th class="text-right">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    <?php if (!empty($partners)) {
+                                        foreach ($partners as $partner) { ?>
+                                            <tr>
+                                                <td><?php echo $partner->partner_code; ?></td>
+                                                <td>
+                                                    <?php
+                                                    if ($partner->account_type == 'organization') {
+                                                        echo $partner->organization_name . '<br><small class="text-muted">' . $partner->firstname . ' ' . $partner->lastname . '</small>';
+                                                    } else {
+                                                        echo $partner->firstname . ' ' . $partner->lastname;
+                                                    }
+                                                    ?>
+                                                </td>
+                                                <td><?php echo $partner->email; ?></td>
+                                                <td><?php echo $partner->mobileno; ?></td>
+                                                <td><?php echo $partner->type_name ? $partner->type_name : '-'; ?></td>
+                                                <td><?php echo $partner->frequency_name ? $partner->frequency_name : '-'; ?></td>
+                                                <td><?php echo $partner->currency . ' ' . number_format($partner->contribution_amount, 2); ?></td>
+                                                <td>
+                                                    <?php
+                                                    $status_class = 'warning';
+                                                    if ($partner->status == 'active') {
+                                                        $status_class = 'success';
+                                                    } elseif ($partner->status == 'suspended') {
+                                                        $status_class = 'danger';
+                                                    } elseif ($partner->status == 'pending') {
+                                                        $status_class = 'warning';
+                                                    }
+                                                    ?>
+                                                    <span class="label label-<?php echo $status_class; ?>">
+                                                        <?php echo ucfirst($partner->status); ?>
+                                                    </span>
+                                                </td>
+                                                <td class="text-right">
+                                                    <div class="btn-group">
+                                                        <?php if ($this->rbac->hasPrivilege('partners', 'can_view')) { ?>
+                                                            <a href="<?php echo base_url('admin/partners/show/' . $partner->id); ?>"
+                                                               class="btn btn-default btn-xs" data-toggle="tooltip" title="View">
+                                                                <i class="fa fa-eye"></i>
+                                                            </a>
+                                                        <?php } ?>
+                                                        <?php if ($this->rbac->hasPrivilege('partners', 'can_edit')) { ?>
+                                                            <a href="<?php echo base_url('admin/partners/edit/' . $partner->id); ?>"
+                                                               class="btn btn-default btn-xs" data-toggle="tooltip" title="Edit">
+                                                                <i class="fa fa-pencil"></i>
+                                                            </a>
+                                                        <?php } ?>
+                                                        <?php if ($this->rbac->hasPrivilege('partners', 'can_delete')) { ?>
+                                                            <a href="<?php echo base_url('admin/partners/delete/' . $partner->id); ?>"
+                                                               class="btn btn-default btn-xs" data-toggle="tooltip" title="Delete"
+                                                               onclick="return confirm('Are you sure you want to delete this partner?');">
+                                                                <i class="fa fa-trash"></i>
+                                                            </a>
+                                                        <?php } ?>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        <?php }
+                                    } else { ?>
+                                        <tr>
+                                            <td colspan="9" class="text-center">
+                                                <div class="alert alert-info">
+                                                    <i class="fa fa-info-circle"></i> No partners found.
+                                                    <?php if ($this->rbac->hasPrivilege('partners', 'can_add')) { ?>
+                                                        <a href="<?php echo base_url('admin/partners/add'); ?>" class="btn btn-sm btn-primary">
+                                                            <i class="fa fa-plus"></i> Add New Partner
+                                                        </a>
+                                                    <?php } ?>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    <?php } ?>
                                 </tbody>
                             </table>
                         </div>
+
+                        <?php if (!empty($partners)) { ?>
+                            <div class="box-footer clearfix">
+                                <div class="pull-left">
+                                    <p class="text-muted">Total Partners: <strong><?php echo count($partners); ?></strong></p>
+                                </div>
+                            </div>
+                        <?php } ?>
                     </div>
                 </div>
             </div>
@@ -105,104 +184,7 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
 </div>
 
 <script type="text/javascript">
-    var base_url = '<?php echo base_url() ?>';
-
     $(document).ready(function() {
-        initDatatable('partnerDataTable', 'admin/partners/getlist');
+        $('[data-toggle="tooltip"]').tooltip();
     });
-
-    $('#search_btn').click(function() {
-        $('#partnerDataTable').DataTable().ajax.reload();
-    });
-
-    function initDatatable(tablename, path) {
-        $('#' + tablename).DataTable({
-            "processing": true,
-            "serverSide": false,
-            "ajax": {
-                "url": base_url + path,
-                "type": "POST",
-                "data": function(d) {
-                    d.status = $('#status').val();
-                    d.giving_type_id = $('#giving_type_id').val();
-                    d.giving_frequency_id = $('#giving_frequency_id').val();
-                }
-            },
-            "columns": [
-                {"data": 0},
-                {"data": 1},
-                {"data": 2},
-                {"data": 3},
-                {"data": 4},
-                {"data": 5},
-                {"data": 6},
-                {"data": 7},
-                {"data": 8}
-            ],
-            "responsive": true,
-            "autoWidth": false,
-            dom: 'Bfrtip',
-            buttons: [
-                {
-                    extend: 'copyHtml5',
-                    text: '<i class="fa fa-files-o"></i>',
-                    titleAttr: 'Copy',
-                    title: $('.download_label').html(),
-                    exportOptions: {
-                        columns: ':visible:not(.no-print)'
-                    }
-                },
-                {
-                    extend: 'excelHtml5',
-                    text: '<i class="fa fa-file-excel-o"></i>',
-                    titleAttr: 'Excel',
-                    title: $('.download_label').html(),
-                    exportOptions: {
-                        columns: ':visible:not(.no-print)'
-                    }
-                },
-                {
-                    extend: 'csvHtml5',
-                    text: '<i class="fa fa-file-text-o"></i>',
-                    titleAttr: 'CSV',
-                    title: $('.download_label').html(),
-                    exportOptions: {
-                        columns: ':visible:not(.no-print)'
-                    }
-                },
-                {
-                    extend: 'pdfHtml5',
-                    text: '<i class="fa fa-file-pdf-o"></i>',
-                    titleAttr: 'PDF',
-                    title: $('.download_label').html(),
-                    exportOptions: {
-                        columns: ':visible:not(.no-print)'
-                    }
-                },
-                {
-                    extend: 'print',
-                    text: '<i class="fa fa-print"></i>',
-                    titleAttr: 'Print',
-                    title: $('.download_label').html(),
-                    customize: function(win) {
-                        $(win.document.body).find('table').addClass('display').css('font-size', '14px');
-                        $(win.document.body).find('tr:nth-child(odd) td').each(function() {
-                            $(this).css('background-color', '#D0D0D0');
-                        });
-                        $(win.document.body).find('h1').css('text-align', 'center');
-                    },
-                    exportOptions: {
-                        columns: ':visible:not(.no-print)'
-                    }
-                },
-                {
-                    extend: 'colvis',
-                    text: '<i class="fa fa-columns"></i>',
-                    titleAttr: 'Columns',
-                    title: $('.download_label').html(),
-                    postfixButtons: ['colvisRestore']
-                },
-            ]
-        });
-    }
 </script>

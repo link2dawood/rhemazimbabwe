@@ -84,7 +84,7 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
 
                                 <div class="form-group col-md-3">
                                     <label><?php echo $this->lang->line('zip_code'); ?></label>
-                                    <input type="text" name="zipcode" class="form-control" value="<?php echo set_value('zipcode'); ?>">
+                                    <input type="text" name="zip_code" class="form-control" value="<?php echo set_value('zip_code'); ?>">
                                 </div>
                             </div>
 

@@ -11,6 +11,7 @@ $lang['partners'] = 'Partners';
 $lang['partner_list'] = 'Partner List';
 $lang['add_partner'] = 'Add Partner';
 $lang['edit_partner'] = 'Edit Partner';
+$lang['partner_requests'] = 'Partner Requests';
 $lang['partner_details'] = 'Partner Details';
 $lang['partner_information'] = 'Partner Information';
 $lang['view_details'] = 'View Details';
@@ -55,6 +56,7 @@ $lang['linked_student'] = 'Linked Student';
 // Contributions
 $lang['contributions'] = 'Contributions';
 $lang['partner_contributions'] = 'Partner Contributions';
+$lang['my_contributions'] = 'My Contributions';
 $lang['add_contribution'] = 'Add Contribution';
 $lang['contribution_date'] = 'Contribution Date';
 $lang['date'] = 'Date';
@@ -191,6 +193,7 @@ $lang['contributions_grouped_by_type'] = 'Contributions Grouped By Type';
 $lang['partner_statement_report'] = 'Partner Statement Report';
 $lang['detailed_transaction_history'] = 'Detailed Transaction History';
 $lang['balance_giving_report'] = 'Balance Giving Report';
+$lang['balance_report'] = 'Balance Report';
 $lang['outstanding_contributions_with_remarks'] = 'Outstanding Contributions with Remarks';
 
 // Report Filters

@@ -1,0 +1,189 @@
+/* Sidebar Menu Items Visibility Fix */
+/* This ensures sidebar menu items are always visible with proper contrast */
+
+/* Force sidebar to be visible - override collapsed states */
+.main-sidebar {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    transform: translate(0, 0) !important;
+    width: 200px !important;
+}
+
+/* Override sidebar-mini collapsed state */
+.sidebar-mini .main-sidebar {
+    width: 200px !important;
+    transform: translate(0, 0) !important;
+}
+
+.sidebar-collapse .main-sidebar {
+    width: 200px !important;
+    transform: translate(0, 0) !important;
+}
+
+/* Ensure sidebar menu is visible */
+.sidebar-menu {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Default state - white text on dark background */
+.sidebar-menu > li > a {
+    color: #ffffff !important;
+    text-decoration: none;
+    background-color: transparent !important;
+}
+
+.sidebar-menu > li > a:hover {
+    color: #ffffff !important;
+    text-decoration: none;
+    background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.sidebar-menu > li > a:focus {
+    color: #ffffff !important;
+    text-decoration: none;
+    background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.sidebar-menu > li > a:active {
+    color: #ffffff !important;
+    text-decoration: none;
+    background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.sidebar-menu > li > a:visited {
+    color: #ffffff !important;
+    text-decoration: none;
+}
+
+/* Active/Selected state - black text on white background */
+.sidebar-menu > li.active > a,
+.sidebar-menu > li.active > a:hover,
+.sidebar-menu > li.active > a:focus,
+.sidebar-menu > li.active > a:active {
+    color: #000000 !important;
+    background-color: #ffffff !important;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+/* Treeview menu items - default white text */
+.sidebar-menu .treeview-menu > li > a {
+    color: #ffffff !important;
+    text-decoration: none;
+    background-color: transparent !important;
+}
+
+.sidebar-menu .treeview-menu > li > a:hover {
+    color: #ffffff !important;
+    text-decoration: none;
+    background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.sidebar-menu .treeview-menu > li > a:focus {
+    color: #ffffff !important;
+    text-decoration: none;
+    background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.sidebar-menu .treeview-menu > li > a:active {
+    color: #ffffff !important;
+    text-decoration: none;
+    background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.sidebar-menu .treeview-menu > li > a:visited {
+    color: #ffffff !important;
+    text-decoration: none;
+}
+
+/* Treeview active/selected state - black text on white background */
+.sidebar-menu .treeview-menu > li.active > a,
+.sidebar-menu .treeview-menu > li.active > a:hover,
+.sidebar-menu .treeview-menu > li.active > a:focus,
+.sidebar-menu .treeview-menu > li.active > a:active {
+    color: #000000 !important;
+    background-color: #ffffff !important;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+/* Icons - white by default, black when active */
+.sidebar-menu > li > a > i {
+    color: #ffffff !important;
+}
+
+.sidebar-menu > li.active > a > i {
+    color: #000000 !important;
+}
+
+.sidebar-menu .treeview-menu > li > a > i {
+    color: #ffffff !important;
+}
+
+.sidebar-menu .treeview-menu > li.active > a > i {
+    color: #000000 !important;
+}
+
+/* Spans - white by default, black when active */
+.sidebar-menu > li > a > span {
+    color: #ffffff !important;
+}
+
+.sidebar-menu > li.active > a > span {
+    color: #000000 !important;
+}
+
+.sidebar-menu .treeview-menu > li > a > span {
+    color: #ffffff !important;
+}
+
+.sidebar-menu .treeview-menu > li.active > a > span {
+    color: #000000 !important;
+}
+
+/* Fallback for any other sidebar links */
+.sidebar a {
+    color: #ffffff !important;
+}
+
+.sidebar a:hover {
+    color: #ffffff !important;
+    text-decoration: none;
+}
+
+/* Session menu styling */
+.sessionul > li > a {
+    color: #ffffff !important;
+    text-decoration: none;
+}
+
+.sessionul > li > a:hover {
+    color: #ffffff !important;
+    text-decoration: none;
+    background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Ensure proper contrast for all text elements */
+.sidebar-menu > li > a,
+.sidebar-menu > li > a > span,
+.sidebar-menu > li > a > i,
+.sidebar-menu .treeview-menu > li > a,
+.sidebar-menu .treeview-menu > li > a > span,
+.sidebar-menu .treeview-menu > li > a > i {
+    text-shadow: none !important;
+}
+
+/* Override any conflicting styles */
+.skin-blue .sidebar-menu > li > a,
+.skin-blue .sidebar-menu .treeview-menu > li > a {
+    color: #ffffff !important;
+}
+
+.skin-blue .sidebar-menu > li.active > a,
+.skin-blue .sidebar-menu .treeview-menu > li.active > a {
+    color: #000000 !important;
+    background-color: #ffffff !important;
+}
