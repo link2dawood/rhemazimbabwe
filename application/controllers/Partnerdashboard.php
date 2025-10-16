@@ -340,35 +340,136 @@ class Partnerdashboard extends Partner_Controller
         echo json_encode($result);
     }
 
-    // Private helper method
+    // Private helper method - Get statistics for THIS specific partner only
     private function getStatistics($partner_id)
     {
         $stats = [];
 
-        // Partner counts (for single partner view, these are always 1)
-        $stats['total_partners'] = 1;
-        $stats['active_partners'] = ($this->partner_data['status'] == 'active') ? 1 : 0;
-
-        // Total contributed
-        $stats['total_contributed'] = $this->contribution_model->getTotalContributed($partner_id);
-
-        // This year contributed
-        $stats['this_year_contributed'] = $this->contribution_model->getYearContributed($partner_id, date('Y'));
-
-        // Total transactions
+        // Get all contributions for THIS specific partner only (regardless of status)
         $contributions = $this->contribution_model->getContributionsByPartner($partner_id);
-        $stats['total_transactions'] = count($contributions);
+        
+        // Total contributions count for THIS partner
+        $stats['total_contributions'] = count($contributions);
 
-        // Last contribution date
+        // Calculate total amount from all contributions for THIS partner
+        $total_amount = 0;
+        $this_year_amount = 0;
+        $current_year = date('Y');
+        
+        foreach ($contributions as $contribution) {
+            // Double-check that this contribution belongs to the correct partner
+            if ($contribution['partner_id'] == $partner_id) {
+                $total_amount += $contribution['amount'];
+                
+                // Check if contribution is from current year
+                if (date('Y', strtotime($contribution['contribution_date'])) == $current_year) {
+                    $this_year_amount += $contribution['amount'];
+                }
+            }
+        }
+        
+        $stats['total_amount'] = $total_amount;
+        $stats['this_year_amount'] = $this_year_amount;
+
+        // Last contribution date for THIS partner
         if (!empty($contributions)) {
             $stats['last_contribution'] = $contributions[0]['contribution_date'];
         } else {
             $stats['last_contribution'] = null;
         }
 
-        // Account status
-        $stats['status'] = $this->partner_data['status'];
+        // Additional stats for compatibility
+        $stats['total_transactions'] = $stats['total_contributions'];
+        $stats['total_contributed'] = $stats['total_amount'];
+        $stats['this_year_contributed'] = $stats['this_year_amount'];
 
         return $stats;
+    }
+    
+    // Test method to add sample contributions (for testing purposes)
+    public function add_sample_contributions()
+    {
+        $partner_id = $this->partner_data['id'];
+        
+        // Sample contributions data
+        $sample_contributions = [
+            [
+                'partner_id' => $partner_id,
+                'giving_type_id' => 1, // Assuming giving type 1 exists
+                'amount' => 100.00,
+                'currency' => 'USD',
+                'contribution_date' => date('Y-m-d', strtotime('-30 days')),
+                'payment_method' => 'bank_transfer',
+                'transaction_id' => 'TXN' . time() . '1',
+                'notes' => 'Sample contribution 1',
+                'status' => 'completed',
+                'created_at' => date('Y-m-d H:i:s')
+            ],
+            [
+                'partner_id' => $partner_id,
+                'giving_type_id' => 2, // Assuming giving type 2 exists
+                'amount' => 50.00,
+                'currency' => 'USD',
+                'contribution_date' => date('Y-m-d', strtotime('-15 days')),
+                'payment_method' => 'credit_card',
+                'transaction_id' => 'TXN' . time() . '2',
+                'notes' => 'Sample contribution 2',
+                'status' => 'completed',
+                'created_at' => date('Y-m-d H:i:s')
+            ],
+            [
+                'partner_id' => $partner_id,
+                'giving_type_id' => 1,
+                'amount' => 75.00,
+                'currency' => 'USD',
+                'contribution_date' => date('Y-m-d'), // Today
+                'payment_method' => 'paypal',
+                'transaction_id' => 'TXN' . time() . '3',
+                'notes' => 'Sample contribution 3',
+                'status' => 'completed',
+                'created_at' => date('Y-m-d H:i:s')
+            ]
+        ];
+        
+        $added_count = 0;
+        foreach ($sample_contributions as $contribution) {
+            if ($this->contribution_model->add($contribution)) {
+                $added_count++;
+            }
+        }
+        
+        if ($added_count > 0) {
+            $this->session->set_flashdata('success', "Added {$added_count} sample contributions successfully!");
+        } else {
+            $this->session->set_flashdata('error', 'Failed to add sample contributions. Please check if giving types exist.');
+        }
+        
+        redirect('partnerdashboard');
+    }
+    
+    // Debug method to verify partner data and contributions
+    public function debug_stats()
+    {
+        $partner_id = $this->partner_data['id'];
+        
+        echo "<h2>Debug Information for Partner ID: {$partner_id}</h2>";
+        echo "<h3>Partner Data:</h3>";
+        echo "<pre>" . print_r($this->partner_data, true) . "</pre>";
+        
+        echo "<h3>Contributions for this partner:</h3>";
+        $contributions = $this->contribution_model->getContributionsByPartner($partner_id);
+        echo "<pre>" . print_r($contributions, true) . "</pre>";
+        
+        echo "<h3>Statistics:</h3>";
+        $stats = $this->getStatistics($partner_id);
+        echo "<pre>" . print_r($stats, true) . "</pre>";
+        
+        echo "<h3>Total from model method:</h3>";
+        $total = $this->contribution_model->getTotalContributed($partner_id);
+        echo "Total Contributed: " . $total . "<br>";
+        
+        echo "<h3>Year total from model method:</h3>";
+        $year_total = $this->contribution_model->getYearContributed($partner_id, date('Y'));
+        echo "This Year Contributed: " . $year_total . "<br>";
     }
 }

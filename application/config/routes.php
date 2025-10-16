@@ -81,4 +81,6 @@ $route['partnerdashboard/receipt/(:any)'] = 'partnerdashboard/receipt/$1';
 $route['partnerdashboard/update-profile'] = 'partnerdashboard/update_profile';
 $route['partnerdashboard/update-giving-settings'] = 'partnerdashboard/update_giving_settings';
 $route['partnerdashboard/update-password'] = 'partnerdashboard/update_password';
-$route['partnerdashboard/add-contribution'] = 'partnerdashboard/add_contribution'; 
+$route['partnerdashboard/add-contribution'] = 'partnerdashboard/add_contribution';
+$route['partnerdashboard/add-sample-contributions'] = 'partnerdashboard/add_sample_contributions';
+$route['partnerdashboard/debug-stats'] = 'partnerdashboard/debug_stats'; 

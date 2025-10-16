@@ -184,6 +184,21 @@
                         </a>
                     </div>
                 </div>
+                
+                <!-- Test Data Button (for development/testing) -->
+                <?php if (empty($recent_contributions)): ?>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="alert alert-info">
+                            <h4><i class="icon fa fa-info"></i> No Contributions Yet</h4>
+                            <p>You haven't made any contributions yet. To test the dashboard with sample data, you can add some sample contributions.</p>
+                            <a href="<?php echo base_url('partnerdashboard/add-sample-contributions'); ?>" class="btn btn-info">
+                                <i class="fa fa-plus"></i> Add Sample Contributions (Test)
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <?php endif; ?>
             </div>
         </div>
     </div>
