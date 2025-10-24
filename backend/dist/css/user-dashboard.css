@@ -1,0 +1,240 @@
+/* User Dashboard Specific Styles */
+
+/* Sidebar Menu Text Color Fix - Black text on white background */
+.sidebar-menu > li > a {
+    color: #333 !important;
+    font-weight: 500;
+    background-color: #fff !important;
+    border-bottom: 1px solid #f4f4f4;
+}
+
+.sidebar-menu > li > a:hover {
+    color: #333 !important;
+    background-color: #f8f9fa !important;
+}
+
+.sidebar-menu > li.active > a {
+    color: #333 !important;
+    background-color: #e3f2fd !important;
+    border-left: 4px solid #2196f3;
+}
+
+.sidebar-menu > li.active > a:hover {
+    color: #333 !important;
+    background-color: #e3f2fd !important;
+}
+
+/* Sidebar Menu Icons */
+.sidebar-menu > li > a > i {
+    color: #666 !important;
+    width: 20px;
+}
+
+.sidebar-menu > li > a:hover > i {
+    color: #333 !important;
+}
+
+.sidebar-menu > li.active > a > i {
+    color: #2196f3 !important;
+}
+
+/* Sidebar Menu Spans */
+.sidebar-menu > li > a > span {
+    color: inherit !important;
+}
+
+/* Treeview Menu Items */
+.sidebar-menu .treeview > a {
+    color: #333 !important;
+    background-color: #fff !important;
+    border-bottom: 1px solid #f4f4f4;
+}
+
+.sidebar-menu .treeview > a:hover {
+    color: #333 !important;
+    background-color: #f8f9fa !important;
+}
+
+.sidebar-menu .treeview.active > a {
+    color: #333 !important;
+    background-color: #e3f2fd !important;
+    border-left: 4px solid #2196f3;
+}
+
+/* Treeview Icons */
+.sidebar-menu .treeview > a > i {
+    color: #666 !important;
+}
+
+.sidebar-menu .treeview > a:hover > i {
+    color: #333 !important;
+}
+
+.sidebar-menu .treeview.active > a > i {
+    color: #2196f3 !important;
+}
+
+/* Treeview Arrow */
+.sidebar-menu .treeview > a > .fa-angle-left,
+.sidebar-menu .treeview > a > .fa-angle-down {
+    color: #666 !important;
+}
+
+.sidebar-menu .treeview > a:hover > .fa-angle-left,
+.sidebar-menu .treeview > a:hover > .fa-angle-down {
+    color: #333 !important;
+}
+
+.sidebar-menu .treeview.active > a > .fa-angle-left,
+.sidebar-menu .treeview.active > a > .fa-angle-down {
+    color: #2196f3 !important;
+}
+
+/* Submenu Items */
+.sidebar-menu .treeview-menu > li > a {
+    color: #555 !important;
+    padding-left: 35px;
+    background-color: #f8f9fa !important;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.sidebar-menu .treeview-menu > li > a:hover {
+    color: #333 !important;
+    background-color: #e9ecef !important;
+}
+
+.sidebar-menu .treeview-menu > li.active > a {
+    color: #333 !important;
+    background-color: #e3f2fd !important;
+    border-left: 4px solid #2196f3;
+}
+
+/* Session Menu */
+.sessionul > li > a {
+    color: #333 !important;
+    font-weight: 500;
+    background-color: #fff !important;
+    border-bottom: 1px solid #f4f4f4;
+}
+
+.sessionul > li > a:hover {
+    color: #333 !important;
+    background-color: #f8f9fa !important;
+}
+
+.sessionul > li > a > span {
+    color: inherit !important;
+}
+
+.sessionul > li > a > i {
+    color: #666 !important;
+}
+
+.sessionul > li > a:hover > i {
+    color: #333 !important;
+}
+
+/* Header Text */
+.sidebar-menu .header {
+    color: #333 !important;
+    background: #f8f9fa !important;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    padding: 10px 15px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+/* Sidebar Background */
+.main-sidebar {
+    background-color: #fff !important;
+    border-right: 1px solid #e9ecef;
+}
+
+/* Sidebar Section */
+.sidebar {
+    background-color: #fff !important;
+}
+
+/* User Panel */
+.user-panel {
+    background-color: #f8f9fa !important;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.user-panel .info {
+    color: #333 !important;
+}
+
+.user-panel .info > a {
+    color: #333 !important;
+}
+
+.user-panel .info > a:hover {
+    color: #2196f3 !important;
+}
+
+/* Sidebar Menu Container */
+.sidebar-menu {
+    background-color: #fff !important;
+}
+
+/* Ensure proper contrast */
+.sidebar-menu > li > a,
+.sidebar-menu .treeview > a {
+    border-left: 3px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.sidebar-menu > li > a:hover,
+.sidebar-menu .treeview > a:hover {
+    border-left-color: #2196f3;
+}
+
+.sidebar-menu > li.active > a,
+.sidebar-menu .treeview.active > a {
+    border-left-color: #2196f3;
+}
+
+/* Fix for specific menu items */
+.sidebar-menu > li > a .ftlayer {
+    color: #666 !important;
+}
+
+.sidebar-menu > li > a:hover .ftlayer {
+    color: #333 !important;
+}
+
+.sidebar-menu > li.active > a .ftlayer {
+    color: #2196f3 !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .sidebar-menu > li > a {
+        color: #333 !important;
+        font-size: 14px;
+        background-color: #fff !important;
+    }
+    
+    .sidebar-menu > li > a:hover {
+        color: #333 !important;
+        background-color: #f8f9fa !important;
+    }
+}
+
+/* Override any conflicting styles */
+.main-sidebar .sidebar-menu li a {
+    color: #333 !important;
+    background-color: #fff !important;
+}
+
+.main-sidebar .sidebar-menu li a:hover {
+    color: #333 !important;
+    background-color: #f8f9fa !important;
+}
+
+.main-sidebar .sidebar-menu li.active a {
+    color: #333 !important;
+    background-color: #e3f2fd !important;
+}

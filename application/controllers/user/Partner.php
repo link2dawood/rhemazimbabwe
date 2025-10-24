@@ -45,7 +45,7 @@ class Partner extends CI_Controller
         ));
 
         // Set active menu
-        $this->session->set_userdata('top_menu', 'partner');
+        $this->session->set_userdata('top_menu', 'user_partners');
 
         // Load language file
         $student_lang = $this->session->userdata('student');
