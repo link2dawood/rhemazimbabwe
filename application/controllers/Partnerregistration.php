@@ -129,8 +129,6 @@ class Partnerregistration extends Front_Controller {
         if ($email) {
             $student = $this->db->where('email', $email)
                                 ->or_where('guardian_email', $email)
-                                ->or_where('father_email', $email)
-                                ->or_where('mother_email', $email)
                                 ->get('students')
                                 ->row();
 
