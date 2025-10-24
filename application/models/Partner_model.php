@@ -181,7 +181,9 @@ class Partner_model extends MY_Model
             ];
         }
 
-        // Check for duplicate phone number (optional check - can be commented out if multiple partners can share a phone)
+        // Check for duplicate phone number (disabled - multiple partners can share a phone)
+        // Uncomment below if you want to enforce unique phone numbers
+        /*
         if (!empty($data['mobileno'])) {
             $existing_phone = $this->db->where('mobileno', $data['mobileno'])->count_all_results('partners');
             if ($existing_phone > 0) {
@@ -191,6 +193,7 @@ class Partner_model extends MY_Model
                 ];
             }
         }
+        */
 
         // Check for duplicate username if provided
         if (!empty($data['username'])) {

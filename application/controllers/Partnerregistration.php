@@ -271,8 +271,14 @@ class Partnerregistration extends Front_Controller {
             $partner_data['password'] = password_hash($password, PASSWORD_DEFAULT);
         }
 
+        // Debug: Log the data being submitted
+        log_message('debug', 'Partner registration attempt with data: ' . json_encode($partner_data));
+
         // Insert partner
         $partner_id = $this->Partner_model->add($partner_data);
+
+        // Debug: Log the result
+        log_message('debug', 'Partner_model->add() result: ' . json_encode($partner_id));
 
         // Check if partner_id is a valid integer (success)
         if (is_numeric($partner_id) && $partner_id > 0) {
@@ -314,9 +320,19 @@ class Partnerregistration extends Front_Controller {
         } else {
             // Unknown error
             log_message('error', 'Partner registration failed with unknown error. Data: ' . json_encode($partner_data));
+            log_message('error', 'Partner_model->add() returned: ' . print_r($partner_id, true));
+
+            // Get database error for debugging
+            $db_error = $this->db->error();
+
             echo json_encode([
                 'status' => 'error',
-                'message' => 'Registration failed due to an unexpected error. Please try again or contact support.'
+                'message' => 'Registration failed due to an unexpected error. Please try again or contact support.',
+                'debug' => [
+                    'result_type' => gettype($partner_id),
+                    'result_value' => $partner_id,
+                    'db_error' => $db_error
+                ]
             ]);
         }
     }
@@ -432,6 +448,94 @@ class Partnerregistration extends Front_Controller {
         $this->data['page_side_bar'] = false;
 
         $this->load_theme('partnerregistration/check_status');
+    }
+
+    /**
+     * Debug page for testing registration
+     */
+    public function debug_test() {
+        // Simple test to diagnose issues
+        echo "<h1>Partner Registration Diagnostic</h1>";
+        echo "<style>body { font-family: Arial; margin: 20px; } .success { color: green; } .error { color: red; } pre { background: #f5f5f5; padding: 10px; }</style>";
+
+        // Test 1: Check database connection
+        echo "<h2>1. Database Connection</h2>";
+        try {
+            $this->db->query("SELECT 1");
+            echo "<p class='success'>✓ Database connected</p>";
+        } catch (Exception $e) {
+            echo "<p class='error'>✗ Database connection failed: " . $e->getMessage() . "</p>";
+            return;
+        }
+
+        // Test 2: Check giving types
+        echo "<h2>2. Giving Types</h2>";
+        $giving_types = $this->Type_model->getAll();
+        if (empty($giving_types)) {
+            echo "<p class='error'>✗ No giving types found!</p>";
+        } else {
+            echo "<p class='success'>✓ Found " . count($giving_types) . " giving types</p>";
+            echo "<pre>" . print_r($giving_types, true) . "</pre>";
+        }
+
+        // Test 3: Check giving frequencies
+        echo "<h2>3. Giving Frequencies</h2>";
+        $giving_frequencies = $this->Frequency_model->getAll();
+        if (empty($giving_frequencies)) {
+            echo "<p class='error'>✗ No giving frequencies found!</p>";
+        } else {
+            echo "<p class='success'>✓ Found " . count($giving_frequencies) . " giving frequencies</p>";
+            echo "<pre>" . print_r($giving_frequencies, true) . "</pre>";
+        }
+
+        // Test 4: Try a registration
+        echo "<h2>4. Test Registration</h2>";
+        $test_data = [
+            'firstname' => 'Test',
+            'lastname' => 'User',
+            'email' => 'debugtest_' . time() . '@example.com',
+            'mobileno' => '071' . rand(1000000, 9999999),
+            'account_type' => 'individual',
+            'status' => 'pending',
+            'is_active' => 1,
+            'created_at' => date('Y-m-d H:i:s')
+        ];
+
+        echo "<p>Testing with data:</p>";
+        echo "<pre>" . print_r($test_data, true) . "</pre>";
+
+        $result = $this->Partner_model->add($test_data);
+
+        echo "<p>Result:</p>";
+        echo "<pre>Type: " . gettype($result) . "\nValue: " . print_r($result, true) . "</pre>";
+
+        if (is_numeric($result) && $result > 0) {
+            echo "<p class='success'>✓ Registration successful! Partner ID: " . $result . "</p>";
+            // Clean up
+            $this->db->where('id', $result)->delete('partners');
+            echo "<p>Test partner deleted.</p>";
+        } elseif (is_array($result) && isset($result['error'])) {
+            echo "<p class='error'>✗ Validation error: " . $result['message'] . "</p>";
+        } else {
+            echo "<p class='error'>✗ Unexpected result!</p>";
+            $db_error = $this->db->error();
+            echo "<p>DB Error:</p><pre>" . print_r($db_error, true) . "</pre>";
+        }
+
+        // Test 5: Check recent partners
+        echo "<h2>5. Recent Partners</h2>";
+        $recent = $this->db->select('id, partner_code, firstname, lastname, email, status, created_at')
+                           ->from('partners')
+                           ->order_by('created_at', 'DESC')
+                           ->limit(5)
+                           ->get()
+                           ->result();
+        if ($recent) {
+            echo "<p>Last 5 partners:</p>";
+            echo "<pre>" . print_r($recent, true) . "</pre>";
+        } else {
+            echo "<p>No partners found.</p>";
+        }
     }
 
     /**
