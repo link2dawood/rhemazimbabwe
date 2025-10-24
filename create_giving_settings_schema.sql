@@ -34,3 +34,4 @@ SELECT 'Partner Giving Settings table created successfully!' AS status;
 
 
 
+

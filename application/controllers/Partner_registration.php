@@ -225,17 +225,24 @@ class Partner_registration extends Front_Controller
         // Insert partner
         $partner_id = $this->partner_model->add($partner_data);
 
-        if ($partner_id) {
+        // Check if partner_id is a valid integer (success)
+        if (is_numeric($partner_id) && $partner_id > 0) {
             // Save giving types
             $this->saveGivingTypes($partner_id);
-            
+
             // Send confirmation email
             $this->sendConfirmationEmail($partner_data, $partner_id);
-            
+
             $this->session->set_flashdata('success', 'Registration submitted successfully! You will receive a confirmation email shortly.');
             redirect('partner_registration/success');
+        } elseif (is_array($partner_id) && isset($partner_id['error']) && $partner_id['error'] === true) {
+            // Model returned a validation error with specific message
+            $this->session->set_flashdata('error', $partner_id['message']);
+            $this->individual();
         } else {
-            $this->session->set_flashdata('error', 'Registration failed. Please try again.');
+            // Unknown error
+            log_message('error', 'Partner registration failed with unknown error. Data: ' . json_encode($partner_data));
+            $this->session->set_flashdata('error', 'Registration failed due to an unexpected error. Please try again or contact support.');
             $this->individual();
         }
     }
@@ -304,17 +311,24 @@ class Partner_registration extends Front_Controller
         // Insert partner
         $partner_id = $this->partner_model->add($partner_data);
 
-        if ($partner_id) {
+        // Check if partner_id is a valid integer (success)
+        if (is_numeric($partner_id) && $partner_id > 0) {
             // Save giving types
             $this->saveGivingTypes($partner_id);
-            
+
             // Send confirmation email
             $this->sendConfirmationEmail($partner_data, $partner_id);
-            
+
             $this->session->set_flashdata('success', 'Registration submitted successfully! You will receive a confirmation email shortly.');
             redirect('partner_registration/success');
+        } elseif (is_array($partner_id) && isset($partner_id['error']) && $partner_id['error'] === true) {
+            // Model returned a validation error with specific message
+            $this->session->set_flashdata('error', $partner_id['message']);
+            $this->organization();
         } else {
-            $this->session->set_flashdata('error', 'Registration failed. Please try again.');
+            // Unknown error
+            log_message('error', 'Partner registration failed with unknown error. Data: ' . json_encode($partner_data));
+            $this->session->set_flashdata('error', 'Registration failed due to an unexpected error. Please try again or contact support.');
             $this->organization();
         }
     }

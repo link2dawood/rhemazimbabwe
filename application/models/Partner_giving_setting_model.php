@@ -236,3 +236,4 @@ class Partner_giving_setting_model extends MY_Model
 
 
 
+

@@ -276,18 +276,24 @@ class Partnerregistration extends Front_Controller {
         // Insert partner
         $partner_id = $this->Partner_model->add($partner_data);
 
-        if ($partner_id) {
+        // Check if partner_id is a valid integer (success)
+        if (is_numeric($partner_id) && $partner_id > 0) {
             // Save multiple giving types with amounts
             if (!empty($giving_types_selected)) {
                 foreach ($giving_types_selected as $type_id) {
                     if (isset($giving_amounts[$type_id]) && !empty($giving_amounts[$type_id])) {
-                        $this->db->insert('partner_giving_types', [
+                        $insert_result = $this->db->insert('partner_giving_types', [
                             'partner_id' => $partner_id,
                             'giving_type_id' => $type_id,
                             'amount' => floatval($giving_amounts[$type_id]),
                             'currency' => $partner_data['currency'],
                             'created_at' => date('Y-m-d H:i:s')
                         ]);
+
+                        // Log error if insert fails but don't stop the process
+                        if (!$insert_result) {
+                            log_message('error', 'Failed to insert giving type for partner ' . $partner_id . ', type: ' . $type_id);
+                        }
                     }
                 }
             }
@@ -301,10 +307,18 @@ class Partnerregistration extends Front_Controller {
                 'partner_code' => $partner_data['partner_code'],
                 'redirect' => base_url('partnerregistration/success/' . $partner_id)
             ]);
-        } else {
+        } elseif (is_array($partner_id) && isset($partner_id['error']) && $partner_id['error'] === true) {
+            // Model returned a validation error with specific message
             echo json_encode([
                 'status' => 'error',
-                'message' => 'Registration failed. Please try again.'
+                'message' => $partner_id['message']
+            ]);
+        } else {
+            // Unknown error
+            log_message('error', 'Partner registration failed with unknown error. Data: ' . json_encode($partner_data));
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Registration failed due to an unexpected error. Please try again or contact support.'
             ]);
         }
     }

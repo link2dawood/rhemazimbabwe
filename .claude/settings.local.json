@@ -13,7 +13,8 @@
       "Bash(\"D:\\xampp8.2\\mysql\\bin\\mysql.exe\" -u root -e \"SHOW TABLES FROM ssdb LIKE ''%role%''\")",
       "Bash(\"D:\\xampp8.2\\mysql\\bin\\mysql.exe\" -u root -e \"DESCRIBE ssdb.partner_permission_types\")",
       "Bash(findstr:*)",
-      "Bash(dir /s /b \"D:\\xampp8.2\\htdocs\\rhemazimbabwe\\backend\")"
+      "Bash(dir /s /b \"D:\\xampp8.2\\htdocs\\rhemazimbabwe\\backend\")",
+      "Bash(\"D:\\xampp8.2\\mysql\\bin\\mysql.exe\" -u root -e \"SHOW CREATE TABLE ssdb.partners\")"
     ],
     "deny": [],
     "ask": []

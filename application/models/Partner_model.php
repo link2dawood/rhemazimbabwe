@@ -152,7 +152,7 @@ class Partner_model extends MY_Model
     /**
      * Add new partner
      * @param array $data
-     * @return int|bool
+     * @return int|bool|array Returns insert_id on success, false or error array on failure
      */
     public function add($data)
     {
@@ -161,9 +161,125 @@ class Partner_model extends MY_Model
             $data['partner_code'] = $this->generatePartnerCode();
         }
 
+        // Validate required fields
+        $required_fields = ['firstname', 'lastname', 'email', 'mobileno'];
+        foreach ($required_fields as $field) {
+            if (empty($data[$field])) {
+                return [
+                    'error' => true,
+                    'message' => 'Missing required field: ' . ucfirst(str_replace('_', ' ', $field))
+                ];
+            }
+        }
+
+        // Check for duplicate email
+        $existing_email = $this->db->where('email', $data['email'])->count_all_results('partners');
+        if ($existing_email > 0) {
+            return [
+                'error' => true,
+                'message' => 'A partner with this email address already exists. Please use a different email or contact support.'
+            ];
+        }
+
+        // Check for duplicate phone number (optional check - can be commented out if multiple partners can share a phone)
+        if (!empty($data['mobileno'])) {
+            $existing_phone = $this->db->where('mobileno', $data['mobileno'])->count_all_results('partners');
+            if ($existing_phone > 0) {
+                return [
+                    'error' => true,
+                    'message' => 'A partner with this phone number already exists. Please use a different phone number or contact support if this is an error.'
+                ];
+            }
+        }
+
+        // Check for duplicate username if provided
+        if (!empty($data['username'])) {
+            $existing_username = $this->db->where('username', $data['username'])->count_all_results('partners');
+            if ($existing_username > 0) {
+                return [
+                    'error' => true,
+                    'message' => 'This username is already taken. Please choose a different username.'
+                ];
+            }
+        }
+
+        // Validate foreign key references
+        if (!empty($data['giving_type_id'])) {
+            $type_exists = $this->db->where('id', $data['giving_type_id'])->count_all_results('giving_types');
+            if ($type_exists == 0) {
+                return [
+                    'error' => true,
+                    'message' => 'Invalid giving type selected. Please refresh the page and try again.'
+                ];
+            }
+        }
+
+        if (!empty($data['giving_frequency_id'])) {
+            $freq_exists = $this->db->where('id', $data['giving_frequency_id'])->count_all_results('giving_frequencies');
+            if ($freq_exists == 0) {
+                return [
+                    'error' => true,
+                    'message' => 'Invalid giving frequency selected. Please refresh the page and try again.'
+                ];
+            }
+        }
+
+        if (!empty($data['student_id'])) {
+            $student_exists = $this->db->where('id', $data['student_id'])->count_all_results('students');
+            if ($student_exists == 0) {
+                return [
+                    'error' => true,
+                    'message' => 'Invalid student reference. Please contact support.'
+                ];
+            }
+        }
+
+        if (!empty($data['staff_id'])) {
+            $staff_exists = $this->db->where('id', $data['staff_id'])->count_all_results('staff');
+            if ($staff_exists == 0) {
+                return [
+                    'error' => true,
+                    'message' => 'Invalid staff reference. Please contact support.'
+                ];
+            }
+        }
+
+        // Attempt to insert
         if ($this->db->insert('partners', $data)) {
             return $this->db->insert_id();
         }
+
+        // If insert failed, get the database error
+        $db_error = $this->db->error();
+        log_message('error', 'Partner registration failed: ' . json_encode($db_error));
+
+        // Return user-friendly error message
+        if (!empty($db_error['message'])) {
+            if (strpos($db_error['message'], 'Duplicate entry') !== false) {
+                if (strpos($db_error['message'], 'partner_code') !== false) {
+                    return [
+                        'error' => true,
+                        'message' => 'Partner code conflict detected. Please try again.'
+                    ];
+                } elseif (strpos($db_error['message'], 'username') !== false) {
+                    return [
+                        'error' => true,
+                        'message' => 'Username already exists. Please choose a different username.'
+                    ];
+                } elseif (strpos($db_error['message'], 'email') !== false) {
+                    return [
+                        'error' => true,
+                        'message' => 'Email address already registered. Please use a different email.'
+                    ];
+                }
+            }
+
+            return [
+                'error' => true,
+                'message' => 'Database error: Unable to complete registration. Please contact support.'
+            ];
+        }
+
         return false;
     }
 
