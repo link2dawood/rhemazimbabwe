@@ -15,7 +15,9 @@
       "Bash(findstr:*)",
       "Bash(dir /s /b \"D:\\xampp8.2\\htdocs\\rhemazimbabwe\\backend\")",
       "Bash(\"D:\\xampp8.2\\mysql\\bin\\mysql.exe\" -u root -e \"SHOW CREATE TABLE ssdb.partners\")",
-      "Bash(\"D:\\xampp8.2\\mysql\\bin\\mysql.exe\" -u root -e \"SHOW COLUMNS FROM ssdb.students\")"
+      "Bash(\"D:\\xampp8.2\\mysql\\bin\\mysql.exe\" -u root -e \"SHOW COLUMNS FROM ssdb.students\")",
+      "Bash(php check_table.php:*)",
+      "Bash(php test_insert.php:*)"
     ],
     "deny": [],
     "ask": []

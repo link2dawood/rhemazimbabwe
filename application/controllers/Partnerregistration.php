@@ -274,6 +274,18 @@ class Partnerregistration extends Front_Controller {
         // Debug: Log the data being submitted
         log_message('debug', 'Partner registration attempt with data: ' . json_encode($partner_data));
 
+        // TEMP DEBUG: Check if required fields are present
+        $debug_info = [
+            'has_firstname' => isset($partner_data['firstname']),
+            'has_lastname' => isset($partner_data['lastname']),
+            'has_email' => isset($partner_data['email']),
+            'has_mobileno' => isset($partner_data['mobileno']),
+            'has_partner_code' => isset($partner_data['partner_code']),
+            'partner_code_value' => $partner_data['partner_code'] ?? 'NOT SET',
+            'email_value' => $partner_data['email'] ?? 'NOT SET',
+            'status_value' => $partner_data['status'] ?? 'NOT SET'
+        ];
+
         // Insert partner
         $partner_id = $this->Partner_model->add($partner_data);
 
@@ -331,7 +343,9 @@ class Partnerregistration extends Front_Controller {
                 'debug' => [
                     'result_type' => gettype($partner_id),
                     'result_value' => $partner_id,
-                    'db_error' => $db_error
+                    'db_error' => $db_error,
+                    'field_check' => $debug_info,
+                    'sample_data' => array_slice($partner_data, 0, 5)
                 ]
             ]);
         }
