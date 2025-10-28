@@ -576,11 +576,17 @@ class Partner_model extends MY_Model
      */
     public function getPartnersByStudentOrContact($student_id, $email, $phone)
     {
-        $this->db->where('(student_id = ' . $this->db->escape($student_id) . ' OR
-                          email = ' . $this->db->escape($email) . ' OR
-                          mobileno = ' . $this->db->escape($phone) . ')', NULL, FALSE);
-        $this->db->order_by('created_at', 'DESC');
-        return $this->db->get('partners')->result_array();
+        $this->db->select('partners.*,
+                          giving_frequencies.name as frequency_name,
+                          giving_types.name as type_name')
+                 ->from('partners')
+                 ->join('giving_frequencies', 'giving_frequencies.id = partners.giving_frequency_id', 'left')
+                 ->join('giving_types', 'giving_types.id = partners.giving_type_id', 'left');
+        $this->db->where('(partners.student_id = ' . $this->db->escape($student_id) . ' OR
+                          partners.email = ' . $this->db->escape($email) . ' OR
+                          partners.mobileno = ' . $this->db->escape($phone) . ')', NULL, FALSE);
+        $this->db->order_by('partners.created_at', 'DESC');
+        return $this->db->get()->result_array();
     }
 
     /**
@@ -591,10 +597,16 @@ class Partner_model extends MY_Model
      */
     public function getPartnersByContact($email, $phone)
     {
-        $this->db->where('(email = ' . $this->db->escape($email) . ' OR
-                          mobileno = ' . $this->db->escape($phone) . ')', NULL, FALSE);
-        $this->db->order_by('created_at', 'DESC');
-        return $this->db->get('partners')->result_array();
+        $this->db->select('partners.*,
+                          giving_frequencies.name as frequency_name,
+                          giving_types.name as type_name')
+                 ->from('partners')
+                 ->join('giving_frequencies', 'giving_frequencies.id = partners.giving_frequency_id', 'left')
+                 ->join('giving_types', 'giving_types.id = partners.giving_type_id', 'left');
+        $this->db->where('(partners.email = ' . $this->db->escape($email) . ' OR
+                          partners.mobileno = ' . $this->db->escape($phone) . ')', NULL, FALSE);
+        $this->db->order_by('partners.created_at', 'DESC');
+        return $this->db->get()->result_array();
     }
 
     /**
@@ -605,10 +617,16 @@ class Partner_model extends MY_Model
      */
     public function getPartnersByStaffOrContact($staff_id, $email)
     {
-        $this->db->where('(staff_id = ' . $this->db->escape($staff_id) . ' OR
-                          email = ' . $this->db->escape($email) . ')', NULL, FALSE);
-        $this->db->order_by('created_at', 'DESC');
-        return $this->db->get('partners')->result_array();
+        $this->db->select('partners.*,
+                          giving_frequencies.name as frequency_name,
+                          giving_types.name as type_name')
+                 ->from('partners')
+                 ->join('giving_frequencies', 'giving_frequencies.id = partners.giving_frequency_id', 'left')
+                 ->join('giving_types', 'giving_types.id = partners.giving_type_id', 'left');
+        $this->db->where('(partners.staff_id = ' . $this->db->escape($staff_id) . ' OR
+                          partners.email = ' . $this->db->escape($email) . ')', NULL, FALSE);
+        $this->db->order_by('partners.created_at', 'DESC');
+        return $this->db->get()->result_array();
     }
 
     /**

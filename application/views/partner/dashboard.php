@@ -163,22 +163,28 @@
             </div>
             <div class="box-body">
                 <div class="row">
-                    <div class="col-md-3">
+                    <div class="col-md-2">
+                        <a href="#" data-toggle="modal" data-target="#addContributionModal" class="btn btn-app">
+                            <span class="badge bg-green">New</span>
+                            <i class="fa fa-plus-circle"></i> Add Contribution
+                        </a>
+                    </div>
+                    <div class="col-md-2">
                         <a href="<?php echo base_url('partnerdashboard/giving-settings'); ?>" class="btn btn-app">
                             <i class="fa fa-cogs"></i> Giving Settings
                         </a>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <a href="<?php echo base_url('partnerdashboard/contributions'); ?>" class="btn btn-app">
                             <i class="fa fa-money"></i> View Contributions
                         </a>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <a href="<?php echo base_url('partnerdashboard/profile'); ?>" class="btn btn-app">
                             <i class="fa fa-user"></i> Update Profile
                         </a>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <a href="<?php echo base_url('partnerdashboard/change-password'); ?>" class="btn btn-app">
                             <i class="fa fa-lock"></i> Change Password
                         </a>
@@ -203,3 +209,136 @@
         </div>
     </div>
 </div>
+
+<!-- Add Contribution Modal -->
+<div class="modal fade" id="addContributionModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form id="addContributionForm">
+                <div class="modal-header bg-green">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title"><i class="fa fa-plus-circle"></i> Add New Contribution</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Giving Type <span class="text-danger">*</span></label>
+                        <select class="form-control" name="giving_type_id" required>
+                            <option value="">Select Giving Type</option>
+                            <?php foreach ($giving_types as $type): ?>
+                                <option value="<?php echo $type->id; ?>"><?php echo $type->name; ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Amount <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-addon">$</span>
+                                    <input type="number" class="form-control" name="amount" step="0.01" min="0.01" required placeholder="0.00">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Currency</label>
+                                <select class="form-control" name="currency">
+                                    <option value="USD" selected>USD ($)</option>
+                                    <option value="ZWL">ZWL (Z$)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Contribution Date <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control" name="contribution_date" value="<?php echo date('Y-m-d'); ?>" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Payment Method <span class="text-danger">*</span></label>
+                        <select class="form-control" name="payment_method" required>
+                            <option value="">Select Payment Method</option>
+                            <option value="cash">Cash</option>
+                            <option value="check">Check</option>
+                            <option value="credit_card">Credit Card</option>
+                            <option value="debit_card">Debit Card</option>
+                            <option value="bank_transfer">Bank Transfer</option>
+                            <option value="mobile_money">Mobile Money</option>
+                            <option value="online">Online Payment</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Transaction ID / Reference Number</label>
+                        <input type="text" class="form-control" name="transaction_id" placeholder="Optional">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Notes</label>
+                        <textarea class="form-control" name="notes" rows="3" placeholder="Any additional notes (optional)"></textarea>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="fa fa-info-circle"></i> Your contribution will be submitted for review by the administrator.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fa fa-check"></i> Submit Contribution
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+$(document).ready(function() {
+    // Handle contribution form submission
+    $('#addContributionForm').submit(function(e) {
+        e.preventDefault();
+        
+        var formData = $(this).serialize();
+        var submitBtn = $(this).find('button[type="submit"]');
+        var originalText = submitBtn.html();
+        
+        // Disable button and show loading
+        submitBtn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Submitting...');
+        
+        $.ajax({
+            url: '<?php echo base_url("partnerdashboard/add_contribution"); ?>',
+            type: 'POST',
+            data: formData,
+            dataType: 'json',
+            success: function(response) {
+                if (response.status) {
+                    // Success
+                    successMsg(response.message);
+                    $('#addContributionModal').modal('hide');
+                    $('#addContributionForm')[0].reset();
+                    
+                    // Reload page after 2 seconds
+                    setTimeout(function() {
+                        location.reload();
+                    }, 2000);
+                } else {
+                    // Error
+                    errorMsg(response.message);
+                }
+            },
+            error: function() {
+                errorMsg('An error occurred. Please try again.');
+            },
+            complete: function() {
+                // Re-enable button
+                submitBtn.prop('disabled', false).html(originalText);
+            }
+        });
+    });
+});
+</script>

@@ -1,18 +1,19 @@
-<!-- Content Header (Page header) -->
-<section class="content-header">
-    <h1>
-        <i class="fa fa-bar-chart"></i> Partner Reports
-        <small>View your partner reports and statements</small>
-    </h1>
-    <ol class="breadcrumb">
-        <li><a href="<?php echo base_url(); ?>user/user/dashboard"><i class="fa fa-dashboard"></i> Home</a></li>
-        <li><a href="<?php echo base_url(); ?>user/partner">Partners</a></li>
-        <li class="active">Reports</li>
-    </ol>
-</section>
+<div class="content-wrapper" style="min-height: 946px;">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+        <h1>
+            <i class="fa fa-bar-chart"></i> Partner Reports
+            <small>View your partner reports and statements</small>
+        </h1>
+        <ol class="breadcrumb">
+            <li><a href="<?php echo base_url(); ?>user/user/dashboard"><i class="fa fa-dashboard"></i> Home</a></li>
+            <li><a href="<?php echo base_url(); ?>user/partner">Partners</a></li>
+            <li class="active">Reports</li>
+        </ol>
+    </section>
 
-<!-- Main content -->
-<section class="content">
+    <!-- Main content -->
+    <section class="content">
     <?php if (!empty($partners)): ?>
     <div class="row">
         <!-- Partner Information Report Card -->
@@ -94,8 +95,8 @@
                                             <?php echo ucfirst($partner['account_type']); ?>
                                         </span>
                                     </td>
-                                    <td><?php echo $partner['type_name'] ? $partner['type_name'] : 'Not Set'; ?></td>
-                                    <td><?php echo $partner['frequency_name'] ? $partner['frequency_name'] : 'Not Set'; ?></td>
+                                    <td><?php echo isset($partner['type_name']) && $partner['type_name'] ? $partner['type_name'] : 'Not Set'; ?></td>
+                                    <td><?php echo isset($partner['frequency_name']) && $partner['frequency_name'] ? $partner['frequency_name'] : 'Not Set'; ?></td>
                                     <td><strong><?php echo $partner['currency'] . ' ' . number_format($partner['contribution_amount'], 2); ?></strong></td>
                                     <td>
                                         <span class="label label-<?php 
@@ -155,7 +156,8 @@
             </div>
         </div>
     </div>
-</section>
+    </section>
+</div>
 
 <script type="text/javascript">
 $(document).ready(function() {

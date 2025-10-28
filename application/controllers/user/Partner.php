@@ -57,54 +57,80 @@ class Partner extends CI_Controller
         }
     }
 
-    // Partner Dashboard - Show student's partners
+    // Partner Dashboard - Allow user to register themselves as a partner
     public function index()
     {
         $student_data = $this->customlib->getLoggedInUserData();
         $role = $this->customlib->getUserRole();
 
-        $data = [];
-        $data['title'] = $this->lang->line('my_partners');
-        $data['page'] = 'partner_dashboard';
-        $data['role'] = $role;
-        $data['student_data'] = $student_data;
-
-        // Get partners based on user role
+        // Check if user is already a partner
+        $existing_partner = null;
+        
         if ($role == 'student') {
             $student_id = $this->customlib->getStudentSessionUserID();
-            $student = $this->student_model->get($student_id);
-            
-            // Get partners created by this student
-            $data['partners'] = $this->partner_model->getByStudentId($student_id);
-            $data['user_id'] = $student_id;
-            $data['user_type'] = 'student';
+            $partners = $this->partner_model->getByStudentId($student_id);
+            $existing_partner = !empty($partners) ? $partners[0] : null;
+        } elseif ($role == 'staff') {
+            $staff_id = $this->customlib->getStaffID();
+            $partners = $this->partner_model->getByStaffId($staff_id);
+            $existing_partner = !empty($partners) ? $partners[0] : null;
         } elseif ($role == 'parent') {
             $parent_id = $this->customlib->getUsersID();
             $parent = $this->student_model->getParent($parent_id);
-            
-            // Get partners by email or phone matching
-            $data['partners'] = $this->partner_model->getPartnersByStudentOrContact(
+            $partners = $this->partner_model->getPartnersByStudentOrContact(
                 null, 
                 $parent['guardian_email'], 
                 $parent['guardian_phone']
             );
-            $data['user_id'] = $parent_id;
-            $data['user_type'] = 'parent';
+            $existing_partner = !empty($partners) ? $partners[0] : null;
+        }
+
+        $data = [];
+        $data['title'] = $this->lang->line('become_a_partner');
+        $data['page'] = 'partner_registration';
+        $data['role'] = $role;
+        $data['student_data'] = $student_data;
+        $data['existing_partner'] = $existing_partner;
+
+        // Get giving types and frequencies
+        $data['giving_types'] = $this->type_model->getAll();
+        $data['giving_frequencies'] = $this->frequency_model->getAll();
+
+        // Pre-fill data based on user role
+        if ($role == 'student') {
+            $student_id = $this->customlib->getStudentSessionUserID();
+            $student = $this->student_model->get($student_id);
+            $data['prefill_data'] = array(
+                'firstname' => $student['firstname'] ?? '',
+                'lastname' => $student['lastname'] ?? '',
+                'email' => $student['email'] ?? '',
+                'mobileno' => $student['mobileno'] ?? ''
+            );
+            $data['user_id'] = $student_id;
+            $data['user_type'] = 'student';
         } elseif ($role == 'staff') {
             $staff_id = $this->customlib->getStaffID();
             $staff = $this->staff_model->get($staff_id);
-            
-            // Get partners created by this staff
-            $data['partners'] = $this->partner_model->getByStaffId($staff_id);
+            $data['prefill_data'] = array(
+                'firstname' => $staff['name'] ?? '',
+                'lastname' => $staff['surname'] ?? '',
+                'email' => $staff['email'] ?? '',
+                'mobileno' => $staff['contact_no'] ?? ''
+            );
             $data['user_id'] = $staff_id;
             $data['user_type'] = 'staff';
-        } else {
-            $data['partners'] = [];
+        } elseif ($role == 'parent') {
+            $parent_id = $this->customlib->getUsersID();
+            $parent = $this->student_model->getParent($parent_id);
+            $data['prefill_data'] = array(
+                'firstname' => $parent['guardian_name'] ?? '',
+                'lastname' => $parent['guardian_surname'] ?? '',
+                'email' => $parent['guardian_email'] ?? '',
+                'mobileno' => $parent['guardian_phone'] ?? ''
+            );
+            $data['user_id'] = $parent_id;
+            $data['user_type'] = 'parent';
         }
-
-        // Get giving types and frequencies for add partner form
-        $data['giving_types'] = $this->type_model->getAll();
-        $data['giving_frequencies'] = $this->frequency_model->getAll();
 
         // Make libraries available in views
         $data['module_lib'] = $this->module_lib;
@@ -112,8 +138,99 @@ class Partner extends CI_Controller
         $data['auth'] = $this->auth;
 
         $this->load->view('layout/student/header', $data);
-        $this->load->view('user/partner/dashboard', $data);
+        $this->load->view('user/partner/register_self', $data);
         $this->load->view('layout/student/footer', $data);
+    }
+
+    // Process Self Registration
+    public function process_self_registration()
+    {
+        $this->load->library('form_validation');
+        
+        $this->form_validation->set_rules('firstname', 'First Name', 'required|trim');
+        $this->form_validation->set_rules('lastname', 'Last Name', 'required|trim');
+        $this->form_validation->set_rules('email', 'Email', 'required|valid_email|trim');
+        $this->form_validation->set_rules('mobileno', 'Mobile Number', 'required|trim');
+        $this->form_validation->set_rules('password', 'Password', 'required|min_length[6]|trim');
+        $this->form_validation->set_rules('password_confirm', 'Password Confirmation', 'required|matches[password]|trim');
+        $this->form_validation->set_rules('giving_frequency_id', 'Giving Frequency', 'required|numeric');
+
+        if ($this->form_validation->run() == FALSE) {
+            $this->session->set_flashdata('error', validation_errors());
+            redirect('user/partner');
+            return;
+        }
+
+        $role = $this->input->post('user_type');
+        $user_id = $this->input->post('user_id');
+
+        // Generate partner code
+        $partner_code = 'P-' . date('Ymd') . '-' . str_pad(rand(1, 99999), 5, '0', STR_PAD_LEFT);
+
+        // Hash password
+        $password = $this->input->post('password');
+        $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+
+        // Prepare partner data
+        $partner_data = array(
+            'partner_code' => $partner_code,
+            'account_type' => 'individual',
+            'firstname' => $this->input->post('firstname'),
+            'lastname' => $this->input->post('lastname'),
+            'email' => $this->input->post('email'),
+            'mobileno' => $this->input->post('mobileno'),
+            'password' => $hashed_password, // Add hashed password
+            'address' => $this->input->post('address'),
+            'city' => $this->input->post('city'),
+            'state' => $this->input->post('state'),
+            'country' => $this->input->post('country'),
+            'zip_code' => $this->input->post('zipcode'),
+            'giving_frequency_id' => $this->input->post('giving_frequency_id'),
+            'currency' => $this->input->post('currency') ?: 'USD',
+            'notes' => $this->input->post('notes'),
+            'status' => 'active', // Auto-approve for logged-in users
+            'is_active' => 1,
+            'created_by' => $user_id,
+            'created_at' => date('Y-m-d H:i:s')
+        );
+
+        // Set student_id or staff_id based on role
+        if ($role == 'student') {
+            $partner_data['student_id'] = $user_id;
+        } elseif ($role == 'staff') {
+            $partner_data['staff_id'] = $user_id;
+        }
+
+        // Insert partner
+        $partner_id = $this->partner_model->add($partner_data);
+
+        if ($partner_id) {
+            // Handle multiple giving types
+            $giving_types = $this->input->post('giving_types');
+            $giving_amounts = $this->input->post('giving_amounts');
+
+            if (!empty($giving_types) && is_array($giving_types)) {
+                foreach ($giving_types as $type_id) {
+                    if (isset($giving_amounts[$type_id]) && $giving_amounts[$type_id] > 0) {
+                        $giving_setting_data = array(
+                            'partner_id' => $partner_id,
+                            'giving_type_id' => $type_id,
+                            'amount' => $giving_amounts[$type_id],
+                            'currency' => $this->input->post('currency') ?: 'USD',
+                            'is_active' => 1,
+                            'created_at' => date('Y-m-d H:i:s')
+                        );
+                        $this->partner_giving_setting_model->add($giving_setting_data);
+                    }
+                }
+            }
+
+            $this->session->set_flashdata('success', 'Partner registration successful! Your account has been automatically approved.');
+            redirect('user/partner');
+        } else {
+            $this->session->set_flashdata('error', 'Failed to register as partner. Please try again.');
+            redirect('user/partner');
+        }
     }
 
     // Partner Registration - Redirect to new registration system

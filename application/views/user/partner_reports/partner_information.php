@@ -1,19 +1,20 @@
-<!-- Content Header (Page header) -->
-<section class="content-header">
-    <h1>
-        <i class="fa fa-user"></i> My Partner Information
-        <small>Complete partner profile details</small>
-    </h1>
-    <ol class="breadcrumb">
-        <li><a href="<?php echo base_url(); ?>user/user/dashboard"><i class="fa fa-dashboard"></i> Home</a></li>
-        <li><a href="<?php echo base_url(); ?>user/partner">Partners</a></li>
-        <li><a href="<?php echo base_url(); ?>user/partner_reports">Reports</a></li>
-        <li class="active">My Information</li>
-    </ol>
-</section>
+<div class="content-wrapper" style="min-height: 946px;">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+        <h1>
+            <i class="fa fa-user"></i> My Partner Information
+            <small>Complete partner profile details</small>
+        </h1>
+        <ol class="breadcrumb">
+            <li><a href="<?php echo base_url(); ?>user/user/dashboard"><i class="fa fa-dashboard"></i> Home</a></li>
+            <li><a href="<?php echo base_url(); ?>user/partner">Partners</a></li>
+            <li><a href="<?php echo base_url(); ?>user/partner_reports">Reports</a></li>
+            <li class="active">My Information</li>
+        </ol>
+    </section>
 
-<!-- Main content -->
-<section class="content">
+    <!-- Main content -->
+    <section class="content">
     <?php if (!empty($partners)): ?>
     <?php foreach ($partners as $partner): ?>
     <div class="row">
@@ -83,11 +84,11 @@
                             <table class="table table-bordered">
                                 <tr>
                                     <th width="30%">Giving Type:</th>
-                                    <td><?php echo $partner['type_name'] ? $partner['type_name'] : 'Not Set'; ?></td>
+                                    <td><?php echo isset($partner['type_name']) && $partner['type_name'] ? $partner['type_name'] : 'Not Set'; ?></td>
                                 </tr>
                                 <tr>
                                     <th>Frequency:</th>
-                                    <td><?php echo $partner['frequency_name'] ? $partner['frequency_name'] : 'Not Set'; ?></td>
+                                    <td><?php echo isset($partner['frequency_name']) && $partner['frequency_name'] ? $partner['frequency_name'] : 'Not Set'; ?></td>
                                 </tr>
                                 <tr>
                                     <th>Amount:</th>
@@ -140,8 +141,8 @@
                                 <a href="<?php echo base_url(); ?>user/partner_reports/partner_statement" class="btn btn-success">
                                     <i class="fa fa-file-text-o"></i> View Statement
                                 </a>
-                                <a href="<?php echo base_url(); ?>user/partner" class="btn btn-info">
-                                    <i class="fa fa-dashboard"></i> Partner Dashboard
+                                <a href="<?php echo base_url(); ?>partnerportal/login" class="btn btn-info">
+                                    <i class="fa fa-sign-in"></i> Partner Login
                                 </a>
                                 <?php if ($partner['status'] == 'active'): ?>
                                 <a href="<?php echo base_url(); ?>user/partner/contribute" class="btn btn-primary">
@@ -169,7 +170,8 @@
         </div>
     </div>
     <?php endif; ?>
-</section>
+    </section>
+</div>
 
 <script type="text/javascript">
 $(document).ready(function() {

@@ -1,19 +1,20 @@
-<!-- Content Header (Page header) -->
-<section class="content-header">
-    <h1>
-        <i class="fa fa-file-text-o"></i> My Partner Statement
-        <small>Financial statement and contribution history</small>
-    </h1>
-    <ol class="breadcrumb">
-        <li><a href="<?php echo base_url(); ?>user/user/dashboard"><i class="fa fa-dashboard"></i> Home</a></li>
-        <li><a href="<?php echo base_url(); ?>user/partner">Partners</a></li>
-        <li><a href="<?php echo base_url(); ?>user/partner_reports">Reports</a></li>
-        <li class="active">My Statement</li>
-    </ol>
-</section>
+<div class="content-wrapper" style="min-height: 946px;">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+        <h1>
+            <i class="fa fa-file-text-o"></i> My Partner Statement
+            <small>Financial statement and contribution history</small>
+        </h1>
+        <ol class="breadcrumb">
+            <li><a href="<?php echo base_url(); ?>user/user/dashboard"><i class="fa fa-dashboard"></i> Home</a></li>
+            <li><a href="<?php echo base_url(); ?>user/partner">Partners</a></li>
+            <li><a href="<?php echo base_url(); ?>user/partner_reports">Reports</a></li>
+            <li class="active">My Statement</li>
+        </ol>
+    </section>
 
-<!-- Main content -->
-<section class="content">
+    <!-- Main content -->
+    <section class="content">
     <!-- Filter Form -->
     <div class="row">
         <div class="col-md-12">
@@ -216,7 +217,8 @@
         </div>
     </div>
     <?php endif; ?>
-</section>
+    </section>
+</div>
 
 <script type="text/javascript">
 $(document).ready(function() {
