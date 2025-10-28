@@ -16,7 +16,8 @@
                     <h1 class="success-title">Registration Successful!</h1>
 
                     <p class="lead text-center">
-                        Thank you for registering as a partner with Rhema Zimbabwe.
+                        Thank you for registering as a partner with Rhema Zimbabwe.<br>
+                        <strong class="text-success">Your account has been automatically approved!</strong>
                     </p>
 
                     <div class="partner-info-box">
@@ -41,29 +42,37 @@
                             <tr>
                                 <th>Status:</th>
                                 <td>
-                                    <span class="label label-warning">Pending Approval</span>
+                                    <span class="label label-success"><i class="fa fa-check"></i> Automatically Approved</span>
                                 </td>
                             </tr>
                         </table>
+                    </div>
+
+                    <div class="alert alert-success">
+                        <h4><i class="fa fa-check-circle"></i> Account Activated!</h4>
+                        <p class="mb-0">
+                            Your partner account has been automatically approved and is now active. You can now login to your partner portal and start managing your contributions.
+                            <?php if ($partner->student_id): ?>
+                            <br><strong>Student Account Linked:</strong> Your partnership has been linked to your student account.
+                            <?php endif; ?>
+                        </p>
                     </div>
 
                     <div class="alert alert-info">
                         <h4><i class="fa fa-info-circle"></i> What's Next?</h4>
                         <ol class="next-steps">
                             <li>
-                                <strong>Verification:</strong> Our team will review your registration within 1-2 business days.
+                                <strong>Login to Partner Portal:</strong> Access your partner dashboard to view your contribution history and manage your account.
+                            </li>
+                            <li>
+                                <strong>Make Your First Contribution:</strong> Click "Pay Now" to make your first contribution securely.
                             </li>
                             <li>
                                 <strong>Confirmation Email:</strong> You'll receive a confirmation email at <strong><?php echo $partner->email; ?></strong>
                             </li>
                             <li>
-                                <strong>Approval Notification:</strong> Once approved, you'll receive your partnership details and instructions.
+                                <strong>Stay Updated:</strong> Check your email regularly for partnership updates and receipts.
                             </li>
-                            <?php if ($partner->student_id): ?>
-                            <li>
-                                <strong>Student Account Linked:</strong> Your partnership has been linked to your student account.
-                            </li>
-                            <?php endif; ?>
                         </ol>
                     </div>
 
@@ -73,13 +82,19 @@
                     </div>
 
                     <div class="action-buttons text-center">
-                        <a href="<?php echo base_url(); ?>" class="btn btn-default btn-lg">
+                        <a href="<?php echo base_url('partnerportal/login'); ?>" class="btn btn-success btn-lg">
+                            <i class="fa fa-sign-in"></i> Login to Partner Portal
+                        </a>
+                        <button class="btn btn-primary btn-lg" onclick="return false;">
+                            <i class="fa fa-credit-card"></i> Pay Now
+                        </button>
+                    </div>
+                    
+                    <div class="other-actions text-center mt-20">
+                        <a href="<?php echo base_url(); ?>" class="btn btn-default">
                             <i class="fa fa-home"></i> Back to Homepage
                         </a>
-                        <a href="<?php echo base_url('partnerregistration/checkStatus'); ?>" class="btn btn-primary btn-lg">
-                            <i class="fa fa-search"></i> Check Status
-                        </a>
-                        <button class="btn btn-info btn-lg" onclick="window.print()">
+                        <button class="btn btn-default" onclick="window.print()">
                             <i class="fa fa-print"></i> Print Details
                         </button>
                     </div>
@@ -162,6 +177,26 @@
 
 .action-buttons .btn {
     margin: 5px;
+    min-width: 200px;
+    padding: 15px 30px;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.other-actions {
+    margin: 20px 0;
+}
+
+.other-actions .btn {
+    margin: 5px;
+}
+
+.mt-20 {
+    margin-top: 20px;
+}
+
+.mb-0 {
+    margin-bottom: 0;
 }
 
 .contact-info {

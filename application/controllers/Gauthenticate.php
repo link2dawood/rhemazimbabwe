@@ -117,7 +117,8 @@ class Gauthenticate extends Public_Controller
         $data['school'] = $school[0];
         $is_captcha     = $this->captchalib->is_captcha('userlogin');
         $data["is_captcha"]    = $is_captcha;
-        $data['captcha_image'] = $this->captchalib->generate_captcha()['image'];
+        $captcha_result = $this->captchalib->generate_captcha();
+        $data['captcha_image'] = is_array($captcha_result) ? $captcha_result['image'] : '';
         $this->load->view('user/gauthenticate/login', $data);
     }
 

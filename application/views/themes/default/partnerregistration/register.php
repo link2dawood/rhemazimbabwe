@@ -207,7 +207,7 @@
                             </div>
 
                             <div class="form-group">
-                                <label>Select Type(s) of Contribution <span class="text-muted">(You can select multiple)</span></label>
+                                <label>Select Type(s) of Contribution <span class="text-muted">(You can select multiple or enter amounts directly)</span></label>
                                 <div class="giving-types-container">
                                     <?php foreach ($giving_types as $type): ?>
                                     <div class="giving-type-item">
@@ -226,7 +226,7 @@
                                             <div class="col-md-6">
                                                 <div class="input-group">
                                                     <span class="input-group-addon currency-symbol">$</span>
-                                                    <input type="number" class="form-control giving-amount" name="giving_amounts[<?php echo $type->id; ?>]" step="0.01" min="0" placeholder="0.00" disabled data-amount-for="<?php echo $type->id; ?>">
+                                                    <input type="number" class="form-control giving-amount" name="giving_amounts[<?php echo $type->id; ?>]" step="0.01" min="0" placeholder="0.00" data-amount-for="<?php echo $type->id; ?>">
                                                 </div>
                                             </div>
                                         </div>
@@ -269,21 +269,21 @@
                             <hr>
 
                             <div class="form-group">
-                                <div class="checkbox">
-                                    <label>
-                                        <input type="checkbox" name="create_account" id="create_account" value="1">
+                                <div class="checkbox" style="border: 2px solid #3c8dbc; border-radius: 5px; padding: 15px; background: #f0f9ff;">
+                                    <label style="font-size: 16px; font-weight: 600; display: flex; align-items: center; margin-bottom: 0; cursor: pointer;">
+                                        <input type="checkbox" name="create_account" id="create_account" value="1" checked style="width: 20px; height: 20px; margin-right: 15px; cursor: pointer; flex-shrink: 0; appearance: auto; -webkit-appearance: checkbox; -moz-appearance: checkbox;">
                                         <strong>Create an Account (optional)</strong>
                                     </label>
                                 </div>
-                                <p class="help-block">
+                                <p class="help-block" style="margin-top: 10px; margin-left: 35px;">
                                     Adding a password will create an account and allow you to access your transaction history
                                     as well as manage account details. This is an optional step and can be completed at a
                                     later date if desired.
                                 </p>
                             </div>
 
-                            <!-- Password Fields (Hidden by default) -->
-                            <div id="passwordFields" style="display: none;">
+                            <!-- Password Fields (Open by default) -->
+                            <div id="passwordFields">
                                 <div class="alert alert-warning">
                                     <i class="fa fa-key"></i> <strong>Set Your Password</strong><br>
                                     Choose a strong password to secure your account.
@@ -321,19 +321,19 @@
                             <hr>
 
                             <div class="form-group">
-                                <div class="checkbox">
-                                    <label>
-                                        <input type="checkbox" name="agree_terms" id="agree_terms" required>
-                                        I agree to the <a href="#" target="_blank">Terms and Conditions</a> <span class="text-danger">*</span>
+                                <div class="checkbox" style="border: 2px solid #f39c12; border-radius: 5px; padding: 15px; background: #fff9f0;">
+                                    <label style="font-size: 16px; font-weight: 600; display: flex; align-items: center; margin-bottom: 0; cursor: pointer;">
+                                        <input type="checkbox" name="agree_terms" id="agree_terms" required style="width: 20px; height: 20px; margin-right: 15px; cursor: pointer; flex-shrink: 0; appearance: auto; -webkit-appearance: checkbox; -moz-appearance: checkbox;">
+                                        <span>I agree to the <a href="#" target="_blank" style="color: #3c8dbc; text-decoration: underline;">Terms and Conditions</a> <span class="text-danger">*</span></span>
                                     </label>
                                 </div>
                             </div>
 
                             <div class="form-group">
-                                <div class="checkbox">
-                                    <label>
-                                        <input type="checkbox" name="subscribe_newsletter" id="subscribe_newsletter" value="1">
-                                        Subscribe to our newsletter
+                                <div class="checkbox" style="border: 2px solid #ddd; border-radius: 5px; padding: 15px; background: #f9f9f9;">
+                                    <label style="font-size: 16px; font-weight: 600; display: flex; align-items: center; margin-bottom: 0; cursor: pointer;">
+                                        <input type="checkbox" name="subscribe_newsletter" id="subscribe_newsletter" value="1" style="width: 20px; height: 20px; margin-right: 15px; cursor: pointer; flex-shrink: 0; appearance: auto; -webkit-appearance: checkbox; -moz-appearance: checkbox;">
+                                        <span><i class="fa fa-envelope" style="color: #3c8dbc; margin-right: 5px;"></i>Subscribe to our newsletter</span>
                                     </label>
                                 </div>
                             </div>
@@ -366,6 +366,26 @@
 </div>
 
 <style>
+/* CRITICAL: Force checkboxes visible FIRST - before any other styles load */
+input[type="checkbox"] {
+    appearance: auto !important;
+    -webkit-appearance: checkbox !important;
+    -moz-appearance: checkbox !important;
+    width: 20px !important;
+    height: 20px !important;
+    display: inline-block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    position: relative !important;
+}
+
+/* Ensure password fields are visible by default */
+#passwordFields {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
 .ptb-60 { padding: 60px 0; }
 .mb-40 { margin-bottom: 40px; }
 .mt-20 { margin-top: 20px; }
@@ -537,12 +557,140 @@
 #passwordMatch.no-match {
     color: #d9534f;
 }
+
+/* Enhanced Checkbox Styling */
+.checkbox label {
+    cursor: pointer;
+    padding-left: 0;
+}
+
+.checkbox input[type="checkbox"] {
+    margin-right: 10px;
+    vertical-align: middle;
+}
+
+/* Terms and Newsletter Checkboxes */
+#step4 .form-group .checkbox {
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    padding: 15px;
+    background: #f9f9f9;
+    transition: all 0.3s ease;
+}
+
+#step4 .form-group .checkbox:hover {
+    background: #f0f0f0;
+    border-color: #3c8dbc;
+}
+
+#step4 .form-group .checkbox label {
+    margin-bottom: 0;
+    display: flex;
+    align-items: center;
+}
+
+#step4 .form-group .checkbox input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+    margin-top: 0;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+/* FORCE checkboxes to be visible - override all conflicting styles */
+input[type="checkbox"] {
+    appearance: auto !important;
+    -webkit-appearance: checkbox !important;
+    -moz-appearance: checkbox !important;
+    width: 20px !important;
+    height: 20px !important;
+    min-width: 20px !important;
+    min-height: 20px !important;
+    max-width: 20px !important;
+    max-height: 20px !important;
+    cursor: pointer !important;
+    display: inline-block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    position: relative !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 1px solid #999 !important;
+    background: white !important;
+    box-shadow: none !important;
+    outline: none !important;
+    vertical-align: middle !important;
+    z-index: 1 !important;
+}
+
+/* Extra specificity for our specific checkboxes */
+#agree_terms,
+#subscribe_newsletter,
+#create_account {
+    appearance: auto !important;
+    -webkit-appearance: checkbox !important;
+    -moz-appearance: checkbox !important;
+    width: 20px !important;
+    height: 20px !important;
+    display: inline-block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* Override Bootstrap checkbox styles if present */
+.checkbox input[type="checkbox"],
+.checkbox-inline input[type="checkbox"] {
+    appearance: auto !important;
+    -webkit-appearance: checkbox !important;
+    -moz-appearance: checkbox !important;
+    position: relative !important;
+    margin-left: 0 !important;
+    margin-top: 0 !important;
+}
+
+/* Giving Type Items - Enhanced */
+.giving-type-item {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.giving-type-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.giving-type-item.selected {
+    border-left-color: #00a65a;
+    background: #f0f9f0;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
 </style>
 
 <script>
 var base_url = '<?php echo base_url(); ?>';
 
 $(document).ready(function() {
+    // FORCE checkboxes to be visible - override any theme CSS
+    console.log('Forcing checkboxes to be visible...');
+    $('input[type="checkbox"]').css({
+        'appearance': 'auto',
+        '-webkit-appearance': 'checkbox',
+        '-moz-appearance': 'checkbox',
+        'width': '20px',
+        'height': '20px',
+        'display': 'inline-block',
+        'opacity': '1',
+        'visibility': 'visible',
+        'position': 'relative',
+        'margin-right': '15px'
+    });
+    console.log('Checkboxes found:', $('input[type="checkbox"]').length);
+    console.log('Agree terms checkbox:', $('#agree_terms').length);
+    console.log('Newsletter checkbox:', $('#subscribe_newsletter').length);
+    console.log('Create account checkbox:', $('#create_account').length);
+    
     // Giving Types - Enable/Disable amount input based on checkbox
     $('.giving-type-checkbox').change(function() {
         var typeId = $(this).data('type-id');
@@ -557,6 +705,23 @@ $(document).ready(function() {
             parentItem.removeClass('selected');
         }
 
+        calculateTotal();
+    });
+
+    // Auto-check checkbox when user enters amount
+    $('.giving-amount').on('input', function() {
+        var typeId = $(this).data('amount-for');
+        var checkbox = $('input[data-type-id="' + typeId + '"]');
+        var parentItem = $(this).closest('.giving-type-item');
+        
+        if ($(this).val() && parseFloat($(this).val()) > 0) {
+            checkbox.prop('checked', true);
+            parentItem.addClass('selected');
+        } else {
+            checkbox.prop('checked', false);
+            parentItem.removeClass('selected');
+        }
+        
         calculateTotal();
     });
 
@@ -614,15 +779,19 @@ $(document).ready(function() {
     // Create Account checkbox - show/hide password fields
     $('#create_account').change(function() {
         if ($(this).is(':checked')) {
-            $('#passwordFields').slideDown();
+            $('#passwordFields').show(); // Changed from slideDown to show
             $('#password, #password_confirm').attr('required', true);
         } else {
-            $('#passwordFields').slideUp();
+            $('#passwordFields').hide(); // Changed from slideUp to hide
             $('#password, #password_confirm').attr('required', false).val('');
             $('#passwordStrength').removeClass('weak medium strong');
             $('#passwordMatch').text('').removeClass('match no-match');
         }
     });
+
+    // Initialize: Ensure password fields are visible and required since checkbox is checked by default
+    $('#passwordFields').show();
+    $('#password, #password_confirm').attr('required', true);
 
     // Multi-step form navigation
     $('.btn-next').click(function() {

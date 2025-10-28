@@ -363,7 +363,7 @@
                             </small>
                         </div>
 
-                        <div id="password-fields" style="display: none;">
+                        <div id="password-fields">
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group">
@@ -659,15 +659,5 @@ function updateTotal() {
 function togglePasswordFields() {
     const checkbox = document.getElementById('create_account');
     const passwordFields = document.getElementById('password-fields');
-    
-    if (checkbox.checked) {
-        passwordFields.style.display = 'block';
-        document.getElementById('password').required = true;
-        document.getElementById('confirm_password').required = true;
-    } else {
-        passwordFields.style.display = 'none';
-        document.getElementById('password').required = false;
-        document.getElementById('confirm_password').required = false;
-    }
 }
 </script>
