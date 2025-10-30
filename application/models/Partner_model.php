@@ -672,4 +672,102 @@ class Partner_model extends MY_Model
 
         return $this->db->get()->result_array();
     }
+
+    /**
+     * Save partner permissions
+     * @param int $partner_id
+     * @param array $permission_codes Array of permission codes to grant
+     * @param int $granted_by Admin/Staff ID who is granting permissions
+     * @return bool
+     */
+    public function savePermissions($partner_id, $permission_codes, $granted_by)
+    {
+        // Start transaction
+        $this->db->trans_start();
+
+        // First, revoke all existing permissions for this partner
+        $this->db->where('partner_id', $partner_id);
+        $this->db->delete('partner_permissions');
+
+        // Now grant the new permissions
+        if (!empty($permission_codes)) {
+            $insert_data = array();
+            foreach ($permission_codes as $code) {
+                $insert_data[] = array(
+                    'partner_id' => $partner_id,
+                    'permission_code' => $code,
+                    'is_granted' => 1,
+                    'granted_by' => $granted_by,
+                    'granted_at' => date('Y-m-d H:i:s')
+                );
+            }
+
+            if (!empty($insert_data)) {
+                $this->db->insert_batch('partner_permissions', $insert_data);
+            }
+        }
+
+        // Complete transaction
+        $this->db->trans_complete();
+
+        return $this->db->trans_status();
+    }
+
+    /**
+     * Get partner permissions with full details
+     * @param int $partner_id
+     * @return array
+     */
+    public function getPermissionsWithDetails($partner_id)
+    {
+        $this->db->select('partner_permissions.*,
+                          partner_permission_types.permission_name,
+                          partner_permission_types.description,
+                          staff.name as granted_by_name')
+                 ->from('partner_permissions')
+                 ->join('partner_permission_types', 'partner_permission_types.permission_code = partner_permissions.permission_code', 'left')
+                 ->join('staff', 'staff.id = partner_permissions.granted_by', 'left')
+                 ->where('partner_permissions.partner_id', $partner_id)
+                 ->where('partner_permissions.is_granted', 1);
+
+        $query = $this->db->get();
+        return $query->result();
+    }
+
+    /**
+     * Get all permission types (available permissions)
+     * @return array
+     */
+    public function getAllPermissionTypes()
+    {
+        $this->db->select('*')
+                 ->from('partner_permission_types')
+                 ->where('is_active', 1)
+                 ->order_by('permission_name', 'ASC');
+
+        $query = $this->db->get();
+        return $query->result();
+    }
+
+    /**
+     * Get partner's granted permission codes (for checkbox checking)
+     * @param int $partner_id
+     * @return array Array of permission codes
+     */
+    public function getGrantedPermissionCodes($partner_id)
+    {
+        $this->db->select('permission_code')
+                 ->from('partner_permissions')
+                 ->where('partner_id', $partner_id)
+                 ->where('is_granted', 1);
+
+        $query = $this->db->get();
+        $codes = array();
+
+        foreach ($query->result() as $row) {
+            $codes[] = $row->permission_code;
+        }
+
+        return $codes;
+    }
 }

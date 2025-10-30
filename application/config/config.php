@@ -24,7 +24,23 @@ defined('BASEPATH') OR exit('No direct script access allowed');
   | a PHP script and you can easily do that on your own.
   |
  */
-$config['base_url'] = 'https://rhemazimbabwe.com/';
+// Auto-detect base URL for local and live environments
+if (isset($_SERVER['HTTP_HOST'])) {
+    $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
+    $host = $_SERVER['HTTP_HOST'];
+    
+    // Check if running on localhost/local environment
+    if (strpos($host, 'localhost') !== false || strpos($host, '127.0.0.1') !== false) {
+        // Local XAMPP environment
+        $config['base_url'] = $protocol . $host . '/rhemazimbabwe/';
+    } else {
+        // Live server environment
+        $config['base_url'] = $protocol . $host . '/';
+    }
+} else {
+    // Fallback
+    $config['base_url'] = 'http://localhost/rhemazimbabwe/';
+}
 
 
 /*

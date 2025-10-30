@@ -293,8 +293,8 @@ class Partners extends Admin_Controller
         $data['contributions'] = $this->contribution_model->getByPartnerId($id, 5);
         $data['total_contributions'] = $this->contribution_model->getTotalByPartner($id);
 
-        // Get partner permissions
-        $data['permissions'] = $this->permission_model->getByPartnerId($id);
+        // Get partner permissions with full details
+        $data['permissions'] = $this->partner_model->getPermissionsWithDetails($id);
 
         // Get partner notes
         $data['notes'] = $this->note_model->getByPartnerId($id, true);
@@ -434,20 +434,31 @@ class Partners extends Admin_Controller
         }
 
         $partner_id = $this->input->post('partner_id');
+        $title = $this->input->post('title');
         $reminder_type = $this->input->post('reminder_type');
         $reminder_date = $this->input->post('reminder_date');
         $reminder_time = $this->input->post('reminder_time');
         $message = $this->input->post('message');
+        $send_via = $this->input->post('send_via') ? $this->input->post('send_via') : 'email';
         $is_active = $this->input->post('is_active') ? 1 : 0;
+
+        // Validation
+        if (empty($partner_id) || empty($title) || empty($reminder_type) || empty($reminder_date) || empty($message)) {
+            json_output(400, array('status' => 'error', 'message' => 'Please fill all required fields'));
+            return;
+        }
 
         $data = array(
             'partner_id' => $partner_id,
+            'title' => $title,
             'reminder_type' => $reminder_type,
             'reminder_date' => $reminder_date,
-            'reminder_time' => $reminder_time,
+            'reminder_time' => $reminder_time ? $reminder_time : '09:00:00',
             'message' => $message,
+            'send_via' => $send_via,
+            'status' => 'pending',
             'is_active' => $is_active,
-            'created_by' => $this->session->userdata('admin_id'),
+            'created_by' => $this->customlib->getStaffID(),
             'created_at' => date('Y-m-d H:i:s')
         );
 
@@ -469,17 +480,21 @@ class Partners extends Admin_Controller
         }
 
         $reminder_id = $this->input->post('reminder_id');
+        $title = $this->input->post('title');
         $reminder_type = $this->input->post('reminder_type');
         $reminder_date = $this->input->post('reminder_date');
         $reminder_time = $this->input->post('reminder_time');
         $message = $this->input->post('message');
+        $send_via = $this->input->post('send_via') ? $this->input->post('send_via') : 'email';
         $is_active = $this->input->post('is_active') ? 1 : 0;
 
         $data = array(
+            'title' => $title,
             'reminder_type' => $reminder_type,
             'reminder_date' => $reminder_date,
-            'reminder_time' => $reminder_time,
+            'reminder_time' => $reminder_time ? $reminder_time : '09:00:00',
             'message' => $message,
+            'send_via' => $send_via,
             'is_active' => $is_active,
             'updated_at' => date('Y-m-d H:i:s')
         );
@@ -692,5 +707,67 @@ class Partners extends Admin_Controller
         } else {
             json_output(400, array('status' => 'error', 'message' => 'Failed to reject partner'));
         }
+    }
+
+    /**
+     * Partner Permissions - Assign/Manage Permissions for a Partner
+     */
+    public function permissions($id = null)
+    {
+        if (!$this->rbac->hasPrivilege('partners', 'can_edit')) {
+            access_denied();
+        }
+
+        $this->session->set_userdata('top_menu', 'Partners');
+        $this->session->set_userdata('sub_menu', 'admin/partners');
+
+        $data['title'] = 'Partner Permissions';
+        $data['partner'] = $this->partner_model->getById($id);
+
+        if (!$data['partner']) {
+            $this->session->set_flashdata('msg', '<div class="alert alert-danger">Partner not found</div>');
+            redirect('admin/partners');
+        }
+
+        // Get all available permission types
+        $data['permission_types'] = $this->partner_model->getAllPermissionTypes();
+
+        // Get partner's current granted permissions
+        $data['granted_permissions'] = $this->partner_model->getGrantedPermissionCodes($id);
+
+        // Handle form submission
+        if ($this->input->post('submit')) {
+            $permission_codes = $this->input->post('permissions');
+
+            if (!is_array($permission_codes)) {
+                $permission_codes = array();
+            }
+
+            $granted_by = $this->customlib->getStaffID();
+
+            if ($this->partner_model->savePermissions($id, $permission_codes, $granted_by)) {
+                // Add note about permission change
+                $note_data = array(
+                    'partner_id' => $id,
+                    'title' => 'Permissions Updated',
+                    'note' => 'Partner permissions have been updated by admin. ' .
+                              (count($permission_codes) > 0 ? 'Granted: ' . count($permission_codes) . ' permissions.' : 'All permissions revoked.'),
+                    'priority' => 'normal',
+                    'is_pinned' => 0,
+                    'is_private' => 0,
+                    'created_by' => $granted_by
+                );
+                $this->note_model->add($note_data);
+
+                $this->session->set_flashdata('msg', '<div class="alert alert-success">Permissions updated successfully</div>');
+                redirect('admin/partners/permissions/' . $id);
+            } else {
+                $this->session->set_flashdata('msg', '<div class="alert alert-danger">Failed to update permissions</div>');
+            }
+        }
+
+        $this->load->view('layout/header', $data);
+        $this->load->view('admin/partners/permissions', $data);
+        $this->load->view('layout/footer', $data);
     }
 }

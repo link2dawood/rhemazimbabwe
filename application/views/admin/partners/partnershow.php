@@ -40,6 +40,9 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                             <a href="<?php echo base_url() ?>admin/partners/edit/<?php echo $partner->id ?>" class="btn btn-primary btn-block">
                                 <i class="fa fa-edit"></i> <?php echo $this->lang->line('edit'); ?>
                             </a>
+                            <a href="<?php echo base_url() ?>admin/partners/permissions/<?php echo $partner->id ?>" class="btn btn-warning btn-block">
+                                <i class="fa fa-lock"></i> <?php echo $this->lang->line('manage_permissions'); ?>
+                            </a>
                         <?php } ?>
                     </div>
                 </div>
@@ -199,11 +202,13 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
 
                         <!-- Permissions Tab -->
                         <div class="tab-pane" id="permissions">
+                            <?php if ($this->rbac->hasPrivilege('partners', 'can_edit')) { ?>
                             <div class="box-tools">
-                                <button class="btn btn-primary btn-sm pull-right" data-toggle="modal" data-target="#permissionModal">
+                                <a href="<?php echo base_url('admin/partners/permissions/' . $partner->id); ?>" class="btn btn-primary btn-sm pull-right">
                                     <i class="fa fa-key"></i> <?php echo $this->lang->line('manage_permissions'); ?>
-                                </button>
+                                </a>
                             </div>
+                            <?php } ?>
                             <div class="clearfix"></div>
                             <br>
 
@@ -211,6 +216,7 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                                 <thead>
                                     <tr>
                                         <th><?php echo $this->lang->line('permission'); ?></th>
+                                        <th><?php echo $this->lang->line('description'); ?></th>
                                         <th><?php echo $this->lang->line('status'); ?></th>
                                         <th><?php echo $this->lang->line('granted_date'); ?></th>
                                     </tr>
@@ -219,14 +225,39 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                                     <?php if (!empty($permissions)) {
                                         foreach ($permissions as $permission) { ?>
                                         <tr>
-                                            <td><?php echo $permission->permission_name ?></td>
+                                            <td>
+                                                <i class="fa <?php
+                                                    // Default icons based on permission codes
+                                                    $icon_map = array(
+                                                        'library_access' => 'fa-book',
+                                                        'online_courses' => 'fa-graduation-cap',
+                                                        'download_centre' => 'fa-download',
+                                                        'gmeet_access' => 'fa-video-camera',
+                                                        'zoom_access' => 'fa-video-camera',
+                                                        'events_access' => 'fa-calendar'
+                                                    );
+                                                    echo isset($icon_map[$permission->permission_code]) ? $icon_map[$permission->permission_code] : 'fa-key';
+                                                ?>"></i>
+                                                <?php echo $permission->permission_name ?>
+                                            </td>
+                                            <td><?php echo !empty($permission->description) ? $permission->description : '-'; ?></td>
                                             <td><span class="label label-success"><?php echo $this->lang->line('granted'); ?></span></td>
                                             <td><?php echo $permission->granted_at ? date($this->customlib->getSchoolDateFormat(), strtotime($permission->granted_at)) : '-' ?></td>
                                         </tr>
                                     <?php }
                                     } else { ?>
                                         <tr>
-                                            <td colspan="3" class="text-center"><?php echo $this->lang->line('no_permissions_granted'); ?></td>
+                                            <td colspan="4" class="text-center">
+                                                <div class="alert alert-info" style="margin: 10px;">
+                                                    <i class="fa fa-info-circle"></i> <?php echo $this->lang->line('no_permissions_granted'); ?>
+                                                    <?php if ($this->rbac->hasPrivilege('partners', 'can_edit')) { ?>
+                                                    <br><br>
+                                                    <a href="<?php echo base_url('admin/partners/permissions/' . $partner->id); ?>" class="btn btn-sm btn-primary">
+                                                        <i class="fa fa-key"></i> Grant Permissions
+                                                    </a>
+                                                    <?php } ?>
+                                                </div>
+                                            </td>
                                         </tr>
                                     <?php } ?>
                                 </tbody>
@@ -298,6 +329,7 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                             <table class="table table-striped">
                                 <thead>
                                     <tr>
+                                        <th><?php echo $this->lang->line('title'); ?></th>
                                         <th><?php echo $this->lang->line('date'); ?></th>
                                         <th><?php echo $this->lang->line('time'); ?></th>
                                         <th><?php echo $this->lang->line('type'); ?></th>
@@ -310,6 +342,7 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                                     <?php if (!empty($reminders)) {
                                         foreach ($reminders as $reminder) { ?>
                                         <tr>
+                                            <td><strong><?php echo $reminder->title ?></strong></td>
                                             <td><?php echo date($this->customlib->getSchoolDateFormat(), strtotime($reminder->reminder_date)) ?></td>
                                             <td><?php echo $reminder->reminder_time ?></td>
                                             <td><?php echo ucfirst(str_replace('_', ' ', $reminder->reminder_type)) ?></td>
@@ -321,12 +354,14 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                                             </td>
                                             <td>
                                                 <div class="btn-group btn-group-xs">
-                                                    <button type="button" class="btn btn-info btn-xs edit-reminder" 
+                                                    <button type="button" class="btn btn-info btn-xs edit-reminder"
                                                             data-reminder-id="<?php echo $reminder->id; ?>"
+                                                            data-title="<?php echo htmlspecialchars($reminder->title); ?>"
                                                             data-type="<?php echo $reminder->reminder_type; ?>"
                                                             data-date="<?php echo $reminder->reminder_date; ?>"
                                                             data-time="<?php echo $reminder->reminder_time; ?>"
                                                             data-message="<?php echo htmlspecialchars($reminder->message); ?>"
+                                                            data-send-via="<?php echo $reminder->send_via; ?>"
                                                             data-active="<?php echo $reminder->is_active; ?>"
                                                             title="Edit Reminder">
                                                         <i class="fa fa-edit"></i>
@@ -348,7 +383,7 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                                     <?php }
                                     } else { ?>
                                         <tr>
-                                            <td colspan="6" class="text-center"><?php echo $this->lang->line('no_reminders_found'); ?></td>
+                                            <td colspan="7" class="text-center"><?php echo $this->lang->line('no_reminders_found'); ?></td>
                                         </tr>
                                     <?php } ?>
                                 </tbody>
@@ -431,7 +466,12 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                 <div class="modal-body">
                     <input type="hidden" name="partner_id" value="<?php echo $partner->id; ?>">
                     <input type="hidden" name="reminder_id" id="reminder_id">
-                    
+
+                    <div class="form-group">
+                        <label><?php echo $this->lang->line('title'); ?> <span class="text-danger">*</span></label>
+                        <input type="text" name="title" id="reminder_title" class="form-control" placeholder="Enter reminder title" required>
+                    </div>
+
                     <div class="form-group">
                         <label><?php echo $this->lang->line('reminder_type'); ?></label>
                         <select name="reminder_type" id="reminder_type" class="form-control">
@@ -458,13 +498,22 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                     </div>
                     
                     <div class="form-group">
-                        <label><?php echo $this->lang->line('message'); ?></label>
-                        <textarea name="message" id="reminder_message" class="form-control" rows="3" placeholder="Enter reminder message"></textarea>
+                        <label><?php echo $this->lang->line('message'); ?> <span class="text-danger">*</span></label>
+                        <textarea name="message" id="reminder_message" class="form-control" rows="3" placeholder="Enter reminder message" required></textarea>
                     </div>
-                    
+
+                    <div class="form-group">
+                        <label><?php echo $this->lang->line('send_via'); ?></label>
+                        <select name="send_via" id="reminder_send_via" class="form-control">
+                            <option value="email">Email</option>
+                            <option value="sms">SMS</option>
+                            <option value="both">Both (Email & SMS)</option>
+                        </select>
+                    </div>
+
                     <div class="form-group">
                         <label>
-                            <input type="checkbox" name="is_active" id="reminder_active" value="1" checked> 
+                            <input type="checkbox" name="is_active" id="reminder_active" value="1" checked>
                             <?php echo $this->lang->line('active'); ?>
                         </label>
                     </div>
@@ -559,19 +608,23 @@ $(document).ready(function() {
     // Edit reminder
     $(document).on('click', '.edit-reminder', function() {
         var reminderId = $(this).data('reminder-id');
+        var title = $(this).data('title');
         var type = $(this).data('type');
         var date = $(this).data('date');
         var time = $(this).data('time');
         var message = $(this).data('message');
+        var sendVia = $(this).data('send-via');
         var active = $(this).data('active');
-        
+
         $('#reminder_id').val(reminderId);
+        $('#reminder_title').val(title);
         $('#reminder_type').val(type);
         $('#reminder_date').val(date);
         $('#reminder_time').val(time);
         $('#reminder_message').val(message);
+        $('#reminder_send_via').val(sendVia);
         $('#reminder_active').prop('checked', active == 1);
-        
+
         $('#reminderModal .modal-title').text('<?php echo $this->lang->line('edit_reminder'); ?>');
         $('#reminderModal').modal('show');
     });

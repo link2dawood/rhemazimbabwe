@@ -32,6 +32,7 @@ class Partnerdashboard extends Partner_Controller
         $data['page_description'] = 'Welcome to your partner portal';
         $data['active_menu'] = 'dashboard';
         $data['partner'] = $this->partner_data;
+        $data['partner_permissions'] = $this->partner_permissions;
 
         // Load giving types and frequencies for dashboard view
         $data['giving_types'] = $this->giving_type_model->getAll();
@@ -64,6 +65,7 @@ class Partnerdashboard extends Partner_Controller
         $data['page_description'] = 'Manage your profile information';
         $data['active_menu'] = 'profile';
         $data['partner'] = $this->partner_data;
+        $data['partner_permissions'] = $this->partner_permissions;
         $data['giving_types'] = $this->giving_type_model->getAll();
         $data['giving_frequencies'] = $this->giving_frequency_model->getAll();
         
@@ -112,6 +114,7 @@ class Partnerdashboard extends Partner_Controller
         $data['page_description'] = 'Manage your contribution preferences';
         $data['active_menu'] = 'giving_settings';
         $data['partner'] = $this->partner_data;
+        $data['partner_permissions'] = $this->partner_permissions;
 
         // Get giving types and frequencies
         $data['giving_types'] = $this->giving_type_model->getAll();
@@ -258,6 +261,7 @@ class Partnerdashboard extends Partner_Controller
         $data['page_description'] = 'View your contribution history';
         $data['active_menu'] = 'contributions';
         $data['partner'] = $this->partner_data;
+        $data['partner_permissions'] = $this->partner_permissions;
 
         // Load giving types and frequencies for contributions view
         $data['giving_types'] = $this->giving_type_model->getAll();
@@ -307,6 +311,7 @@ class Partnerdashboard extends Partner_Controller
         $data['page_description'] = 'Update your account password';
         $data['active_menu'] = 'change_password';
         $data['partner'] = $this->partner_data;
+        $data['partner_permissions'] = $this->partner_permissions;
 
         // Load giving types and frequencies for consistency
         $data['giving_types'] = $this->giving_type_model->getAll();

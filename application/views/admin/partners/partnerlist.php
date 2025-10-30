@@ -139,6 +139,10 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                                                                class="btn btn-default btn-xs" data-toggle="tooltip" title="Edit">
                                                                 <i class="fa fa-pencil"></i>
                                                             </a>
+                                                            <a href="<?php echo base_url('admin/partners/permissions/' . $partner->id); ?>"
+                                                               class="btn btn-warning btn-xs" data-toggle="tooltip" title="Permissions">
+                                                                <i class="fa fa-lock"></i>
+                                                            </a>
                                                         <?php } ?>
                                                         <?php if ($this->rbac->hasPrivilege('partners', 'can_delete')) { ?>
                                                             <a href="<?php echo base_url('admin/partners/delete/' . $partner->id); ?>"

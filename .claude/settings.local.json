@@ -17,7 +17,20 @@
       "Bash(\"D:\\xampp8.2\\mysql\\bin\\mysql.exe\" -u root -e \"SHOW CREATE TABLE ssdb.partners\")",
       "Bash(\"D:\\xampp8.2\\mysql\\bin\\mysql.exe\" -u root -e \"SHOW COLUMNS FROM ssdb.students\")",
       "Bash(php check_table.php:*)",
-      "Bash(php test_insert.php:*)"
+      "Bash(php test_insert.php:*)",
+      "Bash(cat:*)",
+      "Bash(\"D:\\xampp8.2\\mysql\\bin\\mysql.exe\" -u root -e \"DESCRIBE ssdb.giving_types\")",
+      "Bash(php -r:*)",
+      "Bash(php index.php:*)",
+      "Bash(D:xampp8.2mysqlbinmysql.exe -u root -e \"USE ssdb; DESCRIBE partner_contributions;\")",
+      "Bash(D:xampp8.2mysqlbinmysql.exe -u root -e \"USE ssdb; SELECT COUNT(*) as active_partners FROM partners WHERE is_active = 1;\")",
+      "Bash(\"D:\\xampp8.2\\mysql\\bin\\mysql.exe\" -u root -e \"USE ssdb; DESCRIBE partner_contributions;\")",
+      "Bash(\"D:\\xampp8.2\\mysql\\bin\\mysql.exe\" -u root -e \"USE ssdb; SELECT COUNT(*) as active_partners FROM partners WHERE is_active = 1;\")",
+      "Bash(\"D:\\xampp8.2\\mysql\\bin\\mysql.exe\" -u root -e \"USE ssdb; SELECT COUNT(*) as total_contributions FROM partner_contributions;\")",
+      "Bash(test:*)",
+      "Bash(mysql:*)",
+      "Bash(php:*)",
+      "Bash(/c/xampp/php/php.exe:*)"
     ],
     "deny": [],
     "ask": []

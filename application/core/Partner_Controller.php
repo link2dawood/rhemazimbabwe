@@ -31,5 +31,18 @@ class Partner_Controller extends MY_Controller
             $this->session->set_flashdata('error', 'Your account is not active. Please contact support.');
             redirect('partnerportal/login');
         }
+
+        // Get partner permissions
+        $this->partner_permissions = $this->partner_model->getGrantedPermissionCodes($this->partner_data['id']);
+    }
+
+    /**
+     * Check if partner has a specific permission
+     * @param string $permission_code
+     * @return bool
+     */
+    public function hasPermission($permission_code)
+    {
+        return in_array($permission_code, $this->partner_permissions);
     }
 }

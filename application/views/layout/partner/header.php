@@ -144,7 +144,59 @@
                             <i class="fa fa-lock"></i> <span>Change Password</span>
                         </a>
                     </li>
-                    
+
+                    <?php
+                    // Show permission-based menu items
+                    if (isset($partner_permissions) && !empty($partner_permissions)):
+                    ?>
+                    <li class="header">ADDITIONAL RESOURCES</li>
+
+                    <?php
+                    // Define permission-based menu items
+                    $permission_menus = array(
+                        'library_access' => array(
+                            'label' => 'Library',
+                            'icon' => 'fa-book',
+                            'url' => 'partnerdashboard/library'
+                        ),
+                        'online_courses' => array(
+                            'label' => 'Online Courses',
+                            'icon' => 'fa-graduation-cap',
+                            'url' => 'partnerdashboard/courses'
+                        ),
+                        'download_centre' => array(
+                            'label' => 'Download Centre',
+                            'icon' => 'fa-download',
+                            'url' => 'partnerdashboard/downloads'
+                        ),
+                        'gmeet_access' => array(
+                            'label' => 'GMeet',
+                            'icon' => 'fa-video-camera',
+                            'url' => 'partnerdashboard/gmeet'
+                        ),
+                        'zoom_access' => array(
+                            'label' => 'Zoom',
+                            'icon' => 'fa-video-camera',
+                            'url' => 'partnerdashboard/zoom'
+                        )
+                    );
+
+                    // Display menu items for granted permissions
+                    foreach ($permission_menus as $permission_code => $menu_item):
+                        if (in_array($permission_code, $partner_permissions)):
+                    ?>
+                    <li class="<?php echo (isset($active_menu) && $active_menu == $permission_code) ? 'active' : ''; ?>">
+                        <a href="<?php echo base_url($menu_item['url']); ?>">
+                            <i class="fa <?php echo $menu_item['icon']; ?>"></i> <span><?php echo $menu_item['label']; ?></span>
+                        </a>
+                    </li>
+                    <?php
+                        endif;
+                    endforeach;
+                    ?>
+
+                    <?php endif; ?>
+
                     <li class="header">EXTERNAL LINKS</li>
                     
                     <li>
