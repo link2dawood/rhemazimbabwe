@@ -62,13 +62,31 @@ class Partnerreports extends Admin_Controller {
             access_denied();
         }
 
-        $filters = [
-            'status' => $this->input->post('status'),
-            'giving_type_id' => $this->input->post('giving_type_id'),
-            'giving_frequency_id' => $this->input->post('giving_frequency_id'),
-            'date_from' => $this->input->post('date_from'),
-            'date_to' => $this->input->post('date_to')
-        ];
+        // Build filters array - only include non-empty values
+        $filters = [];
+
+        if ($this->input->post('status') != '') {
+            $filters['status'] = $this->input->post('status');
+        }
+
+        if ($this->input->post('giving_type_id') != '') {
+            $filters['giving_type_id'] = $this->input->post('giving_type_id');
+        }
+
+        if ($this->input->post('giving_frequency_id') != '') {
+            $filters['giving_frequency_id'] = $this->input->post('giving_frequency_id');
+        }
+
+        if ($this->input->post('date_from') != '') {
+            $filters['date_from'] = $this->input->post('date_from');
+        }
+
+        if ($this->input->post('date_to') != '') {
+            $filters['date_to'] = $this->input->post('date_to');
+        }
+
+        // Always show only active partners by default
+        $filters['is_active'] = 1;
 
         $partners = $this->Partner_model->getAll($filters);
         $result = [];
@@ -121,12 +139,20 @@ class Partnerreports extends Admin_Controller {
             access_denied();
         }
 
-        $filters = [
-            'giving_type_id' => $this->input->post('giving_type_id'),
-            'date_from' => $this->input->post('date_from'),
-            'date_to' => $this->input->post('date_to'),
-            'status' => 'completed'
-        ];
+        // Build filters array - only include non-empty values
+        $filters = ['status' => 'completed'];
+
+        if ($this->input->post('giving_type_id') != '') {
+            $filters['giving_type_id'] = $this->input->post('giving_type_id');
+        }
+
+        if ($this->input->post('date_from') != '') {
+            $filters['date_from'] = $this->input->post('date_from');
+        }
+
+        if ($this->input->post('date_to') != '') {
+            $filters['date_to'] = $this->input->post('date_to');
+        }
 
         // Get all contributions grouped by type
         $contributions = $this->Contribution_model->getAll($filters);
@@ -179,7 +205,7 @@ class Partnerreports extends Admin_Controller {
         $this->session->set_userdata('sub_menu', 'partner_reports');
 
         $data['title'] = 'Partner Statement Report';
-        $data['partners'] = $this->Partner_model->getAll(['status' => 'active']);
+        $data['partners'] = $this->Partner_model->getAll(['status' => 'active', 'is_active' => 1]);
 
         $this->load->view('layout/header', $data);
         $this->load->view('admin/partnerreports/partner_statement', $data);
@@ -195,8 +221,6 @@ class Partnerreports extends Admin_Controller {
         }
 
         $partner_id = $this->input->post('partner_id');
-        $date_from = $this->input->post('date_from');
-        $date_to = $this->input->post('date_to');
 
         if (!$partner_id) {
             echo json_encode(['data' => [], 'summary' => []]);
@@ -205,11 +229,16 @@ class Partnerreports extends Admin_Controller {
 
         $partner = $this->Partner_model->getById($partner_id);
 
-        $filters = [
-            'partner_id' => $partner_id,
-            'date_from' => $date_from,
-            'date_to' => $date_to
-        ];
+        // Build filters array - only include non-empty values
+        $filters = ['partner_id' => $partner_id];
+
+        if ($this->input->post('date_from') != '') {
+            $filters['date_from'] = $this->input->post('date_from');
+        }
+
+        if ($this->input->post('date_to') != '') {
+            $filters['date_to'] = $this->input->post('date_to');
+        }
 
         $contributions = $this->Contribution_model->getAll($filters);
 
@@ -278,11 +307,19 @@ class Partnerreports extends Admin_Controller {
             access_denied();
         }
 
+        // Build filters array - only include non-empty values
         $filters = [
             'status' => 'active',
-            'giving_type_id' => $this->input->post('giving_type_id'),
-            'giving_frequency_id' => $this->input->post('giving_frequency_id')
+            'is_active' => 1
         ];
+
+        if ($this->input->post('giving_type_id') != '') {
+            $filters['giving_type_id'] = $this->input->post('giving_type_id');
+        }
+
+        if ($this->input->post('giving_frequency_id') != '') {
+            $filters['giving_frequency_id'] = $this->input->post('giving_frequency_id');
+        }
 
         $partners = $this->Partner_model->getAll($filters);
         $result = [];

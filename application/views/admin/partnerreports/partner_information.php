@@ -13,11 +13,8 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                     <div class="box-header with-border">
                         <h3 class="box-title"><?php echo $this->lang->line('filter_criteria'); ?></h3>
                         <div class="box-tools pull-right">
-                            <button type="button" class="btn btn-primary btn-sm" id="exportExcel">
-                                <i class="fa fa-file-excel-o"></i> <?php echo $this->lang->line('export_to_excel'); ?>
-                            </button>
-                            <button type="button" class="btn btn-danger btn-sm" id="exportPdf">
-                                <i class="fa fa-file-pdf-o"></i> <?php echo $this->lang->line('export_to_pdf'); ?>
+                            <button type="button" class="btn btn-primary btn-sm" onclick="window.print()">
+                                <i class="fa fa-print"></i> Print
                             </button>
                         </div>
                     </div>
@@ -100,8 +97,14 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
 
                         <hr>
 
+                        <!-- Loading Indicator -->
+                        <div id="loadingIndicator" style="display:none; text-align:center; padding:20px;">
+                            <i class="fa fa-spinner fa-spin fa-3x"></i>
+                            <p>Loading data...</p>
+                        </div>
+
                         <!-- Report Table -->
-                        <div class="table-responsive">
+                        <div class="table-responsive" id="reportTableContainer">
                             <table class="table table-striped table-bordered table-hover" id="partnerInfoTable">
                                 <thead>
                                     <tr>
@@ -111,23 +114,37 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                                         <th><?php echo $this->lang->line('phone'); ?></th>
                                         <th><?php echo $this->lang->line('giving_type'); ?></th>
                                         <th><?php echo $this->lang->line('frequency'); ?></th>
-                                        <th><?php echo $this->lang->line('pledged_amount'); ?></th>
-                                        <th><?php echo $this->lang->line('total_contributed'); ?></th>
+                                        <th class="text-right"><?php echo $this->lang->line('pledged_amount'); ?></th>
+                                        <th class="text-right"><?php echo $this->lang->line('total_contributed'); ?></th>
                                         <th><?php echo $this->lang->line('start_date'); ?></th>
                                         <th><?php echo $this->lang->line('status'); ?></th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                </tbody>
-                                <tfoot>
+                                <tbody id="reportTableBody">
                                     <tr>
-                                        <th colspan="6" class="text-right"><?php echo $this->lang->line('total'); ?>:</th>
-                                        <th id="totalPledged"></th>
-                                        <th id="totalContributed"></th>
+                                        <td colspan="10" class="text-center text-muted">
+                                            Click "Search" button to load data
+                                        </td>
+                                    </tr>
+                                </tbody>
+                                <tfoot id="reportTableFooter" style="display:none;">
+                                    <tr>
+                                        <th colspan="6" class="text-right">Total:</th>
+                                        <th class="text-right" id="totalPledged">0.00</th>
+                                        <th class="text-right" id="totalContributed">0.00</th>
                                         <th colspan="2"></th>
                                     </tr>
                                 </tfoot>
                             </table>
+                        </div>
+
+                        <!-- Record Count -->
+                        <div class="row" id="recordInfo" style="display:none;">
+                            <div class="col-sm-12">
+                                <p class="text-muted">
+                                    Showing <span id="recordCount">0</span> record(s)
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -138,7 +155,6 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
 
 <script>
 var base_url = '<?php echo base_url() ?>';
-var partnerInfoTable;
 
 $(document).ready(function() {
     // Initialize date pickers
@@ -147,118 +163,96 @@ $(document).ready(function() {
         autoclose: true
     });
 
-    // Initialize DataTable
-    initDataTable();
-
     // Search button
     $('#searchBtn').click(function() {
-        partnerInfoTable.ajax.reload();
+        loadReportData();
     });
 
     // Reset button
     $('#resetBtn').click(function() {
         $('#filterForm')[0].reset();
-        partnerInfoTable.ajax.reload();
+        $('#reportTableBody').html('<tr><td colspan="10" class="text-center text-muted">Click "Search" button to load data</td></tr>');
+        $('#reportTableFooter').hide();
+        $('#recordInfo').hide();
     });
 
-    // Export buttons
-    $('#exportExcel').click(function() {
-        partnerInfoTable.button('.buttons-excel').trigger();
-    });
-
-    $('#exportPdf').click(function() {
-        window.location.href = base_url + 'admin/partnerreports/exportPdf/partner_information';
-    });
+    // Load data on page load
+    loadReportData();
 });
 
-function initDataTable() {
-    partnerInfoTable = $('#partnerInfoTable').DataTable({
-        "processing": true,
-        "serverSide": false,
-        "ajax": {
-            "url": base_url + "admin/partnerreports/getPartnerInformationData",
-            "type": "POST",
-            "data": function(d) {
-                d.status = $('#status').val();
-                d.giving_type_id = $('#giving_type_id').val();
-                d.giving_frequency_id = $('#giving_frequency_id').val();
-                d.date_from = $('#date_from').val();
-                d.date_to = $('#date_to').val();
+function loadReportData() {
+    // Show loading
+    $('#loadingIndicator').show();
+    $('#reportTableContainer').hide();
+
+    // Get filter values
+    var filterData = {
+        status: $('#status').val(),
+        giving_type_id: $('#giving_type_id').val(),
+        giving_frequency_id: $('#giving_frequency_id').val(),
+        date_from: $('#date_from').val(),
+        date_to: $('#date_to').val()
+    };
+
+    // Make AJAX request
+    $.ajax({
+        url: base_url + "admin/partnerreports/getPartnerInformationData",
+        type: "POST",
+        data: filterData,
+        dataType: 'json',
+        success: function(response) {
+            $('#loadingIndicator').hide();
+            $('#reportTableContainer').show();
+
+            if (response.data && response.data.length > 0) {
+                var html = '';
+                var totalPledged = 0;
+                var totalContributed = 0;
+
+                $.each(response.data, function(index, row) {
+                    html += '<tr>';
+                    html += '<td>' + row[0] + '</td>'; // Partner Code
+                    html += '<td>' + row[1] + '</td>'; // Partner Name
+                    html += '<td>' + row[2] + '</td>'; // Email
+                    html += '<td>' + row[3] + '</td>'; // Phone
+                    html += '<td>' + row[4] + '</td>'; // Giving Type
+                    html += '<td>' + row[5] + '</td>'; // Frequency
+                    html += '<td class="text-right">' + row[6] + '</td>'; // Pledged Amount
+                    html += '<td class="text-right">' + row[7] + '</td>'; // Total Contributed
+                    html += '<td>' + row[8] + '</td>'; // Start Date
+                    html += '<td>' + row[9] + '</td>'; // Status
+                    html += '</tr>';
+
+                    // Calculate totals (extract numeric values from formatted strings)
+                    var pledged = parseFloat(row[6].replace(/[^0-9.-]+/g, ""));
+                    var contributed = parseFloat(row[7].replace(/[^0-9.-]+/g, ""));
+                    totalPledged += pledged || 0;
+                    totalContributed += contributed || 0;
+                });
+
+                $('#reportTableBody').html(html);
+
+                // Update footer totals
+                $('#totalPledged').text(totalPledged.toFixed(2));
+                $('#totalContributed').text(totalContributed.toFixed(2));
+                $('#reportTableFooter').show();
+
+                // Update record count
+                $('#recordCount').text(response.data.length);
+                $('#recordInfo').show();
+            } else {
+                $('#reportTableBody').html('<tr><td colspan="10" class="text-center text-muted">No data available. Try adjusting your filters.</td></tr>');
+                $('#reportTableFooter').hide();
+                $('#recordInfo').hide();
             }
         },
-        "columns": [
-            {"data": 0},
-            {"data": 1},
-            {"data": 2},
-            {"data": 3},
-            {"data": 4},
-            {"data": 5},
-            {"data": 6, "className": "text-right"},
-            {"data": 7, "className": "text-right"},
-            {"data": 8},
-            {"data": 9}
-        ],
-        "responsive": true,
-        "autoWidth": false,
-        "drawCallback": function(settings) {
-            // Calculate totals
-            var api = this.api();
-            // You can add total calculations here if needed
-        },
-        dom: 'Bfrtip',
-        buttons: [
-            {
-                extend: 'copyHtml5',
-                text: '<i class="fa fa-files-o"></i>',
-                titleAttr: 'Copy',
-                title: 'Partner Information Report',
-                exportOptions: {
-                    columns: ':visible'
-                }
-            },
-            {
-                extend: 'excelHtml5',
-                text: '<i class="fa fa-file-excel-o"></i>',
-                titleAttr: 'Excel',
-                title: 'Partner Information Report',
-                exportOptions: {
-                    columns: ':visible'
-                }
-            },
-            {
-                extend: 'csvHtml5',
-                text: '<i class="fa fa-file-text-o"></i>',
-                titleAttr: 'CSV',
-                title: 'Partner Information Report',
-                exportOptions: {
-                    columns: ':visible'
-                }
-            },
-            {
-                extend: 'pdfHtml5',
-                text: '<i class="fa fa-file-pdf-o"></i>',
-                titleAttr: 'PDF',
-                title: 'Partner Information Report',
-                orientation: 'landscape',
-                exportOptions: {
-                    columns: ':visible'
-                }
-            },
-            {
-                extend: 'print',
-                text: '<i class="fa fa-print"></i>',
-                titleAttr: 'Print',
-                title: 'Partner Information Report',
-                exportOptions: {
-                    columns: ':visible'
-                }
-            },
-            {
-                extend: 'colvis',
-                text: '<i class="fa fa-columns"></i>',
-                titleAttr: 'Columns'
-            }
-        ]
+        error: function(xhr, status, error) {
+            $('#loadingIndicator').hide();
+            $('#reportTableContainer').show();
+            $('#reportTableBody').html('<tr><td colspan="10" class="text-center text-danger">Error loading data: ' + error + '</td></tr>');
+            $('#reportTableFooter').hide();
+            $('#recordInfo').hide();
+        }
     });
 }
 </script>

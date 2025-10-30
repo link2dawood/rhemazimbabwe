@@ -13,11 +13,8 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                     <div class="box-header with-border">
                         <h3 class="box-title"><?php echo $this->lang->line('filter_criteria'); ?></h3>
                         <div class="box-tools pull-right">
-                            <button type="button" class="btn btn-primary btn-sm" id="exportExcel">
-                                <i class="fa fa-file-excel-o"></i> <?php echo $this->lang->line('export_to_excel'); ?>
-                            </button>
-                            <button type="button" class="btn btn-danger btn-sm" id="exportPdf">
-                                <i class="fa fa-file-pdf-o"></i> <?php echo $this->lang->line('export_to_pdf'); ?>
+                            <button type="button" class="btn btn-primary btn-sm" onclick="window.print()">
+                                <i class="fa fa-print"></i> Print
                             </button>
                         </div>
                     </div>
@@ -63,100 +60,14 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
 
                         <hr>
 
-                        <!-- Alert Box -->
-                        <div class="alert alert-warning">
-                            <i class="fa fa-info-circle"></i>
-                            <strong><?php echo $this->lang->line('note'); ?>:</strong>
-                            <?php echo $this->lang->line('balance_report_note'); ?>
-                        </div>
-
-                        <!-- Summary Cards -->
-                        <div class="row">
-                            <div class="col-md-3 col-sm-6">
-                                <div class="info-box bg-aqua">
-                                    <span class="info-box-icon"><i class="fa fa-users"></i></span>
-                                    <div class="info-box-content">
-                                        <span class="info-box-text"><?php echo $this->lang->line('partners_with_balance'); ?></span>
-                                        <span class="info-box-number" id="partnersWithBalance">0</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-md-3 col-sm-6">
-                                <div class="info-box bg-yellow">
-                                    <span class="info-box-icon"><i class="fa fa-calculator"></i></span>
-                                    <div class="info-box-content">
-                                        <span class="info-box-text"><?php echo $this->lang->line('total_expected'); ?></span>
-                                        <span class="info-box-number" id="totalExpected"><?php echo $currency_symbol ?> 0.00</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-md-3 col-sm-6">
-                                <div class="info-box bg-green">
-                                    <span class="info-box-icon"><i class="fa fa-check"></i></span>
-                                    <div class="info-box-content">
-                                        <span class="info-box-text"><?php echo $this->lang->line('total_contributed'); ?></span>
-                                        <span class="info-box-number" id="totalContributed"><?php echo $currency_symbol ?> 0.00</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-md-3 col-sm-6">
-                                <div class="info-box bg-red">
-                                    <span class="info-box-icon"><i class="fa fa-warning"></i></span>
-                                    <div class="info-box-content">
-                                        <span class="info-box-text"><?php echo $this->lang->line('total_balance'); ?></span>
-                                        <span class="info-box-number" id="totalBalance"><?php echo $currency_symbol ?> 0.00</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Chart -->
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="box box-danger">
-                                    <div class="box-header with-border">
-                                        <h3 class="box-title"><?php echo $this->lang->line('balance_by_remark'); ?></h3>
-                                    </div>
-                                    <div class="box-body">
-                                        <canvas id="remarkChart" height="200"></canvas>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-md-6">
-                                <div class="box box-warning">
-                                    <div class="box-header with-border">
-                                        <h3 class="box-title"><?php echo $this->lang->line('top_10_outstanding_partners'); ?></h3>
-                                    </div>
-                                    <div class="box-body">
-                                        <canvas id="topPartnersChart" height="200"></canvas>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Legend -->
-                        <div class="row">
-                            <div class="col-md-12">
-                                <div class="box box-solid">
-                                    <div class="box-header">
-                                        <h3 class="box-title"><?php echo $this->lang->line('remark_legend'); ?></h3>
-                                    </div>
-                                    <div class="box-body">
-                                        <span class="label label-danger">Critical - 75%+ Outstanding</span>
-                                        <span class="label label-warning">High - 50-74% Outstanding</span>
-                                        <span class="label label-info">Moderate - 25-49% Outstanding</span>
-                                        <span class="label label-success">Low - 0-24% Outstanding</span>
-                                    </div>
-                                </div>
-                            </div>
+                        <!-- Loading Indicator -->
+                        <div id="loadingIndicator" style="display:none; text-align:center; padding:20px;">
+                            <i class="fa fa-spinner fa-spin fa-3x"></i>
+                            <p>Loading data...</p>
                         </div>
 
                         <!-- Report Table -->
-                        <div class="table-responsive">
+                        <div class="table-responsive" id="reportTableContainer">
                             <table class="table table-striped table-bordered table-hover" id="balanceTable">
                                 <thead>
                                     <tr>
@@ -166,24 +77,51 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                                         <th><?php echo $this->lang->line('phone'); ?></th>
                                         <th><?php echo $this->lang->line('giving_type'); ?></th>
                                         <th><?php echo $this->lang->line('frequency'); ?></th>
-                                        <th><?php echo $this->lang->line('expected_amount'); ?></th>
-                                        <th><?php echo $this->lang->line('contributed_amount'); ?></th>
-                                        <th><?php echo $this->lang->line('balance'); ?></th>
+                                        <th class="text-right"><?php echo $this->lang->line('expected_amount'); ?></th>
+                                        <th class="text-right"><?php echo $this->lang->line('total_contributed'); ?></th>
+                                        <th class="text-right"><?php echo $this->lang->line('balance'); ?></th>
                                         <th><?php echo $this->lang->line('remark'); ?></th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                </tbody>
-                                <tfoot>
+                                <tbody id="reportTableBody">
                                     <tr>
-                                        <th colspan="6" class="text-right"><?php echo $this->lang->line('total'); ?>:</th>
-                                        <th id="footerExpected"></th>
-                                        <th id="footerContributed"></th>
-                                        <th id="footerBalance"></th>
+                                        <td colspan="10" class="text-center text-muted">
+                                            Click "Search" button to load data
+                                        </td>
+                                    </tr>
+                                </tbody>
+                                <tfoot id="reportTableFooter" style="display:none;">
+                                    <tr>
+                                        <th colspan="6" class="text-right">Total:</th>
+                                        <th class="text-right" id="totalExpected">0.00</th>
+                                        <th class="text-right" id="totalContributed">0.00</th>
+                                        <th class="text-right" id="totalBalance">0.00</th>
                                         <th></th>
                                     </tr>
                                 </tfoot>
                             </table>
+                        </div>
+
+                        <!-- Record Count -->
+                        <div class="row" id="recordInfo" style="display:none;">
+                            <div class="col-sm-12">
+                                <p class="text-muted">
+                                    Showing <span id="recordCount">0</span> partner(s) with balance
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <h4><i class="fa fa-info-circle"></i> About This Report</h4>
+                            <p><strong>This report shows partners who have outstanding contributions based on their pledge amount and frequency.</strong></p>
+                            <p>Only partners with a balance greater than 0 are displayed.</p>
+                            <p><strong>Remark Legend:</strong></p>
+                            <ul>
+                                <li><span class="label label-danger">Critical</span> - Balance exceeds 75% of expected amount</li>
+                                <li><span class="label label-warning">High</span> - Balance between 50-75% of expected amount</li>
+                                <li><span class="label label-info">Moderate</span> - Balance between 25-50% of expected amount</li>
+                                <li><span class="label label-success">Low</span> - Balance less than 25% of expected amount</li>
+                            </ul>
                         </div>
                     </div>
                 </div>
@@ -192,219 +130,95 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
     </section>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 <script>
 var base_url = '<?php echo base_url() ?>';
-var balanceTable;
-var remarkChart;
-var topPartnersChart;
 
 $(document).ready(function() {
-    // Initialize DataTable
-    initDataTable();
-
-    // Initialize Charts
-    initCharts();
-
     // Search button
     $('#searchBtn').click(function() {
-        balanceTable.ajax.reload(null, false);
+        loadReportData();
     });
 
-    // Export buttons
-    $('#exportExcel').click(function() {
-        balanceTable.button('.buttons-excel').trigger();
-    });
-
-    $('#exportPdf').click(function() {
-        window.location.href = base_url + 'admin/partnerreports/exportPdf/balance_giving';
-    });
+    // Load data on page load
+    loadReportData();
 });
 
-function initDataTable() {
-    balanceTable = $('#balanceTable').DataTable({
-        "processing": true,
-        "serverSide": false,
-        "ajax": {
-            "url": base_url + "admin/partnerreports/getBalanceGivingData",
-            "type": "POST",
-            "data": function(d) {
-                d.giving_type_id = $('#giving_type_id').val();
-                d.giving_frequency_id = $('#giving_frequency_id').val();
-            },
-            "dataSrc": function(json) {
-                updateSummary(json.data);
-                updateCharts(json.data);
-                return json.data;
-            }
-        },
-        "columns": [
-            {"data": 0},
-            {"data": 1},
-            {"data": 2},
-            {"data": 3},
-            {"data": 4},
-            {"data": 5},
-            {"data": 6, "className": "text-right"},
-            {"data": 7, "className": "text-right"},
-            {"data": 8, "className": "text-right"},
-            {"data": 9}
-        ],
-        "order": [[8, 'desc']],
-        "responsive": true,
-        "autoWidth": false,
-        "drawCallback": function(settings) {
-            calculateFooter();
-        },
-        dom: 'Bfrtip',
-        buttons: [
-            {
-                extend: 'excelHtml5',
-                text: '<i class="fa fa-file-excel-o"></i>',
-                titleAttr: 'Excel',
-                title: 'Balance Giving Report',
-                exportOptions: {
-                    columns: ':visible'
-                }
-            },
-            {
-                extend: 'pdfHtml5',
-                text: '<i class="fa fa-file-pdf-o"></i>',
-                titleAttr: 'PDF',
-                title: 'Balance Giving Report',
-                orientation: 'landscape',
-                exportOptions: {
-                    columns: ':visible'
-                }
-            }
-        ]
-    });
-}
+function loadReportData() {
+    // Show loading
+    $('#loadingIndicator').show();
+    $('#reportTableContainer').hide();
+    $('#recordInfo').hide();
 
-function calculateFooter() {
-    var api = balanceTable;
-    var totalExpected = 0;
-    var totalContributed = 0;
-    var totalBalance = 0;
-
-    api.rows().every(function() {
-        var data = this.data();
-        totalExpected += parseFloat(data[6].replace(/[^0-9.-]+/g, "")) || 0;
-        totalContributed += parseFloat(data[7].replace(/[^0-9.-]+/g, "")) || 0;
-        totalBalance += parseFloat(data[8].replace(/[^0-9.-]+/g, "").replace(/<[^>]*>/g, '')) || 0;
-    });
-
-    $('#footerExpected').html('USD ' + totalExpected.toFixed(2));
-    $('#footerContributed').html('USD ' + totalContributed.toFixed(2));
-    $('#footerBalance').html('<strong class="text-danger">USD ' + totalBalance.toFixed(2) + '</strong>');
-}
-
-function updateSummary(data) {
-    var totalExpected = 0;
-    var totalContributed = 0;
-    var totalBalance = 0;
-
-    data.forEach(function(row) {
-        totalExpected += parseFloat(row[6].replace(/[^0-9.-]+/g, "")) || 0;
-        totalContributed += parseFloat(row[7].replace(/[^0-9.-]+/g, "")) || 0;
-        totalBalance += parseFloat(row[8].replace(/[^0-9.-]+/g, "").replace(/<[^>]*>/g, '')) || 0;
-    });
-
-    $('#partnersWithBalance').text(data.length);
-    $('#totalExpected').text('USD ' + totalExpected.toFixed(2));
-    $('#totalContributed').text('USD ' + totalContributed.toFixed(2));
-    $('#totalBalance').text('USD ' + totalBalance.toFixed(2));
-}
-
-function initCharts() {
-    // Remark Chart
-    var ctx1 = document.getElementById('remarkChart').getContext('2d');
-    remarkChart = new Chart(ctx1, {
-        type: 'pie',
-        data: {
-            labels: [],
-            datasets: [{
-                data: [],
-                backgroundColor: [
-                    'rgba(217, 83, 79, 0.8)',   // Danger/Critical
-                    'rgba(240, 173, 78, 0.8)',  // Warning/High
-                    'rgba(91, 192, 222, 0.8)',  // Info/Moderate
-                    'rgba(92, 184, 92, 0.8)'    // Success/Low
-                ]
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: true
-        }
-    });
-
-    // Top Partners Chart
-    var ctx2 = document.getElementById('topPartnersChart').getContext('2d');
-    topPartnersChart = new Chart(ctx2, {
-        type: 'horizontalBar',
-        data: {
-            labels: [],
-            datasets: [{
-                label: 'Outstanding Balance',
-                data: [],
-                backgroundColor: 'rgba(217, 83, 79, 0.6)',
-                borderColor: 'rgba(217, 83, 79, 1)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: true,
-            scales: {
-                x: {
-                    beginAtZero: true
-                }
-            }
-        }
-    });
-}
-
-function updateCharts(data) {
-    // Count by remark category
-    var remarkCounts = {
-        'Critical': 0,
-        'High': 0,
-        'Moderate': 0,
-        'Low': 0
+    // Get filter values
+    var filterData = {
+        giving_type_id: $('#giving_type_id').val(),
+        giving_frequency_id: $('#giving_frequency_id').val()
     };
 
-    var partnerBalances = [];
+    // Make AJAX request
+    $.ajax({
+        url: base_url + "admin/partnerreports/getBalanceGivingData",
+        type: "POST",
+        data: filterData,
+        dataType: 'json',
+        success: function(response) {
+            $('#loadingIndicator').hide();
+            $('#reportTableContainer').show();
 
-    data.forEach(function(row) {
-        var remarkHtml = row[9];
-        if (remarkHtml.includes('Critical')) {
-            remarkCounts['Critical']++;
-        } else if (remarkHtml.includes('High')) {
-            remarkCounts['High']++;
-        } else if (remarkHtml.includes('Moderate')) {
-            remarkCounts['Moderate']++;
-        } else if (remarkHtml.includes('Low')) {
-            remarkCounts['Low']++;
+            if (response.data && response.data.length > 0) {
+                var html = '';
+                var totalExpected = 0;
+                var totalContributed = 0;
+                var totalBalance = 0;
+
+                $.each(response.data, function(index, row) {
+                    html += '<tr>';
+                    html += '<td>' + row[0] + '</td>'; // Partner Code
+                    html += '<td>' + row[1] + '</td>'; // Partner Name
+                    html += '<td>' + row[2] + '</td>'; // Email
+                    html += '<td>' + row[3] + '</td>'; // Phone
+                    html += '<td>' + row[4] + '</td>'; // Giving Type
+                    html += '<td>' + row[5] + '</td>'; // Frequency
+                    html += '<td class="text-right">' + row[6] + '</td>'; // Expected Amount
+                    html += '<td class="text-right">' + row[7] + '</td>'; // Total Contributed
+                    html += '<td class="text-right">' + row[8] + '</td>'; // Balance
+                    html += '<td>' + row[9] + '</td>'; // Remark
+                    html += '</tr>';
+
+                    // Calculate totals (extract numeric values from formatted strings)
+                    var expected = parseFloat(row[6].replace(/[^0-9.-]+/g, ""));
+                    var contributed = parseFloat(row[7].replace(/[^0-9.-]+/g, ""));
+                    var balance = parseFloat(row[8].replace(/[^0-9.-]+/g, "").replace(/<[^>]*>/g, ""));
+
+                    totalExpected += expected || 0;
+                    totalContributed += contributed || 0;
+                    totalBalance += balance || 0;
+                });
+
+                $('#reportTableBody').html(html);
+
+                // Update footer totals
+                $('#totalExpected').text(totalExpected.toFixed(2));
+                $('#totalContributed').text(totalContributed.toFixed(2));
+                $('#totalBalance').text(totalBalance.toFixed(2));
+                $('#reportTableFooter').show();
+
+                // Update record count
+                $('#recordCount').text(response.data.length);
+                $('#recordInfo').show();
+            } else {
+                $('#reportTableBody').html('<tr><td colspan="10" class="text-center text-muted">No partners with balance found. All partners are up to date!</td></tr>');
+                $('#reportTableFooter').hide();
+                $('#recordInfo').hide();
+            }
+        },
+        error: function(xhr, status, error) {
+            $('#loadingIndicator').hide();
+            $('#reportTableContainer').show();
+            $('#reportTableBody').html('<tr><td colspan="10" class="text-center text-danger">Error loading data: ' + error + '</td></tr>');
+            $('#reportTableFooter').hide();
+            $('#recordInfo').hide();
         }
-
-        partnerBalances.push({
-            name: row[1],
-            balance: parseFloat(row[8].replace(/[^0-9.-]+/g, "").replace(/<[^>]*>/g, '')) || 0
-        });
     });
-
-    // Update remark chart
-    remarkChart.data.labels = Object.keys(remarkCounts);
-    remarkChart.data.datasets[0].data = Object.values(remarkCounts);
-    remarkChart.update();
-
-    // Update top partners chart (top 10)
-    partnerBalances.sort((a, b) => b.balance - a.balance);
-    var top10 = partnerBalances.slice(0, 10);
-
-    topPartnersChart.data.labels = top10.map(p => p.name);
-    topPartnersChart.data.datasets[0].data = top10.map(p => p.balance);
-    topPartnersChart.update();
 }
 </script>

@@ -12,6 +12,11 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                 <div class="box box-primary">
                     <div class="box-header with-border">
                         <h3 class="box-title"><?php echo $this->lang->line('select_partner'); ?></h3>
+                        <div class="box-tools pull-right">
+                            <button type="button" class="btn btn-primary btn-sm" onclick="window.print()">
+                                <i class="fa fa-print"></i> Print
+                            </button>
+                        </div>
                     </div>
 
                     <div class="box-body">
@@ -21,7 +26,7 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                                 <div class="col-md-5">
                                     <div class="form-group">
                                         <label><?php echo $this->lang->line('partner'); ?> <small class="req">*</small></label>
-                                        <select class="form-control select2" name="partner_id" id="partner_id" required>
+                                        <select class="form-control" name="partner_id" id="partner_id" required>
                                             <option value=""><?php echo $this->lang->line('select'); ?></option>
                                             <?php foreach ($partners as $partner) { ?>
                                                 <option value="<?php echo $partner->id ?>">
@@ -59,6 +64,12 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
 
                         <hr>
 
+                        <!-- Loading Indicator -->
+                        <div id="loadingIndicator" style="display:none; text-align:center; padding:20px;">
+                            <i class="fa fa-spinner fa-spin fa-3x"></i>
+                            <p>Loading data...</p>
+                        </div>
+
                         <!-- Statement Summary -->
                         <div id="statementSummary" style="display: none;">
                             <div class="row">
@@ -67,8 +78,7 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                                         <h4><i class="fa fa-user"></i> <span id="partnerName"></span></h4>
                                         <p>
                                             <strong><?php echo $this->lang->line('partner_code'); ?>:</strong> <span id="partnerCode"></span><br>
-                                            <strong><?php echo $this->lang->line('statement_period'); ?>:</strong>
-                                            <span id="statementPeriod"><?php echo $this->lang->line('all_time'); ?></span>
+                                            <strong>Currency:</strong> <span id="currency"></span>
                                         </p>
                                     </div>
                                 </div>
@@ -76,87 +86,54 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
 
                             <!-- Summary Cards -->
                             <div class="row">
-                                <div class="col-md-3 col-sm-6">
+                                <div class="col-md-4">
                                     <div class="info-box bg-aqua">
                                         <span class="info-box-icon"><i class="fa fa-list"></i></span>
                                         <div class="info-box-content">
-                                            <span class="info-box-text"><?php echo $this->lang->line('total_transactions'); ?></span>
+                                            <span class="info-box-text">Total Transactions</span>
                                             <span class="info-box-number" id="totalTransactions">0</span>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div class="col-md-3 col-sm-6">
-                                    <div class="info-box bg-yellow">
+                                <div class="col-md-4">
+                                    <div class="info-box bg-green">
                                         <span class="info-box-icon"><i class="fa fa-money"></i></span>
                                         <div class="info-box-content">
-                                            <span class="info-box-text"><?php echo $this->lang->line('total_amount'); ?></span>
-                                            <span class="info-box-number" id="totalAmount"><?php echo $currency_symbol ?> 0.00</span>
+                                            <span class="info-box-text">Completed Amount</span>
+                                            <span class="info-box-number" id="completedAmount">0.00</span>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div class="col-md-3 col-sm-6">
-                                    <div class="info-box bg-green">
-                                        <span class="info-box-icon"><i class="fa fa-check"></i></span>
+                                <div class="col-md-4">
+                                    <div class="info-box bg-yellow">
+                                        <span class="info-box-icon"><i class="fa fa-calculator"></i></span>
                                         <div class="info-box-content">
-                                            <span class="info-box-text"><?php echo $this->lang->line('completed_amount'); ?></span>
-                                            <span class="info-box-number" id="completedAmount"><?php echo $currency_symbol ?> 0.00</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="col-md-3 col-sm-6">
-                                    <div class="info-box bg-red">
-                                        <span class="info-box-icon"><i class="fa fa-clock-o"></i></span>
-                                        <div class="info-box-content">
-                                            <span class="info-box-text"><?php echo $this->lang->line('pending_amount'); ?></span>
-                                            <span class="info-box-number" id="pendingAmount"><?php echo $currency_symbol ?> 0.00</span>
+                                            <span class="info-box-text">Total Amount</span>
+                                            <span class="info-box-number" id="totalAmountSummary">0.00</span>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-
-                            <!-- Action Buttons -->
-                            <div class="row">
-                                <div class="col-md-12 text-right">
-                                    <button type="button" class="btn btn-primary" id="exportExcel">
-                                        <i class="fa fa-file-excel-o"></i> <?php echo $this->lang->line('export_to_excel'); ?>
-                                    </button>
-                                    <button type="button" class="btn btn-danger" id="exportPdf">
-                                        <i class="fa fa-file-pdf-o"></i> <?php echo $this->lang->line('export_to_pdf'); ?>
-                                    </button>
-                                    <button type="button" class="btn btn-default" id="printStatement">
-                                        <i class="fa fa-print"></i> <?php echo $this->lang->line('print'); ?>
-                                    </button>
-                                </div>
-                            </div>
-
-                            <br>
 
                             <!-- Statement Table -->
                             <div class="table-responsive">
-                                <table class="table table-striped table-bordered table-hover" id="statementTable">
+                                <table class="table table-striped table-bordered table-hover">
                                     <thead>
                                         <tr>
                                             <th><?php echo $this->lang->line('date'); ?></th>
                                             <th><?php echo $this->lang->line('receipt_no'); ?></th>
                                             <th><?php echo $this->lang->line('description'); ?></th>
                                             <th><?php echo $this->lang->line('payment_method'); ?></th>
-                                            <th><?php echo $this->lang->line('amount'); ?></th>
+                                            <th class="text-right"><?php echo $this->lang->line('amount'); ?></th>
                                             <th><?php echo $this->lang->line('status'); ?></th>
                                         </tr>
                                     </thead>
-                                    <tbody>
+                                    <tbody id="statementTableBody">
                                     </tbody>
                                 </table>
                             </div>
-                        </div>
-
-                        <!-- Empty State -->
-                        <div id="emptyState" class="text-center" style="padding: 50px;">
-                            <i class="fa fa-file-text-o" style="font-size: 64px; color: #ddd;"></i>
-                            <h4><?php echo $this->lang->line('select_partner_to_view_statement'); ?></h4>
                         </div>
                     </div>
                 </div>
@@ -167,126 +144,81 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
 
 <script>
 var base_url = '<?php echo base_url() ?>';
-var statementTable;
 
 $(document).ready(function() {
-    // Initialize Select2
-    $('.select2').select2();
-
     // Initialize date pickers
     $('.date').datepicker({
         format: "<?php echo $this->customlib->getSchoolDateFormat() ?>",
         autoclose: true
     });
 
-    // Initialize DataTable
-    statementTable = $('#statementTable').DataTable({
-        "data": [],
-        "columns": [
-            {"data": 0},
-            {"data": 1},
-            {"data": 2},
-            {"data": 3},
-            {"data": 4, "className": "text-right"},
-            {"data": 5}
-        ],
-        "responsive": true,
-        "autoWidth": false,
-        dom: 'Bfrtip',
-        buttons: [
-            {
-                extend: 'excelHtml5',
-                text: '<i class="fa fa-file-excel-o"></i>',
-                titleAttr: 'Excel',
-                title: 'Partner Statement',
-                exportOptions: {
-                    columns: ':visible'
-                }
-            },
-            {
-                extend: 'pdfHtml5',
-                text: '<i class="fa fa-file-pdf-o"></i>',
-                titleAttr: 'PDF',
-                title: 'Partner Statement',
-                exportOptions: {
-                    columns: ':visible'
-                }
-            }
-        ]
-    });
-
     // Search button
     $('#searchBtn').click(function() {
-        loadStatement();
-    });
-
-    // Export buttons
-    $('#exportExcel').click(function() {
-        statementTable.button('.buttons-excel').trigger();
-    });
-
-    $('#exportPdf').click(function() {
         var partner_id = $('#partner_id').val();
-        if (partner_id) {
-            window.location.href = base_url + 'admin/partnerreports/exportPdf/partner_statement?partner_id=' + partner_id;
+        if (!partner_id) {
+            alert('Please select a partner');
+            return;
         }
-    });
-
-    $('#printStatement').click(function() {
-        statementTable.button('.buttons-print').trigger();
+        loadStatementData();
     });
 });
 
-function loadStatement() {
+function loadStatementData() {
     var partner_id = $('#partner_id').val();
 
-    if (!partner_id) {
-        alert('<?php echo $this->lang->line('please_select_partner'); ?>');
-        return;
-    }
+    // Show loading
+    $('#loadingIndicator').show();
+    $('#statementSummary').hide();
 
+    // Get filter values
+    var filterData = {
+        partner_id: partner_id,
+        date_from: $('#date_from').val(),
+        date_to: $('#date_to').val()
+    };
+
+    // Make AJAX request
     $.ajax({
-        url: base_url + 'admin/partnerreports/getPartnerStatementData',
-        type: 'POST',
-        data: {
-            partner_id: partner_id,
-            date_from: $('#date_from').val(),
-            date_to: $('#date_to').val()
-        },
+        url: base_url + "admin/partnerreports/getPartnerStatementData",
+        type: "POST",
+        data: filterData,
         dataType: 'json',
         success: function(response) {
-            if (response.data && response.summary) {
-                // Update summary
+            $('#loadingIndicator').hide();
+            $('#statementSummary').show();
+
+            if (response.summary) {
+                // Update summary info
                 $('#partnerName').text(response.summary.partner_name);
                 $('#partnerCode').text(response.summary.partner_code);
+                $('#currency').text(response.summary.currency);
                 $('#totalTransactions').text(response.summary.total_transactions);
-                $('#totalAmount').text(response.summary.currency + ' ' + response.summary.total_amount);
-                $('#completedAmount').text(response.summary.currency + ' ' + response.summary.completed_amount);
-                $('#pendingAmount').text(response.summary.currency + ' ' + response.summary.pending_amount);
+                $('#completedAmount').text(response.summary.completed_amount);
+                $('#totalAmountSummary').text(response.summary.total_amount);
+            }
 
-                // Update period
-                var period = '<?php echo $this->lang->line('all_time'); ?>';
-                if ($('#date_from').val() && $('#date_to').val()) {
-                    period = $('#date_from').val() + ' to ' + $('#date_to').val();
-                } else if ($('#date_from').val()) {
-                    period = 'From ' + $('#date_from').val();
-                } else if ($('#date_to').val()) {
-                    period = 'Up to ' + $('#date_to').val();
-                }
-                $('#statementPeriod').text(period);
+            if (response.data && response.data.length > 0) {
+                var html = '';
 
-                // Update table
-                statementTable.clear();
-                statementTable.rows.add(response.data);
-                statementTable.draw();
+                $.each(response.data, function(index, row) {
+                    html += '<tr>';
+                    html += '<td>' + row[0] + '</td>'; // Date
+                    html += '<td>' + row[1] + '</td>'; // Receipt No
+                    html += '<td>' + row[2] + '</td>'; // Description/Notes
+                    html += '<td>' + row[3] + '</td>'; // Payment Method
+                    html += '<td class="text-right">' + row[4] + '</td>'; // Amount
+                    html += '<td>' + row[5] + '</td>'; // Status
+                    html += '</tr>';
+                });
 
-                // Show statement
-                $('#emptyState').hide();
-                $('#statementSummary').show();
+                $('#statementTableBody').html(html);
+            } else {
+                $('#statementTableBody').html('<tr><td colspan="6" class="text-center text-muted">No transactions found for this partner</td></tr>');
             }
         },
-        error: function() {
-            alert('<?php echo $this->lang->line('error_loading_statement'); ?>');
+        error: function(xhr, status, error) {
+            $('#loadingIndicator').hide();
+            alert('Error loading statement: ' + error);
         }
     });
 }
