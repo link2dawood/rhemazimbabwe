@@ -368,13 +368,24 @@
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label for="password">Password</label>
-                                        <input type="password" class="form-control" id="password" name="password">
+                                        <div class="input-group">
+                                            <input type="password" class="form-control" id="password" name="password">
+                                            <button type="button" class="btn btn-default" onclick="togglePassword('password', this)" title="Show/Hide Password">
+                                                <i class="fa fa-eye" id="password-icon"></i>
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label for="confirm_password">Confirm Password</label>
-                                        <input type="password" class="form-control" id="confirm_password" name="confirm_password">
+                                        <div class="input-group">
+                                            <input type="password" class="form-control" id="confirm_password" name="confirm_password">
+                                            <button type="button" class="btn btn-default" onclick="togglePassword('confirm_password', this)" title="Show/Hide Password">
+                                                <i class="fa fa-eye" id="confirm_password-icon"></i>
+                                            </button>
+                                        </div>
+                                        <small class="text-danger" id="password-match-error" style="display: none;">Passwords do not match</small>
                                     </div>
                                 </div>
                             </div>
@@ -567,13 +578,24 @@
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label for="password">Password</label>
-                                        <input type="password" class="form-control" id="password" name="password">
+                                        <div class="input-group">
+                                            <input type="password" class="form-control" id="password" name="password">
+                                            <button type="button" class="btn btn-default" onclick="togglePassword('password', this)" title="Show/Hide Password">
+                                                <i class="fa fa-eye" id="password-icon"></i>
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label for="confirm_password">Confirm Password</label>
-                                        <input type="password" class="form-control" id="confirm_password" name="confirm_password">
+                                        <div class="input-group">
+                                            <input type="password" class="form-control" id="confirm_password" name="confirm_password">
+                                            <button type="button" class="btn btn-default" onclick="togglePassword('confirm_password', this)" title="Show/Hide Password">
+                                                <i class="fa fa-eye" id="confirm_password-icon"></i>
+                                            </button>
+                                        </div>
+                                        <small class="text-danger" id="password-match-error" style="display: none;">Passwords do not match</small>
                                     </div>
                                 </div>
                             </div>
@@ -668,6 +690,76 @@ function togglePasswordFields() {
         passwordFields.style.display = 'none';
         document.getElementById('password').required = false;
         document.getElementById('confirm_password').required = false;
+        document.getElementById('password').value = '';
+        document.getElementById('confirm_password').value = '';
+        document.getElementById('password-match-error').style.display = 'none';
     }
 }
+
+function togglePassword(fieldId, button) {
+    const field = document.getElementById(fieldId);
+    const icon = button.querySelector('i');
+    
+    if (field.type === 'password') {
+        field.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+    } else {
+        field.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+    }
+    
+    // Check password match when toggling
+    checkPasswordMatch();
+}
+
+function checkPasswordMatch() {
+    const password = document.getElementById('password');
+    const confirmPassword = document.getElementById('confirm_password');
+    const errorMsg = document.getElementById('password-match-error');
+    
+    if (password && confirmPassword && password.value && confirmPassword.value) {
+        if (password.value !== confirmPassword.value) {
+            errorMsg.style.display = 'block';
+        } else {
+            errorMsg.style.display = 'none';
+        }
+    } else {
+        errorMsg.style.display = 'none';
+    }
+}
+
+// Add event listeners for real-time password matching
+document.addEventListener('DOMContentLoaded', function() {
+    const passwordField = document.getElementById('password');
+    const confirmPasswordField = document.getElementById('confirm_password');
+    
+    if (passwordField) {
+        passwordField.addEventListener('input', checkPasswordMatch);
+    }
+    if (confirmPasswordField) {
+        confirmPasswordField.addEventListener('input', checkPasswordMatch);
+    }
+    
+    // Add form submission validation
+    const forms = document.querySelectorAll('#individual-registration-form, #organization-registration-form');
+    forms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            const createAccountCheckbox = form.querySelector('#create_account');
+            if (createAccountCheckbox && createAccountCheckbox.checked) {
+                const password = document.getElementById('password').value;
+                const confirmPassword = document.getElementById('confirm_password').value;
+                
+                if (password !== confirmPassword) {
+                    e.preventDefault();
+                    document.getElementById('password-match-error').style.display = 'block';
+                    document.getElementById('password-match-error').textContent = 'The password and confirm password fields must match.';
+                    document.getElementById('confirm_password').focus();
+                    return false;
+                }
+            }
+        });
+    });
+});
 </script>

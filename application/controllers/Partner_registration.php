@@ -181,10 +181,19 @@ class Partner_registration extends Front_Controller
         $this->form_validation->set_rules('giving_types[]', 'Giving Types', 'required');
         $this->form_validation->set_rules('giving_frequency_id', 'Giving Frequency', 'required');
         
-        // Optional account creation
+        // Optional account creation - only validate if checkbox is checked
         if ($this->input->post('create_account')) {
             $this->form_validation->set_rules('password', 'Password', 'trim|required|min_length[6]');
-            $this->form_validation->set_rules('confirm_password', 'Confirm Password', 'trim|required|matches[password]');
+            $this->form_validation->set_rules('confirm_password', 'Confirm Password', 'trim|required');
+            
+            // Manually check password match
+            $password = $this->input->post('password');
+            $confirm_password = $this->input->post('confirm_password');
+            
+            if (!empty($password) && !empty($confirm_password) && $password !== $confirm_password) {
+                $this->form_validation->set_rules('confirm_password', 'Confirm Password', 'trim|required', array('required' => ''));
+                $this->session->set_flashdata('error', 'The password and confirm password fields do not match.');
+            }
         }
 
         if ($this->form_validation->run() == false) {
@@ -215,11 +224,14 @@ class Partner_registration extends Front_Controller
         );
 
         // Handle account creation
-        if ($this->input->post('create_account')) {
+        if ($this->input->post('create_account') && !empty($this->input->post('password'))) {
             $partner_data['password'] = password_hash($this->input->post('password'), PASSWORD_DEFAULT);
             $partner_data['account_creation_status'] = 'completed';
+            // Auto-approve accounts with passwords
+            $partner_data['status'] = 'active';
         } else {
             $partner_data['account_creation_status'] = 'skipped';
+            $partner_data['password'] = null; // Ensure password is null if not set
         }
 
         // Insert partner
@@ -265,10 +277,19 @@ class Partner_registration extends Front_Controller
         $this->form_validation->set_rules('giving_types[]', 'Giving Types', 'required');
         $this->form_validation->set_rules('giving_frequency_id', 'Giving Frequency', 'required');
         
-        // Optional account creation
+        // Optional account creation - only validate if checkbox is checked
         if ($this->input->post('create_account')) {
             $this->form_validation->set_rules('password', 'Password', 'trim|required|min_length[6]');
-            $this->form_validation->set_rules('confirm_password', 'Confirm Password', 'trim|required|matches[password]');
+            $this->form_validation->set_rules('confirm_password', 'Confirm Password', 'trim|required');
+            
+            // Manually check password match
+            $password = $this->input->post('password');
+            $confirm_password = $this->input->post('confirm_password');
+            
+            if (!empty($password) && !empty($confirm_password) && $password !== $confirm_password) {
+                $this->form_validation->set_rules('confirm_password', 'Confirm Password', 'trim|required', array('required' => ''));
+                $this->session->set_flashdata('error', 'The password and confirm password fields do not match.');
+            }
         }
 
         if ($this->form_validation->run() == false) {
@@ -301,11 +322,14 @@ class Partner_registration extends Front_Controller
         );
 
         // Handle account creation
-        if ($this->input->post('create_account')) {
+        if ($this->input->post('create_account') && !empty($this->input->post('password'))) {
             $partner_data['password'] = password_hash($this->input->post('password'), PASSWORD_DEFAULT);
             $partner_data['account_creation_status'] = 'completed';
+            // Auto-approve accounts with passwords
+            $partner_data['status'] = 'active';
         } else {
             $partner_data['account_creation_status'] = 'skipped';
+            $partner_data['password'] = null; // Ensure password is null if not set
         }
 
         // Insert partner

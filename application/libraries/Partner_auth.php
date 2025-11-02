@@ -40,8 +40,13 @@ class Partner_auth
             return ['status' => false, 'message' => "Account locked. Try again in {$minutes} minutes"];
         }
 
-        // Check if account is active
-        if ($partner['status'] != 'active') {
+        // Check if partner has a password set (account was created)
+        if (empty($partner['password']) || $partner['password'] === null) {
+            return ['status' => false, 'message' => 'No password set for this account. Please contact support or reset your password.'];
+        }
+
+        // Check if account is active or pending (pending accounts with passwords can login)
+        if ($partner['status'] != 'active' && $partner['status'] != 'pending') {
             return ['status' => false, 'message' => 'Your account is not active. Please contact support'];
         }
 
