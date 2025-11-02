@@ -294,25 +294,25 @@
                                         <div class="form-group">
                                             <label>Password <span class="text-danger">*</span></label>
                                             <div class="input-group">
-                                                <input type="password" class="form-control" name="password" id="password" minlength="6">
-                                                <span class="input-group-addon" id="togglePassword" style="cursor:pointer;">
+                                                <input type="password" class="form-control" name="password" id="partner_password" minlength="6" autocomplete="new-password">
+                                                <span class="input-group-addon" id="togglePartnerPassword" style="cursor:pointer;" title="Show/Hide Password">
                                                     <i class="fa fa-eye"></i>
                                                 </span>
                                             </div>
                                             <small class="text-muted">Minimum 6 characters</small>
-                                            <div class="password-strength" id="passwordStrength"></div>
+                                            <div class="password-strength" id="partnerPasswordStrength"></div>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="form-group">
                                             <label>Confirm Password <span class="text-danger">*</span></label>
                                             <div class="input-group">
-                                                <input type="password" class="form-control" name="password_confirm" id="password_confirm">
-                                                <span class="input-group-addon" id="togglePasswordConfirm" style="cursor:pointer;">
+                                                <input type="password" class="form-control" name="password_confirm" id="partner_password_confirm" autocomplete="new-password">
+                                                <span class="input-group-addon" id="togglePartnerPasswordConfirm" style="cursor:pointer;" title="Show/Hide Password">
                                                     <i class="fa fa-eye"></i>
                                                 </span>
                                             </div>
-                                            <div id="passwordMatch" class="help-block"></div>
+                                            <div id="partnerPasswordMatch" class="help-block"></div>
                                         </div>
                                     </div>
                                 </div>
@@ -545,17 +545,126 @@ input[type="checkbox"] {
     width: 100%;
 }
 
-#passwordMatch {
+#partnerPasswordMatch {
     margin-top: 5px;
     font-weight: 600;
 }
 
-#passwordMatch.match {
+#partnerPasswordMatch.match {
     color: #5cb85c;
 }
 
-#passwordMatch.no-match {
+#partnerPasswordMatch.no-match {
     color: #d9534f;
+}
+
+/* Enhanced Checkbox Styling */
+.checkbox label {
+    cursor: pointer;
+    padding-left: 0;
+}
+
+.checkbox input[type="checkbox"] {
+    margin-right: 10px;
+    vertical-align: middle;
+}
+
+/* Terms and Newsletter Checkboxes */
+#step4 .form-group .checkbox {
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    padding: 15px;
+    background: #f9f9f9;
+    transition: all 0.3s ease;
+}
+
+#step4 .form-group .checkbox:hover {
+    background: #f0f0f0;
+    border-color: #3c8dbc;
+}
+
+#step4 .form-group .checkbox label {
+    margin-bottom: 0;
+    display: flex;
+    align-items: center;
+}
+
+#step4 .form-group .checkbox input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+    margin-top: 0;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+/* FORCE checkboxes to be visible - override all conflicting styles */
+input[type="checkbox"] {
+    appearance: auto !important;
+    -webkit-appearance: checkbox !important;
+    -moz-appearance: checkbox !important;
+    width: 20px !important;
+    height: 20px !important;
+    min-width: 20px !important;
+    min-height: 20px !important;
+    max-width: 20px !important;
+    max-height: 20px !important;
+    cursor: pointer !important;
+    display: inline-block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    position: relative !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 1px solid #999 !important;
+    background: white !important;
+    box-shadow: none !important;
+    outline: none !important;
+    vertical-align: middle !important;
+    z-index: 1 !important;
+}
+
+/* Extra specificity for our specific checkboxes */
+#agree_terms,
+#subscribe_newsletter,
+#create_account {
+    appearance: auto !important;
+    -webkit-appearance: checkbox !important;
+    -moz-appearance: checkbox !important;
+    width: 20px !important;
+    height: 20px !important;
+    display: inline-block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* Override Bootstrap checkbox styles if present */
+.checkbox input[type="checkbox"],
+.checkbox-inline input[type="checkbox"] {
+    appearance: auto !important;
+    -webkit-appearance: checkbox !important;
+    -moz-appearance: checkbox !important;
+    position: relative !important;
+    margin-left: 0 !important;
+    margin-top: 0 !important;
+}
+
+/* Giving Type Items - Enhanced */
+.giving-type-item {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.giving-type-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.giving-type-item.selected {
+    border-left-color: #00a65a;
+    background: #f0f9f0;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 </style>
 
@@ -578,6 +687,9 @@ $(document).ready(function() {
         'margin-right': '15px'
     });
     console.log('Checkboxes found:', $('input[type="checkbox"]').length);
+    console.log('Agree terms checkbox:', $('#agree_terms').length);
+    console.log('Newsletter checkbox:', $('#subscribe_newsletter').length);
+    console.log('Create account checkbox:', $('#create_account').length);
     
     // Giving Types - Enable/Disable amount input based on checkbox
     $('.giving-type-checkbox').change(function() {
@@ -625,9 +737,10 @@ $(document).ready(function() {
         $('#currency-symbol-display').text(symbol);
     });
 
-    // Password Toggle Show/Hide
-    $('#togglePassword').click(function() {
-        var passwordInput = $('#password');
+    // Password Toggle Show/Hide - Fixed with unique IDs
+    $('#togglePartnerPassword').click(function(e) {
+        e.preventDefault();
+        var passwordInput = $('#partner_password');
         var icon = $(this).find('i');
 
         if (passwordInput.attr('type') === 'password') {
@@ -639,9 +752,10 @@ $(document).ready(function() {
         }
     });
 
-    // Confirm Password Toggle Show/Hide
-    $('#togglePasswordConfirm').click(function() {
-        var passwordInput = $('#password_confirm');
+    // Confirm Password Toggle Show/Hide - Fixed with unique IDs
+    $('#togglePartnerPasswordConfirm').click(function(e) {
+        e.preventDefault();
+        var passwordInput = $('#partner_password_confirm');
         var icon = $(this).find('i');
 
         if (passwordInput.attr('type') === 'password') {
@@ -653,33 +767,33 @@ $(document).ready(function() {
         }
     });
 
-    // Password strength check
-    $('#password').on('input', function() {
+    // Password strength check - Using unique IDs
+    $('#partner_password').on('input', function() {
         checkPasswordStrength($(this).val());
         checkPasswordMatch(); // Check match when password changes
     });
 
-    // Password match check - trigger on both password fields
-    $('#password, #password_confirm').on('input', function() {
+    // Password match check - trigger on both password fields with unique IDs
+    $('#partner_password, #partner_password_confirm').on('input', function() {
         checkPasswordMatch();
     });
 
-    // Create Account checkbox - show/hide password fields
+    // Create Account checkbox - show/hide password fields with unique IDs
     $('#create_account').change(function() {
         if ($(this).is(':checked')) {
             $('#passwordFields').show(); // Changed from slideDown to show
-            $('#password, #password_confirm').attr('required', true);
+            $('#partner_password, #partner_password_confirm').attr('required', true);
         } else {
             $('#passwordFields').hide(); // Changed from slideUp to hide
-            $('#password, #password_confirm').attr('required', false).val('');
-            $('#passwordStrength').removeClass('weak medium strong');
-            $('#passwordMatch').text('').removeClass('match no-match');
+            $('#partner_password, #partner_password_confirm').attr('required', false).val('');
+            $('#partnerPasswordStrength').removeClass('weak medium strong');
+            $('#partnerPasswordMatch').text('').removeClass('match no-match');
         }
     });
 
     // Initialize: Ensure password fields are visible and required since checkbox is checked by default
     $('#passwordFields').show();
-    $('#password, #password_confirm').attr('required', true);
+    $('#partner_password, #partner_password_confirm').attr('required', true);
 
     // Multi-step form navigation
     $('.btn-next').click(function() {
@@ -701,13 +815,32 @@ $(document).ready(function() {
         checkExistingUser();
     });
 
-    // Form submission
+    // Form submission with password validation
     $('#registrationForm').submit(function(e) {
         e.preventDefault();
 
         if (!$('#agree_terms').is(':checked')) {
             alert('Please agree to the Terms and Conditions');
             return false;
+        }
+
+        // Validate passwords if create account is checked - Using unique IDs
+        if ($('#create_account').is(':checked')) {
+            var password = $('#partner_password').val();
+            var confirm = $('#partner_password_confirm').val();
+
+            if (!password || password.length < 6) {
+                alert('Password must be at least 6 characters long');
+                $('#partner_password').focus();
+                return false;
+            }
+
+            if (password !== confirm) {
+                alert('The password and confirm password fields do not match. Please check and try again.');
+                $('#partner_password_confirm').focus();
+                $('#partnerPasswordMatch').text('✗ Passwords do not match').removeClass('match').addClass('no-match');
+                return false;
+            }
         }
 
         $('#loadingModal').modal('show');
@@ -828,10 +961,10 @@ function calculateTotal() {
     $('#totalContributions').text(total.toFixed(2));
 }
 
-// Check password strength
+// Check password strength - Using unique ID
 function checkPasswordStrength(password) {
     var strength = 0;
-    var $indicator = $('#passwordStrength');
+    var $indicator = $('#partnerPasswordStrength');
 
     if (password.length === 0) {
         $indicator.removeClass('weak medium strong');
@@ -855,21 +988,25 @@ function checkPasswordStrength(password) {
     }
 }
 
-// Check if passwords match
+// Check if passwords match - Enhanced with unique IDs
 function checkPasswordMatch() {
-    var password = $('#password').val();
-    var confirm = $('#password_confirm').val();
-    var $match = $('#passwordMatch');
+    var password = $('#partner_password').val();
+    var confirm = $('#partner_password_confirm').val();
+    var $match = $('#partnerPasswordMatch');
 
+    // Only show message if confirm password has content
     if (confirm.length === 0) {
         $match.text('').removeClass('match no-match');
-        return;
+        return false;
     }
 
-    if (password === confirm) {
+    // Check if passwords match
+    if (password.length > 0 && password === confirm) {
         $match.text('✓ Passwords match').removeClass('no-match').addClass('match');
+        return true;
     } else {
         $match.text('✗ Passwords do not match').removeClass('match').addClass('no-match');
+        return false;
     }
 }
 </script>

@@ -294,25 +294,25 @@
                                         <div class="form-group">
                                             <label>Password <span class="text-danger">*</span></label>
                                             <div class="input-group">
-                                                <input type="password" class="form-control" name="password" id="password" minlength="6" autocomplete="new-password">
-                                                <span class="input-group-addon" id="togglePassword" style="cursor:pointer;" title="Show/Hide Password">
+                                                <input type="password" class="form-control" name="password" id="partner_password" minlength="6" autocomplete="new-password">
+                                                <span class="input-group-addon" id="togglePartnerPassword" style="cursor:pointer;" title="Show/Hide Password">
                                                     <i class="fa fa-eye"></i>
                                                 </span>
                                             </div>
                                             <small class="text-muted">Minimum 6 characters</small>
-                                            <div class="password-strength" id="passwordStrength"></div>
+                                            <div class="password-strength" id="partnerPasswordStrength"></div>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="form-group">
                                             <label>Confirm Password <span class="text-danger">*</span></label>
                                             <div class="input-group">
-                                                <input type="password" class="form-control" name="password_confirm" id="password_confirm" autocomplete="new-password">
-                                                <span class="input-group-addon" id="togglePasswordConfirm" style="cursor:pointer;" title="Show/Hide Password">
+                                                <input type="password" class="form-control" name="password_confirm" id="partner_password_confirm" autocomplete="new-password">
+                                                <span class="input-group-addon" id="togglePartnerPasswordConfirm" style="cursor:pointer;" title="Show/Hide Password">
                                                     <i class="fa fa-eye"></i>
                                                 </span>
                                             </div>
-                                            <div id="passwordMatch" class="help-block"></div>
+                                            <div id="partnerPasswordMatch" class="help-block"></div>
                                         </div>
                                     </div>
                                 </div>
@@ -545,16 +545,16 @@ input[type="checkbox"] {
     width: 100%;
 }
 
-#passwordMatch {
+#partnerPasswordMatch {
     margin-top: 5px;
     font-weight: 600;
 }
 
-#passwordMatch.match {
+#partnerPasswordMatch.match {
     color: #5cb85c;
 }
 
-#passwordMatch.no-match {
+#partnerPasswordMatch.no-match {
     color: #d9534f;
 }
 
@@ -737,10 +737,10 @@ $(document).ready(function() {
         $('#currency-symbol-display').text(symbol);
     });
 
-    // Password Toggle Show/Hide - Fixed
-    $('#togglePassword').click(function(e) {
+    // Password Toggle Show/Hide - Fixed with unique IDs
+    $('#togglePartnerPassword').click(function(e) {
         e.preventDefault();
-        var passwordInput = $('#password');
+        var passwordInput = $('#partner_password');
         var icon = $(this).find('i');
 
         if (passwordInput.attr('type') === 'password') {
@@ -752,10 +752,10 @@ $(document).ready(function() {
         }
     });
 
-    // Confirm Password Toggle Show/Hide - Fixed
-    $('#togglePasswordConfirm').click(function(e) {
+    // Confirm Password Toggle Show/Hide - Fixed with unique IDs
+    $('#togglePartnerPasswordConfirm').click(function(e) {
         e.preventDefault();
-        var passwordInput = $('#password_confirm');
+        var passwordInput = $('#partner_password_confirm');
         var icon = $(this).find('i');
 
         if (passwordInput.attr('type') === 'password') {
@@ -767,33 +767,33 @@ $(document).ready(function() {
         }
     });
 
-    // Password strength check
-    $('#password').on('input', function() {
+    // Password strength check - Using unique IDs
+    $('#partner_password').on('input', function() {
         checkPasswordStrength($(this).val());
         checkPasswordMatch(); // Check match when password changes
     });
 
-    // Password match check - trigger on both password fields
-    $('#password, #password_confirm').on('input', function() {
+    // Password match check - trigger on both password fields with unique IDs
+    $('#partner_password, #partner_password_confirm').on('input', function() {
         checkPasswordMatch();
     });
 
-    // Create Account checkbox - show/hide password fields
+    // Create Account checkbox - show/hide password fields with unique IDs
     $('#create_account').change(function() {
         if ($(this).is(':checked')) {
             $('#passwordFields').show(); // Changed from slideDown to show
-            $('#password, #password_confirm').attr('required', true);
+            $('#partner_password, #partner_password_confirm').attr('required', true);
         } else {
             $('#passwordFields').hide(); // Changed from slideUp to hide
-            $('#password, #password_confirm').attr('required', false).val('');
-            $('#passwordStrength').removeClass('weak medium strong');
-            $('#passwordMatch').text('').removeClass('match no-match');
+            $('#partner_password, #partner_password_confirm').attr('required', false).val('');
+            $('#partnerPasswordStrength').removeClass('weak medium strong');
+            $('#partnerPasswordMatch').text('').removeClass('match no-match');
         }
     });
 
     // Initialize: Ensure password fields are visible and required since checkbox is checked by default
     $('#passwordFields').show();
-    $('#password, #password_confirm').attr('required', true);
+    $('#partner_password, #partner_password_confirm').attr('required', true);
 
     // Multi-step form navigation
     $('.btn-next').click(function() {
@@ -824,21 +824,21 @@ $(document).ready(function() {
             return false;
         }
 
-        // Validate passwords if create account is checked
+        // Validate passwords if create account is checked - Using unique IDs
         if ($('#create_account').is(':checked')) {
-            var password = $('#password').val();
-            var confirm = $('#password_confirm').val();
+            var password = $('#partner_password').val();
+            var confirm = $('#partner_password_confirm').val();
 
             if (!password || password.length < 6) {
                 alert('Password must be at least 6 characters long');
-                $('#password').focus();
+                $('#partner_password').focus();
                 return false;
             }
 
             if (password !== confirm) {
                 alert('The password and confirm password fields do not match. Please check and try again.');
-                $('#password_confirm').focus();
-                $('#passwordMatch').text('✗ Passwords do not match').removeClass('match').addClass('no-match');
+                $('#partner_password_confirm').focus();
+                $('#partnerPasswordMatch').text('✗ Passwords do not match').removeClass('match').addClass('no-match');
                 return false;
             }
         }
@@ -961,10 +961,10 @@ function calculateTotal() {
     $('#totalContributions').text(total.toFixed(2));
 }
 
-// Check password strength
+// Check password strength - Using unique ID
 function checkPasswordStrength(password) {
     var strength = 0;
-    var $indicator = $('#passwordStrength');
+    var $indicator = $('#partnerPasswordStrength');
 
     if (password.length === 0) {
         $indicator.removeClass('weak medium strong');
@@ -988,11 +988,11 @@ function checkPasswordStrength(password) {
     }
 }
 
-// Check if passwords match - Enhanced
+// Check if passwords match - Enhanced with unique IDs
 function checkPasswordMatch() {
-    var password = $('#password').val();
-    var confirm = $('#password_confirm').val();
-    var $match = $('#passwordMatch');
+    var password = $('#partner_password').val();
+    var confirm = $('#partner_password_confirm').val();
+    var $match = $('#partnerPasswordMatch');
 
     // Only show message if confirm password has content
     if (confirm.length === 0) {
