@@ -117,13 +117,27 @@ class Partnercontributions extends Admin_Controller
                 $contribution_data['attachment'] = 'uploads/partner_contributions/' . $file_name;
             }
 
+            // Enable detailed error logging
+            $this->db->db_debug = FALSE;
+            
             $insert_id = $this->contribution_model->add($contribution_data);
 
             if ($insert_id) {
                 $this->session->set_flashdata('msg', '<div class="alert alert-success">Contribution added successfully</div>');
                 redirect('admin/partnercontributions/show/' . $insert_id);
             } else {
-                $this->session->set_flashdata('msg', '<div class="alert alert-danger">Failed to add contribution</div>');
+                // Get detailed database error
+                $db_error = $this->db->error();
+                $error_msg = 'Failed to add contribution';
+                
+                if (!empty($db_error['message'])) {
+                    $error_msg .= ': ' . $db_error['message'];
+                    // Log to CodeIgniter log file
+                    log_message('error', 'Contribution insert failed: ' . print_r($db_error, true));
+                    log_message('error', 'Contribution data: ' . print_r($contribution_data, true));
+                }
+                
+                $this->session->set_flashdata('msg', '<div class="alert alert-danger">' . $error_msg . '</div>');
                 redirect('admin/partnercontributions/add');
             }
         }

@@ -48,14 +48,13 @@ class Debug_contribution extends CI_Controller
             echo "<h2>2. Partner Contributions Table Structure</h2>";
             $fields = $this->db->field_data('partner_contributions');
             echo "<table>";
-            echo "<tr><th>Field Name</th><th>Type</th><th>Max Length</th><th>Default</th><th>Nullable</th></tr>";
+            echo "<tr><th>Field Name</th><th>Type</th><th>Max Length</th><th>Nullable</th></tr>";
             foreach ($fields as $field) {
                 echo "<tr>";
                 echo "<td><strong>" . htmlspecialchars($field->name) . "</strong></td>";
                 echo "<td>" . htmlspecialchars($field->type) . "</td>";
-                echo "<td>" . htmlspecialchars($field->max_length) . "</td>";
-                echo "<td>" . htmlspecialchars($field->default) . "</td>";
-                echo "<td>" . ($field->null ? 'YES' : 'NO') . "</td>";
+                echo "<td>" . (isset($field->max_length) ? htmlspecialchars($field->max_length) : 'N/A') . "</td>";
+                echo "<td>" . (isset($field->null) && $field->null ? 'YES' : 'NO') . "</td>";
                 echo "</tr>";
             }
             echo "</table>";
