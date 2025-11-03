@@ -83,4 +83,7 @@ $route['partnerdashboard/update-giving-settings'] = 'partnerdashboard/update_giv
 $route['partnerdashboard/update-password'] = 'partnerdashboard/update_password';
 $route['partnerdashboard/add-contribution'] = 'partnerdashboard/add_contribution';
 $route['partnerdashboard/add-sample-contributions'] = 'partnerdashboard/add_sample_contributions';
-$route['partnerdashboard/debug-stats'] = 'partnerdashboard/debug_stats'; 
+$route['partnerdashboard/debug-stats'] = 'partnerdashboard/debug_stats';
+
+// Partner Debug Route
+$route['partner-debug'] = 'partner_debug/index'; 
