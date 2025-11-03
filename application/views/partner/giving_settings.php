@@ -70,8 +70,11 @@
                                     <option value="<?php echo $frequency->id; ?>"
                                             <?php 
                                             $is_selected = false;
-                                            if (isset($current_settings) && !empty($current_settings)) {
-                                                $is_selected = ($current_settings[0]->giving_frequency_id == $frequency->id);
+                                            // Check from partner data first, then from current settings
+                                            if (isset($current_frequency) && !empty($current_frequency)) {
+                                                $is_selected = ($current_frequency == $frequency->id);
+                                            } elseif (isset($partner['giving_frequency_id']) && !empty($partner['giving_frequency_id'])) {
+                                                $is_selected = ($partner['giving_frequency_id'] == $frequency->id);
                                             }
                                             echo $is_selected ? 'selected' : '';
                                             ?>>
@@ -87,9 +90,17 @@
                             <div class="form-group">
                                 <label for="currency">Currency</label>
                                 <select class="form-control" id="currency" name="currency">
-                                    <option value="USD" <?php echo (isset($current_settings) && !empty($current_settings) && $current_settings[0]->currency == 'USD') ? 'selected' : ''; ?>>USD</option>
-                                    <option value="ZWL" <?php echo (isset($current_settings) && !empty($current_settings) && $current_settings[0]->currency == 'ZWL') ? 'selected' : ''; ?>>ZWL</option>
-                                    <option value="ZAR" <?php echo (isset($current_settings) && !empty($current_settings) && $current_settings[0]->currency == 'ZAR') ? 'selected' : ''; ?>>ZAR</option>
+                                    <?php 
+                                    $current_currency = 'USD'; // Default
+                                    if (isset($current_settings) && !empty($current_settings) && isset($current_settings[0]->currency)) {
+                                        $current_currency = $current_settings[0]->currency;
+                                    } elseif (isset($partner['currency']) && !empty($partner['currency'])) {
+                                        $current_currency = $partner['currency'];
+                                    }
+                                    ?>
+                                    <option value="USD" <?php echo ($current_currency == 'USD') ? 'selected' : ''; ?>>USD</option>
+                                    <option value="ZWL" <?php echo ($current_currency == 'ZWL') ? 'selected' : ''; ?>>ZWL</option>
+                                    <option value="ZAR" <?php echo ($current_currency == 'ZAR') ? 'selected' : ''; ?>>ZAR</option>
                                 </select>
                             </div>
                             
@@ -111,7 +122,7 @@
                         <div class="col-md-12">
                             <div class="form-group">
                                 <label for="notes">Additional Notes</label>
-                                <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="Any additional information about your giving preferences..."><?php echo (isset($current_settings) && !empty($current_settings)) ? $current_settings[0]->notes : ''; ?></textarea>
+                                <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="Any additional information about your giving preferences..."><?php echo isset($partner['notes']) ? $partner['notes'] : ''; ?></textarea>
                             </div>
                         </div>
                     </div>
