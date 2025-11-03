@@ -155,13 +155,22 @@
                     </li>
 
                     <?php
+                    // DEBUG: Show what permissions are loaded (visible in page source and console)
+                    if (isset($partner_permissions) && is_array($partner_permissions)) {
+                        echo '<!-- DEBUG: Partner Permissions Array: ' . implode(', ', $partner_permissions) . ' -->';
+                        echo '<script>console.log("Partner Permissions Loaded:", ' . json_encode($partner_permissions) . ');</script>';
+                    } else {
+                        echo '<!-- DEBUG: No permissions array found -->';
+                        echo '<script>console.log("Partner Permissions: EMPTY OR NOT SET");</script>';
+                    }
+                    
                     // Show permission-based menu items
                     if (isset($partner_permissions) && !empty($partner_permissions)):
                     ?>
                     <li class="header">ADDITIONAL RESOURCES</li>
 
                     <?php
-                    // Define permission-based menu items (codes match database partner_permission_types table)
+                    // Define permission-based menu items (codes must match database partner_permission_types table)
                     $permission_menus = array(
                         'library' => array(
                             'label' => 'Library',
@@ -187,6 +196,11 @@
                             'label' => 'Zoom',
                             'icon' => 'fa-video-camera',
                             'url' => 'partnerdashboard/zoom'
+                        ),
+                        'events_access' => array(
+                            'label' => 'Events & Calendar',
+                            'icon' => 'fa-calendar',
+                            'url' => 'partnerdashboard/events'
                         )
                     );
 

@@ -483,7 +483,7 @@ class Partnerdashboard extends Partner_Controller
     // =================================================================
 
     /**
-     * Library Access - Redirect to library module
+     * Library Access
      */
     public function library()
     {
@@ -493,9 +493,21 @@ class Partnerdashboard extends Partner_Controller
             redirect('partnerdashboard');
         }
 
-        // Redirect to library module
-        // If you have a specific library module for students, redirect there
-        redirect('librarymanagement');
+        $data = [];
+        $data['title'] = 'Library';
+        $data['page_title'] = 'Library Access';
+        $data['page_description'] = 'Browse library resources and books';
+        $data['active_menu'] = 'library';
+        $data['partner'] = $this->partner_data;
+        $data['partner_permissions'] = $this->partner_permissions;
+        $data['giving_types'] = $this->giving_type_model->getAll();
+        $data['giving_frequencies'] = $this->giving_frequency_model->getAll();
+        $data['setting_model'] = $this->setting_model;
+
+        // Load library view
+        $this->load->view('layout/partner/header', $data);
+        $this->load->view('partner/library', $data);
+        $this->load->view('layout/partner/footer', $data);
     }
 
     /**
@@ -509,14 +521,27 @@ class Partnerdashboard extends Partner_Controller
             redirect('partnerdashboard');
         }
 
-        // Check if online course module is enabled
-        if (!$this->module_lib->hasModule('online_course')) {
-            $this->session->set_flashdata('error', 'Online Courses module is not available.');
-            redirect('partnerdashboard');
-        }
+        $data = [];
+        $data['title'] = 'Online Courses';
+        $data['page_title'] = 'Online Courses';
+        $data['page_description'] = 'Access online courses and learning materials';
+        $data['active_menu'] = 'online_courses';
+        $data['partner'] = $this->partner_data;
+        $data['partner_permissions'] = $this->partner_permissions;
+        $data['giving_types'] = $this->giving_type_model->getAll();
+        $data['giving_frequencies'] = $this->giving_frequency_model->getAll();
+        $data['setting_model'] = $this->setting_model;
 
-        // Redirect to online course module
-        redirect('onlinecourse');
+        // Check if online course module is enabled
+        if ($this->module_lib->hasModule('online_course')) {
+            // Redirect to online course student portal
+            redirect('user/course');
+        } else {
+            // Show custom page explaining courses are not available yet
+            $this->load->view('layout/partner/header', $data);
+            $this->load->view('partner/courses', $data);
+            $this->load->view('layout/partner/footer', $data);
+        }
     }
 
     /**
@@ -587,5 +612,33 @@ class Partnerdashboard extends Partner_Controller
 
         // Redirect to zoom module
         redirect('user/zoom');
+    }
+
+    /**
+     * Events Access
+     */
+    public function events()
+    {
+        // Check if partner has events permission
+        if (!in_array('events_access', $this->partner_permissions)) {
+            $this->session->set_flashdata('error', 'You do not have permission to access Events.');
+            redirect('partnerdashboard');
+        }
+
+        $data = [];
+        $data['title'] = 'Events & Calendar';
+        $data['page_title'] = 'Events & Calendar';
+        $data['page_description'] = 'View school events and calendar';
+        $data['active_menu'] = 'events_access';
+        $data['partner'] = $this->partner_data;
+        $data['partner_permissions'] = $this->partner_permissions;
+        $data['giving_types'] = $this->giving_type_model->getAll();
+        $data['giving_frequencies'] = $this->giving_frequency_model->getAll();
+        $data['setting_model'] = $this->setting_model;
+
+        // Load events view
+        $this->load->view('layout/partner/header', $data);
+        $this->load->view('partner/events', $data);
+        $this->load->view('layout/partner/footer', $data);
     }
 }
