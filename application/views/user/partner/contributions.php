@@ -86,15 +86,15 @@
                             <?php
                             // Determine the correct settings URL based on context
                             if (isset($is_partner_portal) && $is_partner_portal) {
-                                // Partner portal - use partnerdashboard route
-                                $settings_url = base_url('partnerdashboard/profile');
+                                // Partner portal - use partnerdashboard giving-settings route
+                                $settings_url = base_url('partnerdashboard/giving-settings');
                             } else {
                                 // Student/Parent/Staff portal - use user/partner route
                                 $settings_url = base_url('user/partner/settings?partner_id=' . $partner['id']);
                             }
                             ?>
-                            <a href="<?php echo $settings_url; ?>" class="btn btn-primary btn-sm">
-                                <i class="fa fa-cog"></i> <?php echo $this->lang->line('settings'); ?>
+                            <a href="<?php echo $settings_url; ?>" class="btn btn-primary btn-sm" data-toggle="tooltip" title="Manage Giving Settings">
+                                <i class="fa fa-cog"></i>
                             </a>
                         </div>
                     </div>

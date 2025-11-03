@@ -237,6 +237,7 @@ class Partnerdashboard extends Partner_Controller
         $data['active_menu'] = 'contributions';
         $data['partner'] = $this->partner_data;
         $data['partner_permissions'] = $this->partner_permissions;
+        $data['is_partner_portal'] = true; // Flag to identify partner portal context
 
         // Load giving types and frequencies for contributions view
         $data['giving_types'] = $this->giving_type_model->getAll();
@@ -248,6 +249,7 @@ class Partnerdashboard extends Partner_Controller
 
         // Make setting_model available in views
         $data['setting_model'] = $this->setting_model;
+        $data['giving_type_model'] = $this->giving_type_model; // Add giving_type_model for view
         
         $this->load->view('layout/partner/header', $data);
         $this->load->view('user/partner/contributions', $data);
