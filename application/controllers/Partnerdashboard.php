@@ -671,14 +671,27 @@ class Partnerdashboard extends Partner_Controller
             redirect('partnerdashboard');
         }
 
-        // Check if gmeet module is enabled
-        if (!$this->module_lib->hasModule('gmeet_live_class')) {
-            $this->session->set_flashdata('error', 'Google Meet module is not available.');
-            redirect('partnerdashboard');
-        }
+        $data = [];
+        $data['title'] = 'Google Meet';
+        $data['page_title'] = 'Google Meet';
+        $data['page_description'] = 'Join online classes via Google Meet';
+        $data['active_menu'] = 'gmeet';
+        $data['partner'] = $this->partner_data;
+        $data['partner_permissions'] = $this->partner_permissions;
+        $data['giving_types'] = $this->giving_type_model->getAll();
+        $data['giving_frequencies'] = $this->giving_frequency_model->getAll();
+        $data['setting_model'] = $this->setting_model;
 
-        // Redirect to gmeet module
-        redirect('user/gmeet');
+        // Check if gmeet module is enabled
+        if ($this->module_lib->hasModule('gmeet_live_class')) {
+            // Redirect to gmeet module
+            redirect('user/gmeet');
+        } else {
+            // Show custom page explaining gmeet is not available yet
+            $this->load->view('layout/partner/header', $data);
+            $this->load->view('partner/gmeet', $data);
+            $this->load->view('layout/partner/footer', $data);
+        }
     }
 
     /**
@@ -692,14 +705,27 @@ class Partnerdashboard extends Partner_Controller
             redirect('partnerdashboard');
         }
 
-        // Check if zoom module is enabled
-        if (!$this->module_lib->hasModule('zoom_live_class')) {
-            $this->session->set_flashdata('error', 'Zoom module is not available.');
-            redirect('partnerdashboard');
-        }
+        $data = [];
+        $data['title'] = 'Zoom';
+        $data['page_title'] = 'Zoom';
+        $data['page_description'] = 'Join online classes via Zoom';
+        $data['active_menu'] = 'zoom';
+        $data['partner'] = $this->partner_data;
+        $data['partner_permissions'] = $this->partner_permissions;
+        $data['giving_types'] = $this->giving_type_model->getAll();
+        $data['giving_frequencies'] = $this->giving_frequency_model->getAll();
+        $data['setting_model'] = $this->setting_model;
 
-        // Redirect to zoom module
-        redirect('user/zoom');
+        // Check if zoom module is enabled
+        if ($this->module_lib->hasModule('zoom_live_class')) {
+            // Redirect to zoom module
+            redirect('user/zoom');
+        } else {
+            // Show custom page explaining zoom is not available yet
+            $this->load->view('layout/partner/header', $data);
+            $this->load->view('partner/zoom', $data);
+            $this->load->view('layout/partner/footer', $data);
+        }
     }
 
     /**
