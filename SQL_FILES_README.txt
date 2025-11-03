@@ -16,9 +16,9 @@ ROOT DIRECTORY SQL FILES:
    Action: Keep as backup
 
 3. SIMPLE_fix_giving_types_sidebar.sql
-   Purpose: Add "Giving Types" to admin sidebar (removes Partner Settings/Frequencies)
-   When to run: If you want to add Giving Types menu to admin sidebar
-   Action: Run in phpMyAdmin if needed
+   Purpose: Add "Giving Types" and "Giving Frequencies" to admin sidebar
+   When to run: Run this NOW to add both menus to admin sidebar
+   Action: Run in phpMyAdmin (removes old Partner Settings menu)
 
 4. add_events_access_permission.sql
    Purpose: Add Events Access permission type

@@ -1,21 +1,27 @@
-<!-- Content Header (Page header) -->
-<section class="content-header">
-    <h1>
-        <i class="fa fa-clock-o"></i> Giving Frequencies
-        <small>Manage giving frequencies for partners</small>
-    </h1>
-    <ol class="breadcrumb">
-        <li><a href="<?php echo base_url(); ?>admin/dashboard"><i class="fa fa-dashboard"></i> Home</a></li>
-        <li><a href="<?php echo base_url(); ?>admin/partners">Partners</a></li>
-        <li class="active">Giving Frequencies</li>
-    </ol>
-</section>
+<div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+        <h1>
+            <i class="fa fa-clock-o"></i> Giving Frequencies
+            <small>Manage giving frequencies for partners</small>
+        </h1>
+        <ol class="breadcrumb">
+            <li><a href="<?php echo base_url(); ?>admin/dashboard"><i class="fa fa-dashboard"></i> Home</a></li>
+            <li><a href="<?php echo base_url(); ?>admin/partners">Partners</a></li>
+            <li class="active">Giving Frequencies</li>
+        </ol>
+    </section>
 
-<!-- Main content -->
-<section class="content">
-    <div class="row">
-        <div class="col-md-12">
-            <div class="box box-primary">
+    <!-- Main content -->
+    <section class="content">
+        <div class="row">
+            <div class="col-md-12">
+                <!-- Display flash messages -->
+                <?php if ($this->session->flashdata('msg')) {
+                    echo $this->session->flashdata('msg');
+                } ?>
+                
+                <div class="box box-primary">
                 <div class="box-header with-border">
                     <h3 class="box-title"><i class="fa fa-clock-o"></i> Giving Frequencies</h3>
                     <div class="box-tools pull-right">
@@ -156,6 +162,8 @@
         </div>
     </div>
 </div>
+</div>
+<!-- /.content-wrapper -->
 
 <script type="text/javascript">
 $(document).ready(function() {
