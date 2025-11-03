@@ -122,7 +122,21 @@ class Partnercontributions extends Admin_Controller
             
             $insert_id = $this->contribution_model->add($contribution_data);
 
-            if ($insert_id) {
+            // Check if insert was successful (insert_id can be 0 if AUTO_INCREMENT is broken, so check !== false)
+            if ($insert_id !== false) {
+                // If insert_id is 0 (broken AUTO_INCREMENT), get the last inserted record
+                if ($insert_id == 0) {
+                    $last_contribution = $this->db->select('id')
+                                                   ->where('receipt_no', $contribution_data['receipt_no'])
+                                                   ->order_by('created_at', 'DESC')
+                                                   ->limit(1)
+                                                   ->get('partner_contributions')
+                                                   ->row();
+                    if ($last_contribution) {
+                        $insert_id = $last_contribution->id;
+                    }
+                }
+                
                 $this->session->set_flashdata('msg', '<div class="alert alert-success">Contribution added successfully</div>');
                 redirect('admin/partnercontributions/show/' . $insert_id);
             } else {
