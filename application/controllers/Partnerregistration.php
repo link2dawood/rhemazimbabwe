@@ -243,7 +243,7 @@ class Partnerregistration extends Front_Controller {
             'total_contribution_amount' => 0,
             'currency' => $this->input->post('currency') ?? 'USD',
             'start_date' => date('Y-m-d'),
-            'status' => 'pending', // Pending admin approval
+            'status' => 'active', // Automatically approved - no admin approval needed
             'notes' => $this->input->post('notes') ?: NULL,
             'student_id' => !empty($student_id) ? $student_id : NULL,
             'is_active' => 1,
@@ -319,7 +319,7 @@ class Partnerregistration extends Front_Controller {
 
             echo json_encode([
                 'status' => 'success',
-                'message' => 'Registration successful! Your application is pending approval.',
+                'message' => 'Registration successful! Your account has been activated.',
                 'partner_code' => $partner_data['partner_code'],
                 'redirect' => base_url('partnerregistration/success/' . $partner_id)
             ]);
@@ -402,7 +402,7 @@ class Partnerregistration extends Front_Controller {
 
             $this->email->from('noreply@rhemazimbabwe.com', 'Rhema Zimbabwe');
             $this->email->to($partner_data['email']);
-            $this->email->subject('Partner Registration Confirmation');
+            $this->email->subject('Partner Registration - Account Activated!');
 
             $message = $this->load->view('themes/default/partnerregistration/email/confirmation', [
                 'partner_data' => $partner_data,

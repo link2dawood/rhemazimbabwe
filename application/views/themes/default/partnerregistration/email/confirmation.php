@@ -17,6 +17,11 @@
         <p style="font-size: 16px;">Dear <?php echo $partner_data['firstname'] . ' ' . $partner_data['lastname']; ?>,</p>
 
         <p>Thank you for registering to become a partner with Rhema Zimbabwe! We are excited to have you join our community of supporters.</p>
+        
+        <div style="background: #d4edda; border: 2px solid #28a745; padding: 15px; border-radius: 5px; margin: 20px 0; text-align: center;">
+            <h2 style="color: #28a745; margin: 0;"><i>✓</i> Your Account is Now Active!</h2>
+            <p style="margin: 10px 0 0 0; color: #155724;">You can login immediately and start managing your contributions.</p>
+        </div>
 
         <div style="background: #f9f9f9; padding: 20px; border-left: 4px solid #3c8dbc; margin: 20px 0;">
             <h3 style="margin-top: 0; color: #3c8dbc;">Your Registration Details</h3>
@@ -43,7 +48,7 @@
                 </tr>
                 <tr>
                     <td style="padding: 8px 0; font-weight: bold;">Status:</td>
-                    <td style="padding: 8px 0;"><span style="background: #f39c12; color: #fff; padding: 4px 12px; border-radius: 3px; font-size: 12px;">Pending Approval</span></td>
+                    <td style="padding: 8px 0;"><span style="background: #28a745; color: #fff; padding: 4px 12px; border-radius: 3px; font-size: 12px;">✓ Active</span></td>
                 </tr>
             </table>
         </div>
@@ -51,27 +56,31 @@
         <h3 style="color: #3c8dbc; margin-top: 30px;">What Happens Next?</h3>
         <ol style="padding-left: 20px;">
             <li style="margin-bottom: 10px;">
-                <strong>Review Process:</strong> Our team will review your registration within 1-2 business days.
+                <strong>Login to Your Account:</strong> <?php if (!empty($partner_data['password'])): ?>You can login immediately using your email and password.<?php else: ?>Visit the partner portal to set up your password and login.<?php endif; ?>
             </li>
             <li style="margin-bottom: 10px;">
-                <strong>Approval Notification:</strong> You'll receive another email once your registration is approved.
+                <strong>Access Your Dashboard:</strong> View your contribution history, manage settings, and download receipts.
             </li>
             <li style="margin-bottom: 10px;">
-                <strong>Partnership Begins:</strong> After approval, you'll receive information on how to make your first contribution.
+                <strong>Make Your First Contribution:</strong> Start making a difference by contributing through our secure payment system.
             </li>
             <li style="margin-bottom: 10px;">
                 <strong>Stay Connected:</strong> You'll receive regular updates about the impact of your partnership.
             </li>
         </ol>
+        
+        <?php if (!empty($partner_data['password'])): ?>
+        <div style="background: #e7f3ff; border-left: 4px solid #0066cc; padding: 15px; margin: 20px 0;">
+            <h4 style="margin-top: 0; color: #0066cc;">Ready to Login?</h4>
+            <p style="margin-bottom: 10px;">Your account is ready! Click the button below to access your partner dashboard:</p>
+            <div style="text-align: center;">
+                <a href="<?php echo $base_url; ?>partnerportal/login" style="display: inline-block; background: #28a745; color: #fff; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;">Login to Partner Portal</a>
+            </div>
+        </div>
+        <?php endif; ?>
 
         <div style="background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; margin: 20px 0;">
             <p style="margin: 0;"><strong>⚠️ Important:</strong> Please save your <strong>Partner Code: <?php echo $partner_data['partner_code']; ?></strong> for future reference.</p>
-        </div>
-
-        <h3 style="color: #3c8dbc;">Check Your Status</h3>
-        <p>You can check your registration status anytime by visiting:</p>
-        <div style="text-align: center; margin: 20px 0;">
-            <a href="<?php echo $base_url; ?>partnerregistration/checkStatus" style="display: inline-block; background: #3c8dbc; color: #fff; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;">Check Registration Status</a>
         </div>
 
         <h3 style="color: #3c8dbc;">Need Help?</h3>

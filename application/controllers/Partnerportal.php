@@ -81,10 +81,13 @@ class Partnerportal extends Front_Controller
         if ($result['status']) {
             // Check for redirect URL
             $redirect = $this->session->userdata('partner_redirect_url');
-            if ($redirect) {
+            if ($redirect && strpos($redirect, 'partnerportal/login') === false) {
+                // Only use stored redirect if it's not the login page itself
                 $this->session->unset_userdata('partner_redirect_url');
                 $result['redirect'] = $redirect;
             } else {
+                // Clear any stored redirect that points to login
+                $this->session->unset_userdata('partner_redirect_url');
                 $result['redirect'] = base_url('partnerdashboard');
             }
         }

@@ -26,9 +26,10 @@ class Partner_Controller extends MY_Controller
         // Get partner data
         $this->partner_data = $this->partner_auth->get_partner_data();
 
-        // Check if account is active
-        if ($this->partner_data['status'] != 'active') {
+        // Check if account is active or pending (pending accounts with passwords can access)
+        if ($this->partner_data['status'] != 'active' && $this->partner_data['status'] != 'pending') {
             $this->session->set_flashdata('error', 'Your account is not active. Please contact support.');
+            $this->partner_auth->logout(); // Logout to prevent redirect loop
             redirect('partnerportal/login');
         }
 
