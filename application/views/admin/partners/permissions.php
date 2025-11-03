@@ -82,13 +82,13 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                         <?php else: ?>
                             <ul class="list-unstyled">
                                 <?php
-                                // Default icons based on permission codes
+                                // Default icons based on permission codes (must match database codes)
                                 $icon_map = array(
-                                    'library_access' => 'fa-book',
+                                    'library' => 'fa-book',
                                     'online_courses' => 'fa-graduation-cap',
                                     'download_centre' => 'fa-download',
-                                    'gmeet_access' => 'fa-video-camera',
-                                    'zoom_access' => 'fa-video-camera',
+                                    'gmeet' => 'fa-video-camera',
+                                    'zoom' => 'fa-video-camera',
                                     'events_access' => 'fa-calendar'
                                 );
 
@@ -153,13 +153,13 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                         <?php else: ?>
                             <div class="row">
                                 <?php
-                                // Default icons based on permission codes
+                                // Default icons based on permission codes (must match database codes)
                                 $icon_map = array(
-                                    'library_access' => 'fa-book',
+                                    'library' => 'fa-book',
                                     'online_courses' => 'fa-graduation-cap',
                                     'download_centre' => 'fa-download',
-                                    'gmeet_access' => 'fa-video-camera',
-                                    'zoom_access' => 'fa-video-camera',
+                                    'gmeet' => 'fa-video-camera',
+                                    'zoom' => 'fa-video-camera',
                                     'events_access' => 'fa-calendar'
                                 );
 

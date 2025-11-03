@@ -52,14 +52,20 @@
                             <!-- Menu Toggle Button -->
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown">
                                 <!-- The user image in the navbar-->
-                                <img src="<?php echo base_url('backend/images/avatar5.png'); ?>" class="user-image" alt="User Image">
+                                <?php 
+                                $partner_photo = !empty($partner['photo']) ? base_url($partner['photo']) : base_url('backend/images/default.jpg');
+                                ?>
+                                <img src="<?php echo $partner_photo; ?>" class="user-image" alt="User Image">
                                 <!-- hidden-xs hides the username on small devices so only the image appears. -->
                                 <span class="hidden-xs"><?php echo $partner['firstname'] . ' ' . $partner['lastname']; ?></span>
                             </a>
                             <ul class="dropdown-menu">
                                 <!-- The user image in the menu -->
                                 <li class="user-header">
-                                    <img src="<?php echo base_url('backend/images/avatar5.png'); ?>" class="img-circle" alt="User Image">
+                                    <?php 
+                                    $partner_photo = !empty($partner['photo']) ? base_url($partner['photo']) : base_url('backend/images/default.jpg');
+                                    ?>
+                                    <img src="<?php echo $partner_photo; ?>" class="img-circle" alt="User Image">
                                     <p>
                                         <?php echo $partner['firstname'] . ' ' . $partner['lastname']; ?>
                                         <small><?php echo $partner['email']; ?></small>
@@ -103,7 +109,10 @@
                 <!-- Sidebar user panel -->
                 <div class="user-panel">
                     <div class="pull-left image">
-                        <img src="<?php echo base_url('backend/images/avatar5.png'); ?>" class="img-circle" alt="User Image">
+                        <?php 
+                        $partner_photo = !empty($partner['photo']) ? base_url($partner['photo']) : base_url('backend/images/default.jpg');
+                        ?>
+                        <img src="<?php echo $partner_photo; ?>" class="img-circle" alt="User Image">
                     </div>
                     <div class="pull-left info">
                         <p><?php echo $partner['firstname'] . ' ' . $partner['lastname']; ?></p>
@@ -152,9 +161,9 @@
                     <li class="header">ADDITIONAL RESOURCES</li>
 
                     <?php
-                    // Define permission-based menu items
+                    // Define permission-based menu items (codes match database partner_permission_types table)
                     $permission_menus = array(
-                        'library_access' => array(
+                        'library' => array(
                             'label' => 'Library',
                             'icon' => 'fa-book',
                             'url' => 'partnerdashboard/library'
@@ -169,12 +178,12 @@
                             'icon' => 'fa-download',
                             'url' => 'partnerdashboard/downloads'
                         ),
-                        'gmeet_access' => array(
-                            'label' => 'GMeet',
+                        'gmeet' => array(
+                            'label' => 'Google Meet',
                             'icon' => 'fa-video-camera',
                             'url' => 'partnerdashboard/gmeet'
                         ),
-                        'zoom_access' => array(
+                        'zoom' => array(
                             'label' => 'Zoom',
                             'icon' => 'fa-video-camera',
                             'url' => 'partnerdashboard/zoom'

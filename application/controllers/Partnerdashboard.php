@@ -477,4 +477,115 @@ class Partnerdashboard extends Partner_Controller
         $year_total = $this->contribution_model->getYearContributed($partner_id, date('Y'));
         echo "This Year Contributed: " . $year_total . "<br>";
     }
+
+    // =================================================================
+    // PERMISSION-BASED PAGES
+    // =================================================================
+
+    /**
+     * Library Access - Redirect to library module
+     */
+    public function library()
+    {
+        // Check if partner has library permission
+        if (!in_array('library', $this->partner_permissions)) {
+            $this->session->set_flashdata('error', 'You do not have permission to access the Library.');
+            redirect('partnerdashboard');
+        }
+
+        // Redirect to library module
+        // If you have a specific library module for students, redirect there
+        redirect('librarymanagement');
+    }
+
+    /**
+     * Online Courses Access
+     */
+    public function courses()
+    {
+        // Check if partner has online courses permission
+        if (!in_array('online_courses', $this->partner_permissions)) {
+            $this->session->set_flashdata('error', 'You do not have permission to access Online Courses.');
+            redirect('partnerdashboard');
+        }
+
+        // Check if online course module is enabled
+        if (!$this->module_lib->hasModule('online_course')) {
+            $this->session->set_flashdata('error', 'Online Courses module is not available.');
+            redirect('partnerdashboard');
+        }
+
+        // Redirect to online course module
+        redirect('onlinecourse');
+    }
+
+    /**
+     * Download Centre Access
+     */
+    public function downloads()
+    {
+        // Check if partner has download centre permission
+        if (!in_array('download_centre', $this->partner_permissions)) {
+            $this->session->set_flashdata('error', 'You do not have permission to access the Download Centre.');
+            redirect('partnerdashboard');
+        }
+
+        $data = [];
+        $data['title'] = 'Download Centre';
+        $data['page_title'] = 'Download Centre';
+        $data['page_description'] = 'Access digital resources and materials';
+        $data['active_menu'] = 'download_centre';
+        $data['partner'] = $this->partner_data;
+        $data['partner_permissions'] = $this->partner_permissions;
+        $data['giving_types'] = $this->giving_type_model->getAll();
+        $data['giving_frequencies'] = $this->giving_frequency_model->getAll();
+        $data['setting_model'] = $this->setting_model;
+
+        // Load downloads or redirect to content page
+        $this->load->view('layout/partner/header', $data);
+        $this->load->view('partner/downloads', $data);
+        $this->load->view('layout/partner/footer', $data);
+    }
+
+    /**
+     * Google Meet Access
+     */
+    public function gmeet()
+    {
+        // Check if partner has gmeet permission
+        if (!in_array('gmeet', $this->partner_permissions)) {
+            $this->session->set_flashdata('error', 'You do not have permission to access Google Meet.');
+            redirect('partnerdashboard');
+        }
+
+        // Check if gmeet module is enabled
+        if (!$this->module_lib->hasModule('gmeet_live_class')) {
+            $this->session->set_flashdata('error', 'Google Meet module is not available.');
+            redirect('partnerdashboard');
+        }
+
+        // Redirect to gmeet module
+        redirect('user/gmeet');
+    }
+
+    /**
+     * Zoom Access
+     */
+    public function zoom()
+    {
+        // Check if partner has zoom permission
+        if (!in_array('zoom', $this->partner_permissions)) {
+            $this->session->set_flashdata('error', 'You do not have permission to access Zoom.');
+            redirect('partnerdashboard');
+        }
+
+        // Check if zoom module is enabled
+        if (!$this->module_lib->hasModule('zoom_live_class')) {
+            $this->session->set_flashdata('error', 'Zoom module is not available.');
+            redirect('partnerdashboard');
+        }
+
+        // Redirect to zoom module
+        redirect('user/zoom');
+    }
 }
