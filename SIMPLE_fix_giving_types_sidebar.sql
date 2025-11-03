@@ -19,7 +19,7 @@ DELETE FROM sidebar_sub_menus WHERE `key` = 'giving_types';
 DELETE FROM sidebar_sub_menus WHERE `key` = 'giving_frequencies';
 DELETE FROM sidebar_sub_menus WHERE `key` = 'partner_settings';
 
--- Add ONLY Giving Types to sidebar (NOT Frequencies or Settings)
+-- Add Giving Types to sidebar
 INSERT INTO sidebar_sub_menus (
     sidebar_menu_id,
     menu,
@@ -43,6 +43,33 @@ INSERT INTO sidebar_sub_menus (
     @partners_group_id,
     'givingtypes',
     'index,add,edit,delete,show',
+    1
+);
+
+-- Add Giving Frequencies to sidebar
+INSERT INTO sidebar_sub_menus (
+    sidebar_menu_id,
+    menu,
+    `key`,
+    lang_key,
+    url,
+    level,
+    access_permissions,
+    permission_group_id,
+    activate_controller,
+    activate_methods,
+    is_active
+) VALUES (
+    @partners_menu_id,
+    'Giving Frequencies',
+    'giving_frequencies',
+    'giving_frequencies',
+    'admin/givingfrequencies',
+    6,
+    "('partners', 'can_view')",
+    @partners_group_id,
+    'givingfrequencies',
+    'index,save,delete,toggle_status,get',
     1
 );
 
