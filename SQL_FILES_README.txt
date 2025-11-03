@@ -74,12 +74,35 @@ DELETED FILES (Cleanup Complete):
 ✓ Removed outdated menu fix files
 
 =====================================================
+PARTNER PERMISSION ISSUES:
+=====================================================
+
+12. check_partner_22_permissions.sql
+    Purpose: Diagnostic - check what permissions partner 22 has
+    When to run: If partner sidebar is missing menu items
+    Action: Run to see what's wrong
+
+13. FIX_permission_codes.sql
+    Purpose: Fix mismatched permission codes (library_access → library, etc.)
+    When to run: After running diagnostic and finding code mismatches
+    Action: Run to fix permission codes
+
+14. PARTNER_PERMISSIONS_FIX_GUIDE.txt
+    Purpose: Complete guide to fixing partner permission sidebar issues
+    Action: Read this for detailed troubleshooting steps
+
+=====================================================
 NEXT STEPS:
 =====================================================
 
+URGENT:
 1. Run FIX_CONTRIBUTIONS.sql in phpMyAdmin NOW
 2. Test adding a contribution
-3. If successful, you can delete FIX_CONTRIBUTIONS.sql
+
+FOR PARTNER 22 SIDEBAR ISSUE:
+1. Run check_partner_22_permissions.sql (diagnostic)
+2. Run FIX_permission_codes.sql (fix)
+3. Partner 22 logout/login and test
 
 =====================================================
 

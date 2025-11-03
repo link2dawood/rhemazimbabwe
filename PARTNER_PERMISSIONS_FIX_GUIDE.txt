@@ -1,0 +1,159 @@
+=====================================================
+PARTNER 22 PERMISSIONS - DIAGNOSIS & FIX
+=====================================================
+
+ISSUES REPORTED:
+----------------
+Partner ID 22 was granted ALL permissions, but sidebar only shows:
+✓ Online Courses (but shows 404 error)
+✓ Download Center
+✓ Events & Calendar
+
+Missing from sidebar:
+✗ Google Meet
+✗ Zoom
+✗ Library Access
+
+=====================================================
+ROOT CAUSE:
+=====================================================
+
+The permission codes in the database don't match what the sidebar expects!
+
+SIDEBAR EXPECTS:          DATABASE MIGHT HAVE:
+- 'library'               - 'library_access'
+- 'gmeet'                 - 'gmeet_access'
+- 'zoom'                  - 'zoom_access'
+- 'online_courses'        - 'online_courses' (correct)
+- 'download_centre'       - 'download_centre' (correct)
+- 'events_access'         - 'events_access' (correct)
+
+=====================================================
+SOLUTION:
+=====================================================
+
+STEP 1: Run Diagnostic Script
+------------------------------
+File: check_partner_22_permissions.sql
+
+This will show:
+- What permission types exist in the database
+- What permissions partner 22 actually has
+- What permission codes are being used
+
+Run in phpMyAdmin and share results with me.
+
+STEP 2: Fix Permission Codes
+-----------------------------
+File: FIX_permission_codes.sql
+
+This will:
+- Update 'library_access' → 'library'
+- Update 'gmeet_access' → 'gmeet'
+- Update 'zoom_access' → 'zoom'
+- Ensure other codes are correct
+
+Run in phpMyAdmin after reviewing Step 1 results.
+
+STEP 3: Clear Cache & Test
+---------------------------
+1. Partner 22 logout
+2. Clear browser cache
+3. Login again
+4. All 6 menu items should now appear in sidebar
+
+=====================================================
+ONLINE COURSES 404 ERROR - SEPARATE ISSUE:
+=====================================================
+
+The Online Courses link redirects to: user/course
+
+This causes 404 if:
+1. Online Course addon is not installed
+2. The addon is installed but not activated
+3. Routes are not configured
+
+FIX OPTIONS:
+
+Option A: Install Online Course Addon
+--------------------------------------
+The addon exists on your server:
+- addons/online_course/
+- It's currently inactive
+
+Activate it in: Admin → Modules → Online Course
+
+Option B: Use Custom Courses Page
+----------------------------------
+If addon stays disabled, it will show:
+- application/views/partner/courses.php
+- This is a placeholder page you can customize
+
+The controller already handles this automatically!
+
+=====================================================
+DETAILED PERMISSION MATCHING:
+=====================================================
+
+The sidebar (application/views/layout/partner/header.php) checks:
+
+$permission_menus = array(
+    'library' => array(...),          // Line 175
+    'online_courses' => array(...),   // Line 180
+    'download_centre' => array(...),  // Line 185
+    'gmeet' => array(...),            // Line 190
+    'zoom' => array(...),             // Line 195
+    'events_access' => array(...)     // Line 200
+);
+
+Then loops and checks:
+if (in_array($permission_code, $partner_permissions))
+
+So the $partner_permissions array MUST contain exact codes like:
+['library', 'gmeet', 'zoom', 'online_courses', 'download_centre', 'events_access']
+
+NOT like:
+['library_access', 'gmeet_access', ...]
+
+=====================================================
+DEBUG INSTRUCTIONS FOR USER:
+=====================================================
+
+1. Login as Partner 22
+2. Go to any partner portal page
+3. Press F12 (Developer Tools)
+4. Click "Console" tab
+5. Look for this message:
+   "Partner Permissions Loaded: [...]"
+6. Share the array contents with me
+
+This will show exactly what permission codes are being loaded.
+
+=====================================================
+QUICK FIX SUMMARY:
+=====================================================
+
+1. Run: check_partner_22_permissions.sql
+   → See what codes are in database
+
+2. Run: FIX_permission_codes.sql
+   → Update incorrect codes
+
+3. Test: Login as partner 22
+   → All 6 menus should appear
+
+4. For 404 error:
+   → Either activate Online Course addon
+   → OR it will show custom placeholder page
+
+=====================================================
+FILES TO RUN (IN ORDER):
+=====================================================
+
+1. check_partner_22_permissions.sql (diagnostic)
+2. FIX_permission_codes.sql (fix)
+
+Both are safe to run - they won't delete data!
+
+=====================================================
+
