@@ -94,7 +94,7 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                                 <div class="info-box bg-yellow">
                                     <span class="info-box-icon"><i class="fa fa-list"></i></span>
                                     <div class="info-box-content">
-                                        <span class="info-box-text"><?php echo $this->lang->line('total_transactions'); ?></span>
+                                        <span class="info-box-text">Total Pledges</span>
                                         <span class="info-box-number" id="totalTransactions">0</span>
                                     </div>
                                 </div>

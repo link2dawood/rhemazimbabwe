@@ -172,7 +172,20 @@
                                 <td>$<?php echo number_format($setting->amount, 2); ?></td>
                                 <td><?php echo $setting->frequency_name ?? 'N/A'; ?></td>
                                 <td><?php echo $setting->currency; ?></td>
-                                <td><?php echo date('M d, Y H:i', strtotime($setting->updated_at)); ?></td>
+                                <td>
+                                    <?php 
+                                    // Show updated_at if available, otherwise show created_at
+                                    $date_to_show = !empty($setting->updated_at) && $setting->updated_at != '0000-00-00 00:00:00' 
+                                        ? $setting->updated_at 
+                                        : $setting->created_at;
+                                    
+                                    if (!empty($date_to_show) && $date_to_show != '0000-00-00 00:00:00') {
+                                        echo date('M d, Y H:i', strtotime($date_to_show));
+                                    } else {
+                                        echo 'N/A';
+                                    }
+                                    ?>
+                                </td>
                             </tr>
                             <?php endforeach; ?>
                         </tbody>

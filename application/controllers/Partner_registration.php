@@ -396,22 +396,50 @@ class Partner_registration extends Front_Controller
      */
     private function saveGivingTypes($partner_id)
     {
+        // Load the Partner_giving_setting_model
+        $this->load->model('Partner_giving_setting_model');
+        
         $giving_types = $this->input->post('giving_types');
         $amounts = $this->input->post('amounts');
+        $currency = $this->input->post('currency') ?: 'USD';
         
-        if ($giving_types && $amounts) {
-            foreach ($giving_types as $index => $type_id) {
-                if (!empty($amounts[$index]) && $amounts[$index] > 0) {
-                    $this->db->insert('partner_giving_settings', array(
-                        'partner_id' => $partner_id,
+        if (!$giving_types || !is_array($giving_types) || empty($giving_types)) {
+            return; // No giving types selected
+        }
+        
+        // Get all giving types to match amounts by their position in the original form
+        $all_giving_types = $this->type_model->getAll();
+        
+        // Prepare settings data
+        // The form structure: amounts[] array corresponds to ALL giving types in order
+        // giving_types[] array only contains checked type IDs
+        // We need to match: for each checked type, find its index in all_giving_types, then get amount at that index
+        $settings_data = [];
+        $checked_type_ids = array_map('intval', $giving_types);
+        
+        // Create a map of type_id => index in the all_giving_types array
+        $type_index_map = [];
+        foreach ($all_giving_types as $index => $type) {
+            $type_index_map[$type->id] = $index;
+        }
+        
+        // For each checked giving type, get its corresponding amount
+        foreach ($checked_type_ids as $type_id) {
+            if (isset($type_index_map[$type_id]) && isset($amounts[$type_index_map[$type_id]])) {
+                $amount = floatval($amounts[$type_index_map[$type_id]]);
+                if ($amount > 0) {
+                    $settings_data[] = [
                         'giving_type_id' => $type_id,
-                        'amount' => $amounts[$index],
-                        'currency' => $this->input->post('currency') ?: 'USD',
-                        'is_active' => 1,
-                        'created_at' => date('Y-m-d H:i:s')
-                    ));
+                        'amount' => $amount,
+                        'currency' => $currency
+                    ];
                 }
             }
+        }
+        
+        // Save settings using the model
+        if (!empty($settings_data)) {
+            $this->Partner_giving_setting_model->saveSettings($partner_id, $settings_data);
         }
     }
 

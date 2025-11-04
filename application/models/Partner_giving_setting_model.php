@@ -68,6 +68,14 @@ class Partner_giving_setting_model extends MY_Model
      */
     public function add($data)
     {
+        // Ensure timestamps are set
+        if (!isset($data['created_at'])) {
+            $data['created_at'] = date('Y-m-d H:i:s');
+        }
+        if (!isset($data['updated_at'])) {
+            $data['updated_at'] = date('Y-m-d H:i:s');
+        }
+        
         if ($this->db->insert('partner_giving_settings', $data)) {
             return $this->db->insert_id();
         }
@@ -82,6 +90,11 @@ class Partner_giving_setting_model extends MY_Model
      */
     public function update($id, $data)
     {
+        // Ensure updated_at is set
+        if (!isset($data['updated_at'])) {
+            $data['updated_at'] = date('Y-m-d H:i:s');
+        }
+        
         $this->db->where('id', $id);
         return $this->db->update('partner_giving_settings', $data);
     }
@@ -132,7 +145,8 @@ class Partner_giving_setting_model extends MY_Model
                     'amount' => $setting['amount'],
                     'currency' => isset($setting['currency']) ? $setting['currency'] : 'USD',
                     'is_active' => 1,
-                    'created_at' => date('Y-m-d H:i:s')
+                    'created_at' => date('Y-m-d H:i:s'),
+                    'updated_at' => date('Y-m-d H:i:s')
                 ];
                 $this->db->insert('partner_giving_settings', $data);
             }

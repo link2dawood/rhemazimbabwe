@@ -281,10 +281,44 @@
                                 <div class="form-group">
                                     <label for="country">Country <span class="text-danger">*</span></label>
                                     <select class="form-control" id="country" name="country" required>
+                                        <option value="">Select Country</option>
                                         <option value="Zimbabwe" selected>Zimbabwe</option>
-                                        <option value="South Africa">South Africa</option>
-                                        <option value="Botswana">Botswana</option>
-                                        <option value="Other">Other</option>
+                                        <optgroup label="African Countries">
+                                            <option value="South Africa">South Africa</option>
+                                            <option value="Botswana">Botswana</option>
+                                            <option value="Zambia">Zambia</option>
+                                            <option value="Mozambique">Mozambique</option>
+                                            <option value="Malawi">Malawi</option>
+                                            <option value="Namibia">Namibia</option>
+                                            <option value="Tanzania">Tanzania</option>
+                                            <option value="Kenya">Kenya</option>
+                                            <option value="Uganda">Uganda</option>
+                                            <option value="Rwanda">Rwanda</option>
+                                            <option value="Nigeria">Nigeria</option>
+                                            <option value="Ghana">Ghana</option>
+                                            <option value="Ethiopia">Ethiopia</option>
+                                            <option value="Egypt">Egypt</option>
+                                            <option value="Angola">Angola</option>
+                                            <option value="Democratic Republic of Congo">Democratic Republic of Congo</option>
+                                        </optgroup>
+                                        <optgroup label="International">
+                                            <option value="United Kingdom">United Kingdom</option>
+                                            <option value="United States">United States</option>
+                                            <option value="Canada">Canada</option>
+                                            <option value="Australia">Australia</option>
+                                            <option value="New Zealand">New Zealand</option>
+                                            <option value="Germany">Germany</option>
+                                            <option value="France">France</option>
+                                            <option value="Netherlands">Netherlands</option>
+                                            <option value="Switzerland">Switzerland</option>
+                                            <option value="Sweden">Sweden</option>
+                                            <option value="Norway">Norway</option>
+                                            <option value="Denmark">Denmark</option>
+                                            <option value="China">China</option>
+                                            <option value="India">India</option>
+                                            <option value="Brazil">Brazil</option>
+                                            <option value="Other">Other</option>
+                                        </optgroup>
                                     </select>
                                 </div>
                             </div>
@@ -480,10 +514,44 @@
                                 <div class="form-group">
                                     <label for="country">Country <span class="text-danger">*</span></label>
                                     <select class="form-control" id="country" name="country" required>
+                                        <option value="">Select Country</option>
                                         <option value="Zimbabwe" selected>Zimbabwe</option>
-                                        <option value="South Africa">South Africa</option>
-                                        <option value="Botswana">Botswana</option>
-                                        <option value="Other">Other</option>
+                                        <optgroup label="African Countries">
+                                            <option value="South Africa">South Africa</option>
+                                            <option value="Botswana">Botswana</option>
+                                            <option value="Zambia">Zambia</option>
+                                            <option value="Mozambique">Mozambique</option>
+                                            <option value="Malawi">Malawi</option>
+                                            <option value="Namibia">Namibia</option>
+                                            <option value="Tanzania">Tanzania</option>
+                                            <option value="Kenya">Kenya</option>
+                                            <option value="Uganda">Uganda</option>
+                                            <option value="Rwanda">Rwanda</option>
+                                            <option value="Nigeria">Nigeria</option>
+                                            <option value="Ghana">Ghana</option>
+                                            <option value="Ethiopia">Ethiopia</option>
+                                            <option value="Egypt">Egypt</option>
+                                            <option value="Angola">Angola</option>
+                                            <option value="Democratic Republic of Congo">Democratic Republic of Congo</option>
+                                        </optgroup>
+                                        <optgroup label="International">
+                                            <option value="United Kingdom">United Kingdom</option>
+                                            <option value="United States">United States</option>
+                                            <option value="Canada">Canada</option>
+                                            <option value="Australia">Australia</option>
+                                            <option value="New Zealand">New Zealand</option>
+                                            <option value="Germany">Germany</option>
+                                            <option value="France">France</option>
+                                            <option value="Netherlands">Netherlands</option>
+                                            <option value="Switzerland">Switzerland</option>
+                                            <option value="Sweden">Sweden</option>
+                                            <option value="Norway">Norway</option>
+                                            <option value="Denmark">Denmark</option>
+                                            <option value="China">China</option>
+                                            <option value="India">India</option>
+                                            <option value="Brazil">Brazil</option>
+                                            <option value="Other">Other</option>
+                                        </optgroup>
                                     </select>
                                 </div>
                             </div>

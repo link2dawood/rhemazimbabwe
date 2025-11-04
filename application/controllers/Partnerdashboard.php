@@ -172,20 +172,37 @@ class Partnerdashboard extends Partner_Controller
         }
 
         // Prepare settings data
+        // The form structure: amounts[] array corresponds to ALL giving types in order
+        // giving_types[] array only contains checked type IDs
+        // We need to match amounts by giving_type_id, not by array index
         $settings_data = [];
         $total_amount = 0;
 
-        foreach ($giving_types as $index => $type_id) {
-            if (isset($amounts[$index]) && $amounts[$index] > 0) {
-                $settings_data[] = [
-                    'partner_id' => $partner_id,
-                    'giving_type_id' => $type_id,
-                    'amount' => $amounts[$index],
-                    'currency' => $currency,
-                    'is_active' => 1,
-                    'created_at' => date('Y-m-d H:i:s')
-                ];
-                $total_amount += $amounts[$index];
+        // Get all giving types to match amounts by their position in the original form
+        $all_giving_types = $this->giving_type_model->getAll();
+        
+        // Create a map of type_id => index in the all_giving_types array
+        $type_index_map = [];
+        foreach ($all_giving_types as $index => $type) {
+            $type_index_map[$type->id] = $index;
+        }
+
+        // For each checked giving type, get its corresponding amount
+        foreach ($giving_types as $type_id) {
+            $type_id = intval($type_id);
+            if (isset($type_index_map[$type_id]) && isset($amounts[$type_index_map[$type_id]])) {
+                $amount = floatval($amounts[$type_index_map[$type_id]]);
+                if ($amount > 0) {
+                    $settings_data[] = [
+                        'partner_id' => $partner_id,
+                        'giving_type_id' => $type_id,
+                        'amount' => $amount,
+                        'currency' => $currency,
+                        'is_active' => 1,
+                        'created_at' => date('Y-m-d H:i:s')
+                    ];
+                    $total_amount += $amount;
+                }
             }
         }
 

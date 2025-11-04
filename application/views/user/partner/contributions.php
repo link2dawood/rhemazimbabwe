@@ -42,7 +42,7 @@
                                 <div class="info-box bg-green">
                                     <span class="info-box-icon"><i class="fa fa-check-circle"></i></span>
                                     <div class="info-box-content">
-                                        <span class="info-box-text"><?php echo $this->lang->line('total_transactions'); ?></span>
+                                        <span class="info-box-text">Total Pledges</span>
                                         <span class="info-box-number"><?php echo count($contributions); ?></span>
                                     </div>
                                 </div>

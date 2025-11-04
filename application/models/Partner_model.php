@@ -35,13 +35,15 @@ class Partner_model extends MY_Model
     {
         $this->db->select('partners.*,
                           giving_frequencies.name as frequency_name,
-                          giving_types.name as type_name,
+                          GROUP_CONCAT(DISTINCT giving_types.name SEPARATOR ", ") as type_name,
                           students.firstname as student_firstname,
                           students.lastname as student_lastname')
                  ->from('partners')
                  ->join('giving_frequencies', 'giving_frequencies.id = partners.giving_frequency_id', 'left')
-                 ->join('giving_types', 'giving_types.id = partners.giving_type_id', 'left')
-                 ->join('students', 'students.id = partners.student_id', 'left');
+                 ->join('partner_giving_settings', 'partner_giving_settings.partner_id = partners.id AND partner_giving_settings.is_active = 1', 'left')
+                 ->join('giving_types', 'giving_types.id = partner_giving_settings.giving_type_id', 'left')
+                 ->join('students', 'students.id = partners.student_id', 'left')
+                 ->group_by('partners.id');
 
         // Apply filters
         if (isset($filters['is_active'])) {
@@ -57,7 +59,8 @@ class Partner_model extends MY_Model
         }
 
         if (isset($filters['giving_type_id'])) {
-            $this->db->where('partners.giving_type_id', $filters['giving_type_id']);
+            // Filter by giving type from partner_giving_settings
+            $this->db->where('partner_giving_settings.giving_type_id', $filters['giving_type_id']);
         }
 
         if (isset($filters['giving_frequency_id'])) {
@@ -89,15 +92,17 @@ class Partner_model extends MY_Model
     {
         $this->db->select('partners.*,
                           giving_frequencies.name as frequency_name,
-                          giving_types.name as type_name,
+                          GROUP_CONCAT(DISTINCT giving_types.name SEPARATOR ", ") as type_name,
                           students.firstname as student_firstname,
                           students.lastname as student_lastname,
                           students.admission_no')
                  ->from('partners')
                  ->join('giving_frequencies', 'giving_frequencies.id = partners.giving_frequency_id', 'left')
-                 ->join('giving_types', 'giving_types.id = partners.giving_type_id', 'left')
+                 ->join('partner_giving_settings', 'partner_giving_settings.partner_id = partners.id AND partner_giving_settings.is_active = 1', 'left')
+                 ->join('giving_types', 'giving_types.id = partner_giving_settings.giving_type_id', 'left')
                  ->join('students', 'students.id = partners.student_id', 'left')
-                 ->where('partners.id', $id);
+                 ->where('partners.id', $id)
+                 ->group_by('partners.id');
 
         $query = $this->db->get();
         return $query->row();
@@ -122,11 +127,13 @@ class Partner_model extends MY_Model
     {
         $this->db->select('partners.*,
                           giving_frequencies.name as frequency_name,
-                          giving_types.name as type_name')
+                          GROUP_CONCAT(DISTINCT giving_types.name SEPARATOR ", ") as type_name')
                  ->from('partners')
                  ->join('giving_frequencies', 'giving_frequencies.id = partners.giving_frequency_id', 'left')
-                 ->join('giving_types', 'giving_types.id = partners.giving_type_id', 'left')
-                 ->where('partners.student_id', $student_id);
+                 ->join('partner_giving_settings', 'partner_giving_settings.partner_id = partners.id AND partner_giving_settings.is_active = 1', 'left')
+                 ->join('giving_types', 'giving_types.id = partner_giving_settings.giving_type_id', 'left')
+                 ->where('partners.student_id', $student_id)
+                 ->group_by('partners.id');
         
         return $this->db->get()->result();
     }
@@ -140,11 +147,13 @@ class Partner_model extends MY_Model
     {
         $this->db->select('partners.*,
                           giving_frequencies.name as frequency_name,
-                          giving_types.name as type_name')
+                          GROUP_CONCAT(DISTINCT giving_types.name SEPARATOR ", ") as type_name')
                  ->from('partners')
                  ->join('giving_frequencies', 'giving_frequencies.id = partners.giving_frequency_id', 'left')
-                 ->join('giving_types', 'giving_types.id = partners.giving_type_id', 'left')
-                 ->where('partners.created_by', $staff_id);
+                 ->join('partner_giving_settings', 'partner_giving_settings.partner_id = partners.id AND partner_giving_settings.is_active = 1', 'left')
+                 ->join('giving_types', 'giving_types.id = partner_giving_settings.giving_type_id', 'left')
+                 ->where('partners.created_by', $staff_id)
+                 ->group_by('partners.id');
         
         return $this->db->get()->result();
     }
@@ -363,13 +372,14 @@ class Partner_model extends MY_Model
     {
         $this->db->select('partners.*,
                           giving_frequencies.name as frequency_name,
-                          giving_types.name as type_name,
+                          GROUP_CONCAT(DISTINCT giving_types.name SEPARATOR ", ") as type_name,
                           IFNULL(SUM(partner_contributions.amount), 0) as total_contributions,
                           COUNT(partner_contributions.id) as contribution_count,
                           MAX(partner_contributions.contribution_date) as last_contribution_date')
                  ->from('partners')
                  ->join('giving_frequencies', 'giving_frequencies.id = partners.giving_frequency_id', 'left')
-                 ->join('giving_types', 'giving_types.id = partners.giving_type_id', 'left')
+                 ->join('partner_giving_settings', 'partner_giving_settings.partner_id = partners.id AND partner_giving_settings.is_active = 1', 'left')
+                 ->join('giving_types', 'giving_types.id = partner_giving_settings.giving_type_id', 'left')
                  ->join('partner_contributions', 'partner_contributions.partner_id = partners.id AND partner_contributions.status = "completed"', 'left')
                  ->group_by('partners.id');
 
@@ -489,13 +499,15 @@ class Partner_model extends MY_Model
             }
         }
 
-        // Type distribution
-        $type_dist = $this->db->select('giving_types.name, COUNT(partners.id) as count')
-                             ->from('partners')
-                             ->join('giving_types', 'giving_types.id = partners.giving_type_id', 'left')
+        // Type distribution from partner_giving_settings
+        $type_dist = $this->db->select('giving_types.name, COUNT(DISTINCT partner_giving_settings.partner_id) as count')
+                             ->from('partner_giving_settings')
+                             ->join('giving_types', 'giving_types.id = partner_giving_settings.giving_type_id', 'left')
+                             ->join('partners', 'partners.id = partner_giving_settings.partner_id', 'left')
+                             ->where('partner_giving_settings.is_active', 1)
                              ->where('partners.is_active', 1)
                              ->where('partners.status', 'active')
-                             ->group_by('partners.giving_type_id')
+                             ->group_by('partner_giving_settings.giving_type_id')
                              ->get()
                              ->result();
 
@@ -578,13 +590,15 @@ class Partner_model extends MY_Model
     {
         $this->db->select('partners.*,
                           giving_frequencies.name as frequency_name,
-                          giving_types.name as type_name')
+                          GROUP_CONCAT(DISTINCT giving_types.name SEPARATOR ", ") as type_name')
                  ->from('partners')
                  ->join('giving_frequencies', 'giving_frequencies.id = partners.giving_frequency_id', 'left')
-                 ->join('giving_types', 'giving_types.id = partners.giving_type_id', 'left');
+                 ->join('partner_giving_settings', 'partner_giving_settings.partner_id = partners.id AND partner_giving_settings.is_active = 1', 'left')
+                 ->join('giving_types', 'giving_types.id = partner_giving_settings.giving_type_id', 'left');
         $this->db->where('(partners.student_id = ' . $this->db->escape($student_id) . ' OR
                           partners.email = ' . $this->db->escape($email) . ' OR
                           partners.mobileno = ' . $this->db->escape($phone) . ')', NULL, FALSE);
+        $this->db->group_by('partners.id');
         $this->db->order_by('partners.created_at', 'DESC');
         return $this->db->get()->result_array();
     }
@@ -599,12 +613,14 @@ class Partner_model extends MY_Model
     {
         $this->db->select('partners.*,
                           giving_frequencies.name as frequency_name,
-                          giving_types.name as type_name')
+                          GROUP_CONCAT(DISTINCT giving_types.name SEPARATOR ", ") as type_name')
                  ->from('partners')
                  ->join('giving_frequencies', 'giving_frequencies.id = partners.giving_frequency_id', 'left')
-                 ->join('giving_types', 'giving_types.id = partners.giving_type_id', 'left');
+                 ->join('partner_giving_settings', 'partner_giving_settings.partner_id = partners.id AND partner_giving_settings.is_active = 1', 'left')
+                 ->join('giving_types', 'giving_types.id = partner_giving_settings.giving_type_id', 'left');
         $this->db->where('(partners.email = ' . $this->db->escape($email) . ' OR
                           partners.mobileno = ' . $this->db->escape($phone) . ')', NULL, FALSE);
+        $this->db->group_by('partners.id');
         $this->db->order_by('partners.created_at', 'DESC');
         return $this->db->get()->result_array();
     }
@@ -619,12 +635,14 @@ class Partner_model extends MY_Model
     {
         $this->db->select('partners.*,
                           giving_frequencies.name as frequency_name,
-                          giving_types.name as type_name')
+                          GROUP_CONCAT(DISTINCT giving_types.name SEPARATOR ", ") as type_name')
                  ->from('partners')
                  ->join('giving_frequencies', 'giving_frequencies.id = partners.giving_frequency_id', 'left')
-                 ->join('giving_types', 'giving_types.id = partners.giving_type_id', 'left');
+                 ->join('partner_giving_settings', 'partner_giving_settings.partner_id = partners.id AND partner_giving_settings.is_active = 1', 'left')
+                 ->join('giving_types', 'giving_types.id = partner_giving_settings.giving_type_id', 'left');
         $this->db->where('(partners.staff_id = ' . $this->db->escape($staff_id) . ' OR
                           partners.email = ' . $this->db->escape($email) . ')', NULL, FALSE);
+        $this->db->group_by('partners.id');
         $this->db->order_by('partners.created_at', 'DESC');
         return $this->db->get()->result_array();
     }
@@ -743,6 +761,7 @@ class Partner_model extends MY_Model
         $this->db->select('*')
                  ->from('partner_permission_types')
                  ->where('is_active', 1)
+                 ->group_by('permission_code')
                  ->order_by('permission_name', 'ASC');
 
         $query = $this->db->get();
