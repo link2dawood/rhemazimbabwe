@@ -38,7 +38,7 @@ class Givingfrequencies extends Admin_Controller
     public function save()
     {
         if (!$this->rbac->hasPrivilege('partners', 'can_add') && !$this->rbac->hasPrivilege('partners', 'can_edit')) {
-            echo json_output(array('status' => 'error', 'message' => 'Access denied'));
+            json_output(403, array('status' => 'error', 'message' => 'Access denied'));
             return;
         }
 
@@ -51,7 +51,7 @@ class Givingfrequencies extends Admin_Controller
         $sort_order = $this->input->post('sort_order') ? $this->input->post('sort_order') : 0;
 
         if (empty($name)) {
-            echo json_output(array('status' => 'error', 'message' => 'Name is required'));
+            json_output(400, array('status' => 'error', 'message' => 'Name is required'));
             return;
         }
 
@@ -67,16 +67,16 @@ class Givingfrequencies extends Admin_Controller
         if ($id) {
             // Update existing
             if ($this->frequency_model->update($id, $data)) {
-                echo json_output(array('status' => 'success', 'message' => 'Giving frequency updated successfully'));
+                json_output(200, array('status' => 'success', 'message' => 'Giving frequency updated successfully'));
             } else {
-                echo json_output(array('status' => 'error', 'message' => 'Failed to update giving frequency'));
+                json_output(400, array('status' => 'error', 'message' => 'Failed to update giving frequency'));
             }
         } else {
             // Add new
             if ($this->frequency_model->add($data)) {
-                echo json_output(array('status' => 'success', 'message' => 'Giving frequency added successfully'));
+                json_output(200, array('status' => 'success', 'message' => 'Giving frequency added successfully'));
             } else {
-                echo json_output(array('status' => 'error', 'message' => 'Failed to add giving frequency'));
+                json_output(400, array('status' => 'error', 'message' => 'Failed to add giving frequency'));
             }
         }
     }
@@ -87,7 +87,7 @@ class Givingfrequencies extends Admin_Controller
     public function delete()
     {
         if (!$this->rbac->hasPrivilege('partners', 'can_delete')) {
-            echo json_output(array('status' => 'error', 'message' => 'Access denied'));
+            json_output(403, array('status' => 'error', 'message' => 'Access denied'));
             return;
         }
 
@@ -97,14 +97,14 @@ class Givingfrequencies extends Admin_Controller
         $usage_count = $this->frequency_model->getUsageCount($id);
         
         if ($usage_count > 0) {
-            echo json_output(array('status' => 'error', 'message' => 'Cannot delete giving frequency - it is being used by ' . $usage_count . ' partner(s)'));
+            json_output(400, array('status' => 'error', 'message' => 'Cannot delete giving frequency - it is being used by ' . $usage_count . ' partner(s)'));
             return;
         }
 
         if ($this->frequency_model->delete($id)) {
-            echo json_output(array('status' => 'success', 'message' => 'Giving frequency deleted successfully'));
+            json_output(200, array('status' => 'success', 'message' => 'Giving frequency deleted successfully'));
         } else {
-            echo json_output(array('status' => 'error', 'message' => 'Failed to delete giving frequency'));
+            json_output(400, array('status' => 'error', 'message' => 'Failed to delete giving frequency'));
         }
     }
 
@@ -114,16 +114,16 @@ class Givingfrequencies extends Admin_Controller
     public function toggle_status()
     {
         if (!$this->rbac->hasPrivilege('partners', 'can_edit')) {
-            echo json_output(array('status' => 'error', 'message' => 'Access denied'));
+            json_output(403, array('status' => 'error', 'message' => 'Access denied'));
             return;
         }
 
         $id = $this->input->post('id');
 
         if ($this->frequency_model->toggleStatus($id)) {
-            echo json_output(array('status' => 'success', 'message' => 'Status updated successfully'));
+            json_output(200, array('status' => 'success', 'message' => 'Status updated successfully'));
         } else {
-            echo json_output(array('status' => 'error', 'message' => 'Failed to update status'));
+            json_output(400, array('status' => 'error', 'message' => 'Failed to update status'));
         }
     }
 
@@ -133,7 +133,7 @@ class Givingfrequencies extends Admin_Controller
     public function get()
     {
         if (!$this->rbac->hasPrivilege('partners', 'can_view')) {
-            echo json_output(array('status' => 'error', 'message' => 'Access denied'));
+            json_output(403, array('status' => 'error', 'message' => 'Access denied'));
             return;
         }
 
@@ -141,10 +141,14 @@ class Givingfrequencies extends Admin_Controller
         
         if ($id) {
             $frequency = $this->frequency_model->getById($id);
-            echo json_output(array('status' => 'success', 'data' => $frequency));
+            if ($frequency) {
+                json_output(200, array('status' => 'success', 'data' => $frequency));
+            } else {
+                json_output(404, array('status' => 'error', 'message' => 'Frequency not found'));
+            }
         } else {
             $frequencies = $this->frequency_model->getAll(false);
-            echo json_output(array('status' => 'success', 'data' => $frequencies));
+            json_output(200, array('status' => 'success', 'data' => $frequencies));
         }
     }
 }
