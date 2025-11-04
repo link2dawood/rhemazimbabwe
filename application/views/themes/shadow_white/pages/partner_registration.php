@@ -209,7 +209,6 @@
             <ul class="features">
                 <li><i class="fa fa-check text-success"></i> Corporate giving programs</li>
                 <li><i class="fa fa-check text-success"></i> Multiple contact persons</li>
-                <li><i class="fa fa-check text-success"></i> Branded recognition</li>
                 <li><i class="fa fa-check text-success"></i> Special partnership benefits</li>
                 <li><i class="fa fa-check text-success"></i> Annual partnership reports</li>
             </ul>

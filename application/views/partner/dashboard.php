@@ -20,7 +20,7 @@
         <div class="small-box bg-green">
             <div class="inner">
                 <h3><?php echo isset($statistics['total_amount']) ? '$' . number_format($statistics['total_amount'], 2) : '$0.00'; ?></h3>
-                <p>Total Amount</p>
+                <p>Total Pledges</p>
             </div>
             <div class="icon">
                 <i class="fa fa-dollar"></i>

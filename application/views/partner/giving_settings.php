@@ -107,7 +107,7 @@
                             <div class="total-amount text-center">
                                 <div class="panel panel-success">
                                     <div class="panel-heading">
-                                        <h4>Total Contribution Amount</h4>
+                                        <h4>Total Pledges</h4>
                                     </div>
                                     <div class="panel-body">
                                         <h2 id="total-amount-display">$0.00</h2>

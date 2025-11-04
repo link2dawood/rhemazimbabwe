@@ -18,9 +18,15 @@ class Partner_giving_setting_model extends MY_Model
      */
     public function getByPartnerId($partner_id)
     {
-        $this->db->select('partner_giving_settings.*, giving_types.name as type_name, giving_types.code as type_code')
+        $this->db->select('partner_giving_settings.*, 
+                          giving_types.name as type_name, 
+                          giving_types.code as type_code,
+                          giving_frequencies.name as frequency_name,
+                          partners.giving_frequency_id')
                  ->from('partner_giving_settings')
                  ->join('giving_types', 'giving_types.id = partner_giving_settings.giving_type_id', 'left')
+                 ->join('partners', 'partners.id = partner_giving_settings.partner_id', 'left')
+                 ->join('giving_frequencies', 'giving_frequencies.id = partners.giving_frequency_id', 'left')
                  ->where('partner_giving_settings.partner_id', $partner_id)
                  ->where('partner_giving_settings.is_active', 1)
                  ->order_by('giving_types.name', 'ASC');
