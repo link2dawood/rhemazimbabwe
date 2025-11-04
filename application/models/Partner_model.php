@@ -186,7 +186,7 @@ class Partner_model extends MY_Model
         if ($existing_email > 0) {
             return [
                 'error' => true,
-                'message' => 'A partner with this email address already exists. Please use a different email or contact support.'
+                'message' => 'Your email address is already registered as either a student, instructor or admin staff. Please login and click on partner'
             ];
         }
 
