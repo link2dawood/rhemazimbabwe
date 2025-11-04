@@ -10,6 +10,7 @@ class Givingfrequencies extends Admin_Controller
     {
         parent::__construct();
         $this->load->model('frequency_model');
+        $this->load->helper('json_output');
     }
 
     /**
